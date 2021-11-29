@@ -66,14 +66,20 @@ void xe_kmem_tester_write(size_t size) {
 }
 
 void xe_kmem_tester_run(int count, size_t max_size) {
+    uint64_t total_read = 0;
+    uint64_t total_wrote = 0;
     for (int i=0; i<count; i++) {
         size_t size = random() % max_size;
         size = size == 0 ? 1 : size;
         assert(size <= max_size);
         if (random() % 2 == 0) {
             xe_kmem_tester_write(size);
+            total_wrote += size;
         } else {
             xe_kmem_tester_read(size);
+            total_read += size;
         }
     }
+    
+    printf("[TEST OK] total read: %llu, wrote: %llu\n", total_read, total_wrote);
 }

@@ -24,9 +24,7 @@ struct kmem_msdosfs {
     struct kmem_msdosfs_init_args args;
     
     int helper_cctl_fds[2];
-    
     int worker_cctl_fd;
-    int woeker_cctl_idx;
     
     struct xe_kmem_ops* ops;
 };
@@ -119,7 +117,6 @@ void xe_kmem_msdosfs_populate_worker_cache(struct kmem_msdosfs* kmem) {
         bzero(&args, sizeof(args));
         args.l2p_contigbytes = 16384 + random();
         args.l2p_devoffset = 16384 + random();
-        kmem->woeker_cctl_idx++;
         res = fcntl(kmem->worker_cctl_fd, F_LOG2PHYS_EXT, &args);
         tries++;
     } while (res == 0 && tries < 5);
@@ -186,7 +183,6 @@ void xe_kmem_msdosfs_init_worker(struct kmem_msdosfs* kmem) {
     int fd = open(path, O_RDONLY);
     assert(fd >= 0);
     kmem->worker_cctl_fd = fd;
-    kmem->woeker_cctl_idx = 1;
     
     int res = fcntl(kmem->args.worker_bridge_fd, F_NOCACHE);
     assert(res == 0);
