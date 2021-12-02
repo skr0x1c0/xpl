@@ -199,7 +199,7 @@ void xe_kmem_msdosfs_read(void* ctx, void* dst, uintptr_t src, size_t size) {
     assert(len == size);
 }
 
-void xe_kmem_mdosfs_write(void* ctx, uintptr_t dst, void* src, size_t size) {
+void xe_kmem_msdosfs_write(void* ctx, uintptr_t dst, void* src, size_t size) {
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)ctx;
     size_t off = lseek(kmem_msdosfs->args.worker_bridge_fd, 0, SEEK_SET);
     assert(off == 0);
@@ -209,18 +209,21 @@ void xe_kmem_mdosfs_write(void* ctx, uintptr_t dst, void* src, size_t size) {
     xe_kmem_msdosfs_populate_worker_cache(kmem_msdosfs);
 }
 
-struct xe_kmem_ops* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args) {
+static struct xe_kmem_ops xe_kmem_msdosfs_ops = {
+    .read = xe_kmem_msdosfs_read,
+    .write = xe_kmem_msdosfs_write,
+};
+
+struct xe_kmem_backend* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args) {
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)malloc(sizeof(struct kmem_msdosfs));
     kmem_msdosfs->args = *args;
     
     xe_kmem_msdosfs_init_helper(kmem_msdosfs);
     xe_kmem_msdosfs_init_worker(kmem_msdosfs);
     
-    struct xe_kmem_ops* ops = (struct xe_kmem_ops*)malloc(sizeof(struct xe_kmem_ops));
-    ops->read = xe_kmem_msdosfs_read;
-    ops->write = xe_kmem_mdosfs_write;
-    ops->ctx = kmem_msdosfs;
-    kmem_msdosfs->ops = ops;
+    struct xe_kmem_backend* backend = malloc(sizeof(struct xe_kmem_backend));
+    backend->ops = &xe_kmem_msdosfs_ops;
+    backend->ctx = kmem_msdosfs;
     
-    return ops;
+    return backend;
 }

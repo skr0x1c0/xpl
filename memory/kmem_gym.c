@@ -28,18 +28,21 @@ void xe_kmem_gym_write(void* ctx, uintptr_t dst, void* src, size_t size) {
     }
 }
 
+static struct xe_kmem_ops xe_kmem_gym_ops = {
+    .read = xe_kmem_gym_read,
+    .write = xe_kmem_gym_write,
+};
 
-struct xe_kmem_ops* xe_kmem_gym_create(void) {
+struct xe_kmem_backend* xe_kmem_gym_create(void) {
     if (getuid() != 0) {
         printf("[ERROR] root privileges are required for gym kmem read / write\n");
         abort();
     }
     gym_init();
     
-    struct xe_kmem_ops* ops = (struct xe_kmem_ops*)malloc(sizeof(struct xe_kmem_ops));
-    ops->read = xe_kmem_gym_read;
-    ops->write = xe_kmem_gym_write;
-    ops->ctx = ops;
+    struct xe_kmem_backend* backend = malloc(sizeof(struct xe_kmem_backend));
+    backend->ops = &xe_kmem_gym_ops;
+    backend->ctx = NULL;
     
-    return ops;
+    return backend;
 }

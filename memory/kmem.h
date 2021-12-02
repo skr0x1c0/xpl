@@ -15,10 +15,14 @@
 struct xe_kmem_ops {
     void(*read)(void* ctx, void* dst, uintptr_t src, size_t size);
     void(*write)(void* ctx, uintptr_t dst, void* src, size_t size);
+};
+
+struct xe_kmem_backend {
+    struct xe_kmem_ops* ops;
     void* ctx;
 };
 
-void xe_kmem_setup(struct xe_kmem_ops* ops);
+void xe_kmem_use_backend(struct xe_kmem_backend* backend);
 void xe_kmem_read(void* dst, uintptr_t src, size_t size);
 void xe_kmem_write(uintptr_t dst, void* src, size_t size);
 

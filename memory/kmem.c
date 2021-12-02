@@ -11,21 +11,21 @@
 
 #include "kmem.h"
 
-static struct xe_kmem_ops* kmem_ops;
+static struct xe_kmem_backend* kmem_backend;
 
 
-void xe_kmem_setup(struct xe_kmem_ops* ops) {
-    assert(ops != NULL);
-    kmem_ops = ops;
+void xe_kmem_use_backend(struct xe_kmem_backend* backend) {
+    assert(backend != NULL);
+    kmem_backend = backend;
 }
 
 void xe_kmem_read(void* dst, uintptr_t src, size_t size) {
-    assert(kmem_ops != NULL);
-    (*kmem_ops->read)(kmem_ops->ctx, dst, src, size);
+    assert(kmem_backend != NULL);
+    (*kmem_backend->ops->read)(kmem_backend->ctx, dst, src, size);
 }
 void xe_kmem_write(uintptr_t dst, void* src, size_t size) {
-    assert(kmem_ops != NULL);
-    (*kmem_ops->write)(kmem_ops->ctx, dst, src, size);
+    assert(kmem_backend != NULL);
+    (*kmem_backend->ops->write)(kmem_backend->ctx, dst, src, size);
 }
 
 uint8_t xe_kmem_read_uint8(uintptr_t src) {

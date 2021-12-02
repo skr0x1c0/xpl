@@ -32,6 +32,7 @@ struct kmem_msdosfs_init_args {
     void* helper_mutator_ctx;
 };
 
-struct xe_kmem_ops* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args);
+struct xe_kmem_backend* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args);
+void xe_kmem_msdosfs_destroy(struct xe_kmem_backend* backend);
 
 #endif /* kmem_msdosfs_h */
