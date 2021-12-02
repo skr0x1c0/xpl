@@ -25,6 +25,9 @@ struct map_ctx {
 };
 
 
+static dispatch_queue_t s_xe_dispatch_queue;
+
+
 void map_apply(void* data, size_t index) {
     struct map_ctx* ctx = (struct map_ctx*)data;
     if (ctx->error != 0) {
@@ -52,4 +55,11 @@ int xe_util_dispatch_apply(void* data, size_t element_size, size_t element_count
     atomic_init(&ctx.error, 0);
     dispatch_apply_f(element_count, DISPATCH_APPLY_AUTO, &ctx, map_apply);
     return ctx.error;
+}
+
+dispatch_queue_t xe_dispatch_queue(void) {
+    if (!s_xe_dispatch_queue) {
+        s_xe_dispatch_queue = dispatch_queue_create("xe_dispatch_queue", DISPATCH_QUEUE_CONCURRENT);
+    }
+    return s_xe_dispatch_queue;
 }
