@@ -311,7 +311,9 @@ void xe_kmem_remote_client_write(void* ctx, uintptr_t dst, void* src, size_t siz
 
 static struct xe_kmem_ops xe_kmem_remote_client_ops = {
     .read = xe_kmem_remote_client_read,
-    .write = xe_kmem_remote_client_write
+    .write = xe_kmem_remote_client_write,
+    .max_read_size = MAX_READ_SIZE,
+    .max_write_size = MAX_WRITE_SIZE,
 };
 
 struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path) {

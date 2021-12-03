@@ -18,6 +18,10 @@
 #include "util_misc.h"
 
 
+#define MAX_READ_SIZE 1024
+#define MAX_WRITE_SIZE 1024
+
+
 struct kmem_msdosfs {
     struct kmem_msdosfs_init_args args;
     
@@ -191,6 +195,7 @@ void xe_kmem_msdosfs_destroy_worker(struct kmem_msdosfs* kmem) {
 }
 
 void xe_kmem_msdosfs_read(void* ctx, void* dst, uintptr_t src, size_t size) {
+    assert(size <= MAX_READ_SIZE);
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)ctx;
     xe_kmem_msdosfs_prepare_worker_for_read(kmem_msdosfs, src, size);
     xe_kmem_msdosfs_flush_worker_cache(kmem_msdosfs);
@@ -201,6 +206,7 @@ void xe_kmem_msdosfs_read(void* ctx, void* dst, uintptr_t src, size_t size) {
 }
 
 void xe_kmem_msdosfs_write(void* ctx, uintptr_t dst, void* src, size_t size) {
+    assert(size <= MAX_WRITE_SIZE);
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)ctx;
     size_t off = lseek(kmem_msdosfs->args.worker_bridge_fd, 0, SEEK_SET);
     assert(off == 0);
@@ -213,6 +219,9 @@ void xe_kmem_msdosfs_write(void* ctx, uintptr_t dst, void* src, size_t size) {
 static struct xe_kmem_ops xe_kmem_msdosfs_ops = {
     .read = xe_kmem_msdosfs_read,
     .write = xe_kmem_msdosfs_write,
+    
+    .max_read_size = MAX_READ_SIZE,
+    .max_write_size = MAX_WRITE_SIZE,
 };
 
 struct xe_kmem_backend* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args) {

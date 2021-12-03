@@ -31,6 +31,9 @@ void xe_kmem_gym_write(void* ctx, uintptr_t dst, void* src, size_t size) {
 static struct xe_kmem_ops xe_kmem_gym_ops = {
     .read = xe_kmem_gym_read,
     .write = xe_kmem_gym_write,
+    
+    .max_read_size = 16 * 1024,
+    .max_write_size = 16 * 1024,
 };
 
 struct xe_kmem_backend* xe_kmem_gym_create(void) {
