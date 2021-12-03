@@ -181,6 +181,11 @@ int main(int argc, const char* argv[]) {
     xe_kmem_use_backend(xe_kmem_gym_create());
     xe_kmem_msdosfs_destroy(msdosfs_backend);
     
+    int32_t* pm_sync_incomplete_worker = (int32_t*)(worker_data_backup + TYPE_MSDOSFSMOUNT_MEM_PM_SYNC_INCOMPLETE_OFFSET);
+    *pm_sync_incomplete_worker = 1;
+    int32_t* pm_sync_incomplete_helper = (int32_t*)(helper_data_backup + TYPE_MSDOSFSMOUNT_MEM_PM_SYNC_INCOMPLETE_OFFSET);
+    *pm_sync_incomplete_helper = 1;
+    
     xe_kmem_write(worker_addr, worker_data_backup, sizeof(worker_data_backup));
     xe_kmem_write(helper_addr, helper_data_backup, sizeof(helper_data_backup));
     
