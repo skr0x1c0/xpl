@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include <sys/errno.h>
 
-#include "xnu_proc.h"
-#include "xnu_pipe.h"
 #include "allocator_pipe.h"
+#include "platform_types.h"
+#include "xnu_proc.h"
+#include "kmem.h"
 
 
 struct allocator_pipe {
@@ -49,8 +50,8 @@ int xe_kmem_allocator_pipe_allocate(uintptr_t kernproc, size_t size, xe_allocato
     }
     free(temp);
     
-    uintptr_t buffer = xe_xnu_pipe_pipebuf_get_buffer(pipe);
-    uint buffer_size = xe_xnu_pipe_pipebuf_get_size(pipe);
+    uintptr_t buffer = xe_kmem_read_uint64(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET));
+    uint buffer_size = xe_kmem_read_uint32(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_SIZE_OFFSET));
     assert(buffer_size >= size);
     
     xe_allocator_pipe_t allocator = (xe_allocator_pipe_t)malloc(sizeof(struct allocator_pipe));
