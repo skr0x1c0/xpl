@@ -13,7 +13,7 @@
 
 void xe_kmem_remote_server_start(void);
 
-struct xe_kmem_backend* xe_kmem_remote_create(const char* socket_path);
-void xe_kmem_remote_destroy(struct xe_kmem_backend* backend);
+struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path);
+void xe_kmem_remote_client_destroy(struct xe_kmem_backend* backend);
 
 #endif /* kmem_remote_h */

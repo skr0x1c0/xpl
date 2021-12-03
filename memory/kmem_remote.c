@@ -314,7 +314,7 @@ static struct xe_kmem_ops xe_kmem_remote_client_ops = {
     .write = xe_kmem_remote_client_write
 };
 
-struct xe_kmem_backend* xe_kmem_remote_create(const char* socket_path) {
+struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path) {
     int fd = socket(PF_UNIX, SOCK_STREAM, 0);
     
     struct sockaddr_un addr;
@@ -335,7 +335,7 @@ struct xe_kmem_backend* xe_kmem_remote_create(const char* socket_path) {
     return backend;
 }
 
-void xe_kmem_remote_destroy(struct xe_kmem_backend* backend) {
+void xe_kmem_remote_client_destroy(struct xe_kmem_backend* backend) {
     struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)backend->ctx;
     close(client->sock);
     free(client);
