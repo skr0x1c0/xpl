@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		8401FDBA2750B0A0007B561F /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 8401FDB92750B0A0007B561F /* slider_kas.c */; };
 		8401FDD32750B3E3007B561F /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; };
-		8401FDD42750B3E3007B561F /* libxib.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		8401FDEE2750B8C2007B561F /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F7864A274A2595000BA7BE /* libgym_client.dylib */; };
 		8401FDF12750BCB1007B561F /* allocator_iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84283087274D0336006FD852 /* allocator_iosurface.c */; };
 		8401FDF22750BCB5007B561F /* kmem_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78647274A21DE000BA7BE /* kmem_gym.c */; };
@@ -76,17 +75,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		8401FDD52750B3E3007B561F /* Embed Libraries */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				8401FDD42750B3E3007B561F /* libxib.dylib in Embed Libraries */,
-			);
-			name = "Embed Libraries";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8401FDE52750B8B6007B561F /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -430,7 +418,6 @@
 				84F78635274A219A000BA7BE /* Sources */,
 				84F78636274A219A000BA7BE /* Frameworks */,
 				84F78637274A219A000BA7BE /* CopyFiles */,
-				8401FDD52750B3E3007B561F /* Embed Libraries */,
 			);
 			buildRules = (
 			);
