@@ -25,6 +25,8 @@ int xe_allocator_msdosfs_loadkext(void) {
 
 
 int msdosfs_hdiutil_attach_internal(const char* image, char* dev_out, size_t dev_size) {
+    dev_out[0] = 0;
+    
     char buffer[1024];
     if (snprintf(buffer, sizeof(buffer), "hdiutil attach -nomount \"%s\"", image) >= sizeof(buffer)) {
         return E2BIG;
