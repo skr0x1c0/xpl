@@ -34,11 +34,7 @@ struct xe_util_lck_rw {
     uintptr_t necp_uuid_id_mapping_head;
     uintptr_t necp_uuid_id_mapping_tail;
     
-    _Atomic enum disconnect_state {
-        STATE_DISCONNECT_UNDEFINED,
-        STATE_DISCONNECT_START,
-        STATE_DISCONNECT_DONE
-    } disconnect_state;
+    dispatch_semaphore_t sem_disconnect_done;
 };
 
 
@@ -179,7 +175,7 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     util->so_pcb = inpcb;
     util->inp_pcbinfo = inp_pcbinfo;
     util->lck = lock;
-    atomic_init(&util->disconnect_state, STATE_DISCONNECT_UNDEFINED);
+    util->sem_disconnect_done = dispatch_semaphore_create(0);
     
     xe_util_lck_read_nstat_controls_state(util);
     xe_util_lck_read_necp_uuid_id_mapping_state(util);
@@ -187,19 +183,17 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     xe_util_lck_rw_set_lock(util);
     xe_util_lck_create_nstat_controls_cycle(util);
     
+    dispatch_semaphore_t sem_disconnect_start = dispatch_semaphore_create(0);
     dispatch_async(xe_dispatch_queue(), ^() {
-        enum disconnect_state expected = STATE_DISCONNECT_UNDEFINED;
-        _Bool ok = atomic_compare_exchange_strong(&util->disconnect_state, &expected, STATE_DISCONNECT_START);
-        assert(ok);
+        dispatch_semaphore_signal(sem_disconnect_start);
         int error = disconnectx(util->sock_fd, SAE_ASSOCID_ANY, SAE_CONNID_ANY);
         assert(error == 0);
-        expected = STATE_DISCONNECT_START;
-        ok = atomic_compare_exchange_strong(&util->disconnect_state, &expected, STATE_DISCONNECT_DONE);
-        assert(ok);
+        dispatch_semaphore_signal(util->sem_disconnect_done);
     });
     
+    dispatch_semaphore_wait(sem_disconnect_start, DISPATCH_TIME_FOREVER);
+    dispatch_release(sem_disconnect_start);
     sleep(1);
-    assert(util->disconnect_state == STATE_DISCONNECT_START);
     
     return util;
 }
@@ -220,9 +214,10 @@ void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
     xe_util_lck_rw_set_lock(*util);
     xe_util_lck_restore_necp_ids(*util);
     xe_util_lck_break_necp_mapping_cycle(*util);
-    sleep(1);
+    dispatch_semaphore_wait((*util)->sem_disconnect_done, DISPATCH_TIME_FOREVER);
     xe_util_lck_rw_restore_lock(*util);
     
+    dispatch_release((*util)->sem_disconnect_done);
     free(*util);
     *util = NULL;
 }
