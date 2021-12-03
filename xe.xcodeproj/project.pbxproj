@@ -8,11 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		8401FDBA2750B0A0007B561F /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 8401FDB92750B0A0007B561F /* slider_kas.c */; };
-		8401FDBB2750B0A0007B561F /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 8401FDB92750B0A0007B561F /* slider_kas.c */; };
 		8401FDD32750B3E3007B561F /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; };
 		8401FDD42750B3E3007B561F /* libxib.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		8401FDDF2750B746007B561F /* allocator_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423D963274CB68700D9F940 /* allocator_pipe.c */; };
-		8401FDE02750B76A007B561F /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; };
 		8401FDEE2750B8C2007B561F /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F7864A274A2595000BA7BE /* libgym_client.dylib */; };
 		8401FDF12750BCB1007B561F /* allocator_iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84283087274D0336006FD852 /* allocator_iosurface.c */; };
 		8401FDF22750BCB5007B561F /* kmem_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78647274A21DE000BA7BE /* kmem_gym.c */; };
@@ -29,33 +26,46 @@
 		8405D9AB274F62B30094FFB0 /* util_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 8405D9AA274F62B30094FFB0 /* util_binary.c */; };
 		84067EBA2753AAE3008F58AE /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */; };
 		8416832F275210B500840428 /* allocator_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 8416832D275210B500840428 /* allocator_msdosfs.c */; };
-		84168330275210B500840428 /* allocator_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 8416832D275210B500840428 /* allocator_msdosfs.c */; };
 		84168331275210B500840428 /* allocator_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 8416832D275210B500840428 /* allocator_msdosfs.c */; };
 		84168332275210B500840428 /* allocator_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 8416832D275210B500840428 /* allocator_msdosfs.c */; };
 		841683372752230000840428 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
-		841683382752230000840428 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
 		841683392752230000840428 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
 		8416833A2752230000840428 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
 		8423D95F274CB40400D9F940 /* xnu_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423D95E274CB40400D9F940 /* xnu_pipe.c */; };
 		8423D964274CB68700D9F940 /* allocator_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423D963274CB68700D9F940 /* allocator_pipe.c */; };
 		84283089274D0337006FD852 /* allocator_iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84283087274D0336006FD852 /* allocator_iosurface.c */; };
-		843DF9A527553C98006A5AAE /* kmem_tester.c in Sources */ = {isa = PBXBuildFile; fileRef = 843DF9A427553C98006A5AAE /* kmem_tester.c */; };
+		8439B9F9275917CA0051ABD9 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
+		8439B9FB275917CA0051ABD9 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
+		8439B9FC275917CA0051ABD9 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
 		84DDFEE9274FA898006B01D5 /* xnu_thread.c in Sources */ = {isa = PBXBuildFile; fileRef = 84DDFEE8274FA898006B01D5 /* xnu_thread.c */; };
-		84EFAD17274FE80B009E8833 /* allocator_iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84283087274D0336006FD852 /* allocator_iosurface.c */; };
-		84EFAD18274FE80F009E8833 /* kmem_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78647274A21DE000BA7BE /* kmem_gym.c */; };
-		84EFAD19274FE811009E8833 /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7864E274A25E3000BA7BE /* kmem.c */; };
-		84EFAD1A274FE814009E8833 /* xnu_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78651274A2A1B000BA7BE /* xnu_proc.c */; };
-		84EFAD1B274FE817009E8833 /* xnu_socket.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78655274A313E000BA7BE /* xnu_socket.c */; };
-		84EFAD1C274FE819009E8833 /* xnu_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423D95E274CB40400D9F940 /* xnu_pipe.c */; };
-		84EFAD1D274FE81B009E8833 /* xnu_thread.c in Sources */ = {isa = PBXBuildFile; fileRef = 84DDFEE8274FA898006B01D5 /* xnu_thread.c */; };
-		84EFAD1E274FE81E009E8833 /* util_lock.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78659274A36FA000BA7BE /* util_lock.c */; };
-		84EFAD1F274FE821009E8833 /* util_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 8405D9AA274F62B30094FFB0 /* util_binary.c */; };
-		84EFAD20274FE8D4009E8833 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F7864A274A2595000BA7BE /* libgym_client.dylib */; };
+		84E8B2102758FEC000C7B462 /* util_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */; };
+		84EA78B62758E8FB00ED2D28 /* util_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */; };
+		84ED2FA9275953FC002CC400 /* kmem_client_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 84ED2FA8275953FC002CC400 /* kmem_client_test.c */; };
+		84ED2FAD2759541E002CC400 /* util_lock.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78659274A36FA000BA7BE /* util_lock.c */; };
+		84ED2FAE27595421002CC400 /* util_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 8405D9AA274F62B30094FFB0 /* util_binary.c */; };
+		84ED2FAF27595423002CC400 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
+		84ED2FB027595426002CC400 /* util_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */; };
+		84ED2FB127595427002CC400 /* util_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */; };
+		84ED2FB22759542B002CC400 /* cmd_hdiutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33E052750E5F400EB3701 /* cmd_hdiutil.c */; };
+		84ED2FB32759542B002CC400 /* cmd_hdiutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33E052750E5F400EB3701 /* cmd_hdiutil.c */; };
+		84ED2FB527595430002CC400 /* xnu_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78651274A2A1B000BA7BE /* xnu_proc.c */; };
+		84ED2FB627595432002CC400 /* xnu_socket.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78655274A313E000BA7BE /* xnu_socket.c */; };
+		84ED2FB727595434002CC400 /* xnu_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423D95E274CB40400D9F940 /* xnu_pipe.c */; };
+		84ED2FB827595437002CC400 /* xnu_thread.c in Sources */ = {isa = PBXBuildFile; fileRef = 84DDFEE8274FA898006B01D5 /* xnu_thread.c */; };
+		84ED2FBA27595440002CC400 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
+		84ED2FBB27595443002CC400 /* kmem_tester.c in Sources */ = {isa = PBXBuildFile; fileRef = 843DF9A427553C98006A5AAE /* kmem_tester.c */; };
+		84ED2FBE2759544C002CC400 /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7864E274A25E3000BA7BE /* kmem.c */; };
+		84ED2FBF27595451002CC400 /* allocator_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 8416832D275210B500840428 /* allocator_msdosfs.c */; };
+		84ED2FC027595555002CC400 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F7864A274A2595000BA7BE /* libgym_client.dylib */; };
+		84ED2FC327595563002CC400 /* allocator_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423D963274CB68700D9F940 /* allocator_pipe.c */; };
+		84ED2FC52759558B002CC400 /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 8401FDB92750B0A0007B561F /* slider_kas.c */; };
+		84ED2FC62759559B002CC400 /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; };
+		84ED2FC92759559E002CC400 /* libdwarf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD62750B3EA007B561F /* libdwarf.dylib */; };
+		84ED2FCB275955A1002CC400 /* libctf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDDC2750B3F6007B561F /* libctf.dylib */; };
+		84ED2FCD275955A4002CC400 /* libelf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD92750B3EF007B561F /* libelf.dylib */; };
 		84F33DFE2750E2C300EB3701 /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */; };
-		84F33DFF2750E2C700EB3701 /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */; };
 		84F33E002750E2C700EB3701 /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */; };
 		84F33E062750E5F400EB3701 /* cmd_hdiutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33E052750E5F400EB3701 /* cmd_hdiutil.c */; };
-		84F64E2927512E640082A74B /* monitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EFAD12274FE7E8009E8833 /* monitor.c */; };
 		84F64E2A27512E670082A74B /* locker.c in Sources */ = {isa = PBXBuildFile; fileRef = 8401FDE92750B8B6007B561F /* locker.c */; };
 		84F64E2B27512E6B0082A74B /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F64E2027512E2F0082A74B /* kmem_msdosfs.c */; };
 		84F64E2F27512E850082A74B /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; };
@@ -102,7 +112,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
-		84EFAD0E274FE7E8009E8833 /* CopyFiles */ = {
+		84ED2FA4275953FC002CC400 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -155,13 +165,18 @@
 		8423D963274CB68700D9F940 /* allocator_pipe.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_pipe.c; sourceTree = "<group>"; };
 		84283087274D0336006FD852 /* allocator_iosurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = allocator_iosurface.c; sourceTree = "<group>"; };
 		84283088274D0337006FD852 /* allocator_iosurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = allocator_iosurface.h; sourceTree = "<group>"; };
+		84292CDF275A021C0058F246 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		8439B9F7275917CA0051ABD9 /* kmem_remote.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_remote.h; sourceTree = "<group>"; };
+		8439B9F8275917CA0051ABD9 /* kmem_remote.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_remote.c; sourceTree = "<group>"; };
 		843DF9A327553C98006A5AAE /* kmem_tester.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_tester.h; sourceTree = "<group>"; };
 		843DF9A427553C98006A5AAE /* kmem_tester.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_tester.c; sourceTree = "<group>"; };
 		84DDFEE7274FA898006B01D5 /* xnu_thread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xnu_thread.h; sourceTree = "<group>"; };
 		84DDFEE8274FA898006B01D5 /* xnu_thread.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xnu_thread.c; sourceTree = "<group>"; };
 		84DDFEEA274FAA49006B01D5 /* util_ptrauth.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_ptrauth.h; sourceTree = "<group>"; };
-		84EFAD10274FE7E8009E8833 /* monitor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = monitor; sourceTree = BUILT_PRODUCTS_DIR; };
-		84EFAD12274FE7E8009E8833 /* monitor.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = monitor.c; sourceTree = "<group>"; };
+		84EA78B42758E8FB00ED2D28 /* util_lck_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_lck_rw.h; sourceTree = "<group>"; };
+		84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_lck_rw.c; sourceTree = "<group>"; };
+		84ED2FA6275953FC002CC400 /* kmem_client_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kmem_client_test; sourceTree = BUILT_PRODUCTS_DIR; };
+		84ED2FA8275953FC002CC400 /* kmem_client_test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_client_test.c; sourceTree = "<group>"; };
 		84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_msdosfs.c; sourceTree = "<group>"; };
 		84F33E042750E5F400EB3701 /* cmd_hdiutil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cmd_hdiutil.h; sourceTree = "<group>"; };
 		84F33E052750E5F400EB3701 /* cmd_hdiutil.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cmd_hdiutil.c; sourceTree = "<group>"; };
@@ -195,12 +210,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		84EFAD0D274FE7E8009E8833 /* Frameworks */ = {
+		84ED2FA3275953FC002CC400 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8401FDE02750B76A007B561F /* libxib.dylib in Frameworks */,
-				84EFAD20274FE8D4009E8833 /* libgym_client.dylib in Frameworks */,
+				84ED2FCD275955A4002CC400 /* libelf.dylib in Frameworks */,
+				84ED2FC62759559B002CC400 /* libxib.dylib in Frameworks */,
+				84ED2FC92759559E002CC400 /* libdwarf.dylib in Frameworks */,
+				84ED2FCB275955A1002CC400 /* libctf.dylib in Frameworks */,
+				84ED2FC027595555002CC400 /* libgym_client.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,9 +304,9 @@
 			isa = PBXGroup;
 			children = (
 				84F7863C274A219A000BA7BE /* xe.c */,
-				84EFAD12274FE7E8009E8833 /* monitor.c */,
 				8401FDE92750B8B6007B561F /* locker.c */,
 				84F64E2027512E2F0082A74B /* kmem_msdosfs.c */,
+				84ED2FA8275953FC002CC400 /* kmem_client_test.c */,
 			);
 			path = bin;
 			sourceTree = "<group>";
@@ -296,6 +314,7 @@
 		84F78630274A219A000BA7BE = {
 			isa = PBXGroup;
 			children = (
+				84292CDF275A021C0058F246 /* .gitignore */,
 				84FC1469274A72330090885D /* platform_variables.h */,
 				84F78653274A2AA6000BA7BE /* platform_types.h */,
 				84F33E012750E2E100EB3701 /* allocators */,
@@ -314,9 +333,9 @@
 			isa = PBXGroup;
 			children = (
 				84F78639274A219A000BA7BE /* xe */,
-				84EFAD10274FE7E8009E8833 /* monitor */,
 				8401FDE72750B8B6007B561F /* locker */,
 				84F64E1E27512E2F0082A74B /* kmem_msdosfs */,
+				84ED2FA6275953FC002CC400 /* kmem_client_test */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -347,6 +366,8 @@
 				84F33E072750EA2E00EB3701 /* kmem_msdosfs.h */,
 				843DF9A327553C98006A5AAE /* kmem_tester.h */,
 				843DF9A427553C98006A5AAE /* kmem_tester.c */,
+				8439B9F7275917CA0051ABD9 /* kmem_remote.h */,
+				8439B9F8275917CA0051ABD9 /* kmem_remote.c */,
 			);
 			path = memory;
 			sourceTree = "<group>";
@@ -374,6 +395,8 @@
 				84168334275215A800840428 /* utils_misc.h */,
 				841683352752230000840428 /* util_dispatch.h */,
 				841683362752230000840428 /* util_dispatch.c */,
+				84EA78B42758E8FB00ED2D28 /* util_lck_rw.h */,
+				84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -398,21 +421,21 @@
 			productReference = 8401FDE72750B8B6007B561F /* locker */;
 			productType = "com.apple.product-type.tool";
 		};
-		84EFAD0F274FE7E8009E8833 /* monitor */ = {
+		84ED2FA5275953FC002CC400 /* kmem_client_test */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 84EFAD16274FE7E8009E8833 /* Build configuration list for PBXNativeTarget "monitor" */;
+			buildConfigurationList = 84ED2FAC275953FC002CC400 /* Build configuration list for PBXNativeTarget "kmem_client_test" */;
 			buildPhases = (
-				84EFAD0C274FE7E8009E8833 /* Sources */,
-				84EFAD0D274FE7E8009E8833 /* Frameworks */,
-				84EFAD0E274FE7E8009E8833 /* CopyFiles */,
+				84ED2FA2275953FC002CC400 /* Sources */,
+				84ED2FA3275953FC002CC400 /* Frameworks */,
+				84ED2FA4275953FC002CC400 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = monitor;
-			productName = monitor;
-			productReference = 84EFAD10274FE7E8009E8833 /* monitor */;
+			name = kmem_client_test;
+			productName = kmem_client_test;
+			productReference = 84ED2FA6275953FC002CC400 /* kmem_client_test */;
 			productType = "com.apple.product-type.tool";
 		};
 		84F64E1D27512E2F0082A74B /* kmem_msdosfs */ = {
@@ -462,7 +485,7 @@
 					8401FDE62750B8B6007B561F = {
 						CreatedOnToolsVersion = 13.1;
 					};
-					84EFAD0F274FE7E8009E8833 = {
+					84ED2FA5275953FC002CC400 = {
 						CreatedOnToolsVersion = 13.1;
 					};
 					84F64E1D27512E2F0082A74B = {
@@ -487,9 +510,9 @@
 			projectRoot = "";
 			targets = (
 				84F78638274A219A000BA7BE /* xe */,
-				84EFAD0F274FE7E8009E8833 /* monitor */,
 				8401FDE62750B8B6007B561F /* locker */,
 				84F64E1D27512E2F0082A74B /* kmem_msdosfs */,
+				84ED2FA5275953FC002CC400 /* kmem_client_test */,
 			);
 		};
 /* End PBXProject section */
@@ -503,6 +526,7 @@
 				8401FDF42750BCBB007B561F /* slider_kas.c in Sources */,
 				8401FDF32750BCB7007B561F /* kmem.c in Sources */,
 				84F64E2A27512E670082A74B /* locker.c in Sources */,
+				8439B9FB275917CA0051ABD9 /* kmem_remote.c in Sources */,
 				8401FDFD2750BCFA007B561F /* allocator_pipe.c in Sources */,
 				8401FDF92750BCCA007B561F /* util_lock.c in Sources */,
 				8401FDF62750BCC1007B561F /* xnu_socket.c in Sources */,
@@ -510,32 +534,35 @@
 				841683392752230000840428 /* util_dispatch.c in Sources */,
 				8401FDF52750BCBF007B561F /* xnu_proc.c in Sources */,
 				84F33E002750E2C700EB3701 /* kmem_msdosfs.c in Sources */,
+				84ED2FB32759542B002CC400 /* cmd_hdiutil.c in Sources */,
 				8401FDF12750BCB1007B561F /* allocator_iosurface.c in Sources */,
 				84168331275210B500840428 /* allocator_msdosfs.c in Sources */,
+				84E8B2102758FEC000C7B462 /* util_lck_rw.c in Sources */,
 				8401FDF82750BCC6007B561F /* xnu_thread.c in Sources */,
 				8401FDF22750BCB5007B561F /* kmem_gym.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		84EFAD0C274FE7E8009E8833 /* Sources */ = {
+		84ED2FA2275953FC002CC400 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84EFAD1C274FE819009E8833 /* xnu_pipe.c in Sources */,
-				84EFAD1E274FE81E009E8833 /* util_lock.c in Sources */,
-				84EFAD1A274FE814009E8833 /* xnu_proc.c in Sources */,
-				8401FDDF2750B746007B561F /* allocator_pipe.c in Sources */,
-				84EFAD19274FE811009E8833 /* kmem.c in Sources */,
-				84EFAD1F274FE821009E8833 /* util_binary.c in Sources */,
-				84EFAD17274FE80B009E8833 /* allocator_iosurface.c in Sources */,
-				84F64E2927512E640082A74B /* monitor.c in Sources */,
-				841683382752230000840428 /* util_dispatch.c in Sources */,
-				84EFAD1B274FE817009E8833 /* xnu_socket.c in Sources */,
-				84F33DFF2750E2C700EB3701 /* kmem_msdosfs.c in Sources */,
-				8401FDBB2750B0A0007B561F /* slider_kas.c in Sources */,
-				84168330275210B500840428 /* allocator_msdosfs.c in Sources */,
-				84EFAD18274FE80F009E8833 /* kmem_gym.c in Sources */,
-				84EFAD1D274FE81B009E8833 /* xnu_thread.c in Sources */,
+				84ED2FB627595432002CC400 /* xnu_socket.c in Sources */,
+				84ED2FBE2759544C002CC400 /* kmem.c in Sources */,
+				84ED2FB827595437002CC400 /* xnu_thread.c in Sources */,
+				84ED2FBF27595451002CC400 /* allocator_msdosfs.c in Sources */,
+				84ED2FB22759542B002CC400 /* cmd_hdiutil.c in Sources */,
+				84ED2FB727595434002CC400 /* xnu_pipe.c in Sources */,
+				84ED2FAE27595421002CC400 /* util_binary.c in Sources */,
+				84ED2FAF27595423002CC400 /* util_dispatch.c in Sources */,
+				84ED2FAD2759541E002CC400 /* util_lock.c in Sources */,
+				84ED2FA9275953FC002CC400 /* kmem_client_test.c in Sources */,
+				84ED2FB527595430002CC400 /* xnu_proc.c in Sources */,
+				84ED2FB127595427002CC400 /* util_lck_rw.c in Sources */,
+				84ED2FC327595563002CC400 /* allocator_pipe.c in Sources */,
+				84ED2FBB27595443002CC400 /* kmem_tester.c in Sources */,
+				84ED2FC52759558B002CC400 /* slider_kas.c in Sources */,
+				84ED2FBA27595440002CC400 /* kmem_remote.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,7 +574,9 @@
 				84FE898E27523E3A00788A90 /* xnu_thread.c in Sources */,
 				84FE898A27523E2C00788A90 /* slider_kas.c in Sources */,
 				84FE898D27523E3700788A90 /* xnu_pipe.c in Sources */,
+				84ED2FB027595426002CC400 /* util_lck_rw.c in Sources */,
 				84FE899127523E5200788A90 /* util_binary.c in Sources */,
+				8439B9FC275917CA0051ABD9 /* kmem_remote.c in Sources */,
 				84FE899227523E7B00788A90 /* allocator_iosurface.c in Sources */,
 				84FE898727523E1800788A90 /* kmem.c in Sources */,
 				84067EBA2753AAE3008F58AE /* kmem_msdosfs.c in Sources */,
@@ -556,7 +585,6 @@
 				84168332275210B500840428 /* allocator_msdosfs.c in Sources */,
 				84FE898B27523E3100788A90 /* xnu_proc.c in Sources */,
 				84FE899427523F3200788A90 /* kmem_gym.c in Sources */,
-				843DF9A527553C98006A5AAE /* kmem_tester.c in Sources */,
 				84FE899327523E7F00788A90 /* allocator_pipe.c in Sources */,
 				84FE899027523E4F00788A90 /* util_lock.c in Sources */,
 				8416833A2752230000840428 /* util_dispatch.c in Sources */,
@@ -572,6 +600,7 @@
 				841683372752230000840428 /* util_dispatch.c in Sources */,
 				8416832F275210B500840428 /* allocator_msdosfs.c in Sources */,
 				8423D95F274CB40400D9F940 /* xnu_pipe.c in Sources */,
+				8439B9F9275917CA0051ABD9 /* kmem_remote.c in Sources */,
 				84F78652274A2A1B000BA7BE /* xnu_proc.c in Sources */,
 				8405D9AB274F62B30094FFB0 /* util_binary.c in Sources */,
 				84F7864F274A25E3000BA7BE /* kmem.c in Sources */,
@@ -581,6 +610,7 @@
 				84F33DFE2750E2C300EB3701 /* kmem_msdosfs.c in Sources */,
 				84F78656274A313E000BA7BE /* xnu_socket.c in Sources */,
 				84F78648274A21DE000BA7BE /* kmem_gym.c in Sources */,
+				84EA78B62758E8FB00ED2D28 /* util_lck_rw.c in Sources */,
 				84F33E062750E5F400EB3701 /* cmd_hdiutil.c in Sources */,
 				8423D964274CB68700D9F940 /* allocator_pipe.c in Sources */,
 			);
@@ -609,22 +639,20 @@
 			};
 			name = Release;
 		};
-		84EFAD14274FE7E8009E8833 /* Debug */ = {
+		84ED2FAA275953FC002CC400 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				DEVELOPMENT_ASSET_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		84EFAD15274FE7E8009E8833 /* Release */ = {
+		84ED2FAB275953FC002CC400 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				DEVELOPMENT_ASSET_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -633,6 +661,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -641,6 +673,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -794,11 +830,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		84EFAD16274FE7E8009E8833 /* Build configuration list for PBXNativeTarget "monitor" */ = {
+		84ED2FAC275953FC002CC400 /* Build configuration list for PBXNativeTarget "kmem_client_test" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				84EFAD14274FE7E8009E8833 /* Debug */,
-				84EFAD15274FE7E8009E8833 /* Release */,
+				84ED2FAA275953FC002CC400 /* Debug */,
+				84ED2FAB275953FC002CC400 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
