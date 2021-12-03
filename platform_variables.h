@@ -13,4 +13,6 @@
 #define VAR_NSTAT_CONTROLS_ADDR 0xfffffe0007bcce88
 #define VAR_NECP_UUID_ID_MAPPING_HEAD_ADDR 0xfffffe0007bcd430
 
+#define FUNC_KFREE_EXT_ADDR 0xfffffe00072a7adc
+
 #endif /* platform_variables_h */

@@ -26,6 +26,7 @@
 		841683372752230000840428 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
 		841683392752230000840428 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
 		8416833A2752230000840428 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
+		841DF23A275A9B0500865C62 /* util_pacda.c in Sources */ = {isa = PBXBuildFile; fileRef = 841DF239275A9B0500865C62 /* util_pacda.c */; };
 		8423D964274CB68700D9F940 /* allocator_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423D963274CB68700D9F940 /* allocator_pipe.c */; };
 		84283089274D0337006FD852 /* allocator_iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84283087274D0336006FD852 /* allocator_iosurface.c */; };
 		8439B9F9275917CA0051ABD9 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
@@ -131,6 +132,8 @@
 		84168334275215A800840428 /* util_misc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_misc.h; sourceTree = "<group>"; };
 		841683352752230000840428 /* util_dispatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_dispatch.h; sourceTree = "<group>"; };
 		841683362752230000840428 /* util_dispatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_dispatch.c; sourceTree = "<group>"; };
+		841DF238275A9B0500865C62 /* util_pacda.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_pacda.h; sourceTree = "<group>"; };
+		841DF239275A9B0500865C62 /* util_pacda.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_pacda.c; sourceTree = "<group>"; };
 		8423D962274CB68700D9F940 /* allocator_pipe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_pipe.h; sourceTree = "<group>"; };
 		8423D963274CB68700D9F940 /* allocator_pipe.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_pipe.c; sourceTree = "<group>"; };
 		84283087274D0336006FD852 /* allocator_iosurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = allocator_iosurface.c; sourceTree = "<group>"; };
@@ -322,10 +325,10 @@
 				84F33E082750EBF300EB3701 /* kmem_gym.h */,
 				84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */,
 				84F33E072750EA2E00EB3701 /* kmem_msdosfs.h */,
-				843DF9A327553C98006A5AAE /* kmem_tester.h */,
 				843DF9A427553C98006A5AAE /* kmem_tester.c */,
-				8439B9F7275917CA0051ABD9 /* kmem_remote.h */,
+				843DF9A327553C98006A5AAE /* kmem_tester.h */,
 				8439B9F8275917CA0051ABD9 /* kmem_remote.c */,
+				8439B9F7275917CA0051ABD9 /* kmem_remote.h */,
 			);
 			path = memory;
 			sourceTree = "<group>";
@@ -353,6 +356,8 @@
 				841683362752230000840428 /* util_dispatch.c */,
 				84EA78B42758E8FB00ED2D28 /* util_lck_rw.h */,
 				84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */,
+				841DF238275A9B0500865C62 /* util_pacda.h */,
+				841DF239275A9B0500865C62 /* util_pacda.c */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -539,6 +544,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				84F7863D274A219A000BA7BE /* xe.c in Sources */,
+				841DF23A275A9B0500865C62 /* util_pacda.c in Sources */,
 				841683372752230000840428 /* util_dispatch.c in Sources */,
 				8416832F275210B500840428 /* allocator_msdosfs.c in Sources */,
 				8439B9F9275917CA0051ABD9 /* kmem_remote.c in Sources */,
