@@ -20,7 +20,7 @@
 
 #include "platform_variables.h"
 #include "allocator_msdosfs.h"
-#include "utils_misc.h"
+#include "util_misc.h"
 #include "util_dispatch.h"
 #include "kmem_gym.h"
 #include "kmem_msdosfs.h"

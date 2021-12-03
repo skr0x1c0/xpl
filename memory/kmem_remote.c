@@ -19,7 +19,7 @@
 
 #include "kmem_remote.h"
 #include "kmem.h"
-#include "utils_misc.h"
+#include "util_misc.h"
 
 
 // MARK: server

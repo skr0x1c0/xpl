@@ -140,7 +140,7 @@
 		8416832D275210B500840428 /* allocator_msdosfs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = allocator_msdosfs.c; sourceTree = "<group>"; };
 		8416832E275210B500840428 /* allocator_msdosfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = allocator_msdosfs.h; sourceTree = "<group>"; };
 		84168333275211FC00840428 /* msdosfs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = msdosfs.h; sourceTree = "<group>"; };
-		84168334275215A800840428 /* utils_misc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utils_misc.h; sourceTree = "<group>"; };
+		84168334275215A800840428 /* util_misc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_misc.h; sourceTree = "<group>"; };
 		841683352752230000840428 /* util_dispatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_dispatch.h; sourceTree = "<group>"; };
 		841683362752230000840428 /* util_dispatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_dispatch.c; sourceTree = "<group>"; };
 		8423D962274CB68700D9F940 /* allocator_pipe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_pipe.h; sourceTree = "<group>"; };
@@ -360,7 +360,7 @@
 				8405D9A9274F62B30094FFB0 /* util_binary.h */,
 				8405D9AA274F62B30094FFB0 /* util_binary.c */,
 				84DDFEEA274FAA49006B01D5 /* util_ptrauth.h */,
-				84168334275215A800840428 /* utils_misc.h */,
+				84168334275215A800840428 /* util_misc.h */,
 				841683352752230000840428 /* util_dispatch.h */,
 				841683362752230000840428 /* util_dispatch.c */,
 				84EA78B42758E8FB00ED2D28 /* util_lck_rw.h */,

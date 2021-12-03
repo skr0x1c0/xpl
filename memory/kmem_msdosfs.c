@@ -15,7 +15,7 @@
 #include "msdosfs.h"
 #include "cmd_hdiutil.h"
 #include "platform_types.h"
-#include "utils_misc.h"
+#include "util_misc.h"
 
 
 struct kmem_msdosfs {
