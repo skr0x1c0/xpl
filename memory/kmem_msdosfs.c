@@ -16,8 +16,6 @@
 #include "cmd_hdiutil.h"
 #include "platform_types.h"
 #include "utils_misc.h"
-#include "gym_client.h"
-#include "util_binary.h"
 
 
 struct kmem_msdosfs {
@@ -29,12 +27,6 @@ struct kmem_msdosfs {
     struct xe_kmem_ops* ops;
 };
 
-void confirm_write(uintptr_t dst, char* src, size_t size) {
-    char* temp = malloc(size);
-    int error = gym_privileged_read(temp, dst, size);
-    assert(error == 0);
-    assert(memcmp(temp, src, size) == 0);
-}
 
 void xe_kmem_msdosfs_update_helper_bridge(struct kmem_msdosfs* kmem, const char worker_data[TYPE_MSDOSFSMOUNT_SIZE]) {
     int fd = kmem->args.helper_bridge_fd;
@@ -106,7 +98,6 @@ void xe_kmem_msdosfs_prepare_worker_for_read(struct kmem_msdosfs* kmem, uintptr_
     *pm_sync_timer = 0;
     
     xe_kmem_msdosfs_update_worker_msdosfs(kmem, worker_data);
-    confirm_write(kmem->args.worker_msdosfs, worker_data, sizeof(worker_data));
 }
 
 void xe_kmem_msdosfs_populate_worker_cache(struct kmem_msdosfs* kmem) {
@@ -177,6 +168,12 @@ void xe_kmem_msdosfs_init_helper(struct kmem_msdosfs* kmem) {
     (kmem->args.helper_mutator)(kmem->args.helper_mutator_ctx, helper_data);
 }
 
+void xe_kmem_msdosfs_destroy_helper(struct kmem_msdosfs* kmem) {
+    for (int i=0; i<XE_ARRAY_SIZE(kmem->helper_cctl_fds); i++) {
+        close(kmem->helper_cctl_fds[i]);
+    }
+}
+
 void xe_kmem_msdosfs_init_worker(struct kmem_msdosfs* kmem) {
     char path[PATH_MAX];
     snprintf(path, sizeof(path), "%s/data1", kmem->args.worker_mount_point);
@@ -187,6 +184,10 @@ void xe_kmem_msdosfs_init_worker(struct kmem_msdosfs* kmem) {
     int res = fcntl(kmem->args.worker_bridge_fd, F_NOCACHE);
     assert(res == 0);
     xe_kmem_msdosfs_init_worker_bridge(kmem);
+}
+
+void xe_kmem_msdosfs_destroy_worker(struct kmem_msdosfs* kmem) {
+    close(kmem->worker_cctl_fd);
 }
 
 void xe_kmem_msdosfs_read(void* ctx, void* dst, uintptr_t src, size_t size) {
@@ -226,4 +227,12 @@ struct xe_kmem_backend* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* ar
     backend->ctx = kmem_msdosfs;
     
     return backend;
+}
+
+void xe_kmem_msdosfs_destroy(struct xe_kmem_backend* backend) {
+    struct kmem_msdosfs* kmem = (struct kmem_msdosfs*)backend->ctx;
+    xe_kmem_msdosfs_destroy_helper(kmem);
+    xe_kmem_msdosfs_destroy_worker(kmem);
+    free(kmem);
+    free(backend);
 }
