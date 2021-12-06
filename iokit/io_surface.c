@@ -30,7 +30,7 @@ int xe_io_surface_find_surface_with_props_key(uintptr_t root_user_client, char* 
         uintptr_t props_dict = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
         
         uintptr_t temp;
-        int error = xe_io_os_dictionary_find_value(props_dict, key, &temp);
+        int error = xe_io_os_dictionary_find_value(props_dict, key, &temp, NULL);
         if (!error) {
             *out = surface;
             return 0;

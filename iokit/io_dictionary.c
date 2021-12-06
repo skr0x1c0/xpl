@@ -40,7 +40,22 @@ uintptr_t xe_io_os_dictionary_value_at_index(uintptr_t dict, int index) {
     return xe_io_os_dictionary_value(xe_io_os_dictionary_dict_entry(dict), index);
 }
 
-int xe_io_os_dictionary_find_value(uintptr_t dict, const char* value, uintptr_t* out) {
+void xe_io_os_dictionary_set_value_at_idx(uintptr_t dict, int idx, uintptr_t value) {
+    uintptr_t dst = KMEM_OFFSET(xe_io_os_dictionary_dict_entry(dict), (idx * 2 + 1) * sizeof(uintptr_t));
+    xe_kmem_write_uint64(dst, value);
+}
+
+int xe_io_os_dictionary_set_value_of_key(uintptr_t dict, char* key, uintptr_t value) {
+    int idx;
+    int error = xe_io_os_dictionary_find_value(dict, key, NULL, &idx);
+    if (error) {
+        return error;
+    }
+    xe_io_os_dictionary_set_value_at_idx(dict, idx, value);
+    return 0;
+}
+
+int xe_io_os_dictionary_find_value(uintptr_t dict, const char* value, uintptr_t* ptr_out, int* idx_out) {
     uint count = xe_io_os_dictionary_count(dict);
     uintptr_t dict_entry = xe_io_os_dictionary_dict_entry(dict);
     
@@ -50,7 +65,8 @@ int xe_io_os_dictionary_find_value(uintptr_t dict, const char* value, uintptr_t*
         assert(len <= sizeof(buffer));
         
         if (strncmp(value, buffer, sizeof(buffer)) == 0) {
-            *out = xe_io_os_dictionary_value(dict_entry, i);
+            if (ptr_out) *ptr_out = xe_io_os_dictionary_value(dict_entry, i);
+            if (idx_out) *idx_out = i;
             return 0;
         }
     }

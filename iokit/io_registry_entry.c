@@ -31,7 +31,7 @@ uintptr_t xe_io_registry_entry_property_table(uintptr_t entry) {
 size_t xe_io_registry_entry_name(uintptr_t entry, char* name, size_t name_len) {
     uintptr_t registry_table = xe_io_registry_entry_registry_table(entry);
     uintptr_t prop_name;
-    int error = xe_io_os_dictionary_find_value(registry_table, "IOName", &prop_name);
+    int error = xe_io_os_dictionary_find_value(registry_table, "IOName", &prop_name, NULL);
     if (error) {
         name[0] = '\0';
         return 0;
@@ -43,7 +43,7 @@ size_t xe_io_registry_entry_location(uintptr_t entry, char* location, size_t loc
     uintptr_t registry_table = xe_io_registry_entry_registry_table(entry);
     xe_io_os_dictionary_print_keys(registry_table);
     uintptr_t prop;
-    int error = xe_io_os_dictionary_find_value(registry_table, "IOLocation", &prop);
+    int error = xe_io_os_dictionary_find_value(registry_table, "IOLocation", &prop, NULL);
     if (error) {
         location[0] = '\0';
         return 0;
@@ -54,7 +54,7 @@ size_t xe_io_registry_entry_location(uintptr_t entry, char* location, size_t loc
 int xe_io_registry_entry_find_child_by_type(uintptr_t entry, uintptr_t type, uintptr_t* out) {    
     uintptr_t registry_table = xe_io_registry_entry_registry_table(entry);
     uintptr_t child_array;
-    int error = xe_io_os_dictionary_find_value(registry_table, "IOServiceChildLinks", &child_array);
+    int error = xe_io_os_dictionary_find_value(registry_table, "IOServiceChildLinks", &child_array, NULL);
     if (error) {
         return error;
     }
@@ -75,7 +75,7 @@ int xe_io_registry_entry_find_child_by_type(uintptr_t entry, uintptr_t type, uin
 int xe_io_registry_entry_find_child_by_name(uintptr_t entry, char* name, uintptr_t* out) {
     uintptr_t registry_table = xe_io_registry_entry_registry_table(entry);
     uintptr_t child_array;
-    int error = xe_io_os_dictionary_find_value(registry_table, "IOServiceChildLinks", &child_array);
+    int error = xe_io_os_dictionary_find_value(registry_table, "IOServiceChildLinks", &child_array, NULL);
     if (error) {
         return error;
     }

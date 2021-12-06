@@ -90,6 +90,11 @@ void xe_util_zone_lock(uintptr_t zone) {
     xe_kmem_write_uint64(KMEM_OFFSET(zone, TYPE_ZONE_MEM_Z_LOCK_OFFSET), value);
 }
 
+void xe_util_meta_add_zm_alloc_size(uintptr_t meta, uint16_t size) {
+    uint16_t current = xe_kmem_read_uint16(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET));
+    xe_kmem_write_uint16(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET), current + size);
+    assert(xe_kmem_read_uint64(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET)) == current + size);
+}
 
 void xe_util_zone_unlock(uintptr_t zone) {
     uint64_t value = 0;
