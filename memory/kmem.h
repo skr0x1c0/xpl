@@ -51,7 +51,7 @@ void xe_kmem_write_int64(uintptr_t dst, int64_t value);
 void xe_kmem_copy(uintptr_t dst, uintptr_t src, size_t size);
 
 
-#define XE_KMEM_READ_BITFIELD(dst, src, bit_offset, bit_size) \
+#define xe_kmem_read_bitfield(dst, src, bit_offset, bit_size) \
 { \
     size_t byte_size = ((bit_size) + NBBY - 1) / NBBY;\
     assert(sizeof(*dst) >= byte_size);\

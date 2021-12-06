@@ -24,7 +24,7 @@ uint16_t xe_util_zone_to_z_index(uintptr_t zone) {
 
 uint16_t xe_util_meta_to_z_index(uintptr_t meta) {
     uint16_t zm_index;
-    XE_KMEM_READ_BITFIELD(&zm_index, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
+    xe_kmem_read_bitfield(&zm_index, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
     return zm_index;
 }
 
@@ -53,7 +53,7 @@ uint xe_util_zba_scan_bitmap_ref(uintptr_t meta) {
 
 uint xe_util_zba_scan_bitmap_inline(uintptr_t meta_base) {
     uint8_t zm_chunk_len;
-    XE_KMEM_READ_BITFIELD(&zm_chunk_len, meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
+    xe_kmem_read_bitfield(&zm_chunk_len, meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
     assert(zm_chunk_len <= 0x8);
     
     for (int i=0; i<zm_chunk_len; i++) {
@@ -74,7 +74,7 @@ uint xe_util_zba_scan_bitmap_inline(uintptr_t meta_base) {
 
 uint xe_util_meta_find_and_clear_bit(uintptr_t meta) {
     uint16_t zm_inline_bitmap;
-    XE_KMEM_READ_BITFIELD(&zm_inline_bitmap, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_SIZE);
+    xe_kmem_read_bitfield(&zm_inline_bitmap, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_SIZE);
     
     if (zm_inline_bitmap) {
         return xe_util_zba_scan_bitmap_inline(meta);
@@ -121,7 +121,7 @@ int xe_util_zone_allocate(uintptr_t zone, uintptr_t* out) {
     assert(xe_util_zone_to_z_index(zone) == xe_util_meta_to_z_index(meta));
     uint16_t zm_alloc_size = xe_kmem_read_uint16(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET));
     uint8_t zm_chunk_len;
-    XE_KMEM_READ_BITFIELD(&zm_chunk_len, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
+    xe_kmem_read_bitfield(&zm_chunk_len, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
     uint64_t max_size = xe_ptoa(zm_chunk_len) + 1u;
     
     if (zm_alloc_size + z_elem_size > max_size) {
