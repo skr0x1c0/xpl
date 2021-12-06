@@ -8,6 +8,7 @@
 #ifndef memory_kmem_h
 #define memory_kmem_h
 
+#include <assert.h>
 #include <stdio.h>
 
 #define KMEM_OFFSET(base, offset) (base + offset)
@@ -49,5 +50,13 @@ void xe_kmem_write_int64(uintptr_t dst, int64_t value);
 
 void xe_kmem_copy(uintptr_t dst, uintptr_t src, size_t size);
 
+
+#define XE_KMEM_READ_BITFIELD(dst, src, bit_offset, bit_size) \
+{ \
+    size_t byte_size = ((bit_size) + NBBY - 1) / NBBY;\
+    assert(sizeof(*dst) >= byte_size);\
+    xe_kmem_read(dst, (src) + ((bit_offset) / NBBY), byte_size); \
+    (*dst) = (((*(dst)) >> ((bit_offset) % NBBY)) & ((1 << (bit_size)) - 1));\
+}
 
 #endif /* memory_kmem_h */
