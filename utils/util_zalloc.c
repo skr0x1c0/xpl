@@ -27,12 +27,16 @@ struct xe_util_zalloc {
     size_t pageq_len;
 };
 
+uintptr_t xe_util_zalloc_pva_to_addr(uint32_t pva) {
+    return (uintptr_t)(int32_t)pva << XE_PAGE_SHIFT;
+}
+
 uintptr_t xe_util_zalloc_find_zone_at_index(uint zone_index) {
     return xe_slider_slide(VAR_ZONE_ARRAY_ADDR) + zone_index * TYPE_ZONE_SIZE;
 }
 
 uint xe_util_zalloc_zone_to_index(uintptr_t zone) {
-    return (uint)((zone - xe_slider_slide(VAR_ZONE_INFO_ADDR)) / TYPE_ZONE_SIZE);
+    return (uint)((zone - xe_slider_slide(VAR_ZONE_ARRAY_ADDR)) / TYPE_ZONE_SIZE);
 }
 
 uintptr_t xe_util_zalloc_pageq_to_meta(uint32_t pageq) {
@@ -211,12 +215,18 @@ void xe_util_zalloc_init_bitmap(uintptr_t meta, uint elem_size) {
 
 void xe_util_zalloc_change_pageq_owner(uintptr_t meta_head, uint16_t zone_index) {
     uintptr_t cursor = meta_head;
+    assert(zone_index < VAR_ZONE_ARRAY_LEN);
     while (cursor) {
         uint16_t bitfields = xe_kmem_read_uint16(cursor);
         uint16_t zm_index_mask = XE_BITFIELD_MASK(TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
         bitfields = (bitfields & ~zm_index_mask) | ((zone_index << TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET) & zm_index_mask);
         xe_kmem_write_uint16(KMEM_OFFSET(cursor, 0), bitfields);
         uint32_t next_pageq = xe_kmem_read_uint32(KMEM_OFFSET(cursor, TYPE_ZONE_PAGE_METADATA_MEM_ZM_PAGE_NEXT_OFFSET));
+        
+        uint16_t written;
+        xe_kmem_read_bitfield(&written, cursor, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
+        assert(written == zone_index);
+        
         cursor = next_pageq ? xe_util_zalloc_pageq_to_meta(next_pageq) : 0;
     }
 }
@@ -255,6 +265,9 @@ uint32_t xe_util_zalloc_steal_pageq(uintptr_t recipient_zone, uint elem_size, ui
     xe_util_zalloc_init_bitmap(meta_head, elem_size);
     xe_util_zalloc_change_pageq_owner(meta_head, xe_util_zalloc_zone_to_index(recipient_zone));
     
+    assert(xe_kmem_read_uint16(KMEM_OFFSET(meta_head, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET)) == 0);
+    xe_kmem_write_uint16(KMEM_OFFSET(meta_head, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET), elem_size);
+    
     uint16_t z_elem_size = xe_kmem_read_uint16(KMEM_OFFSET(victim_zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET));
     uint32_t z_elems_free = xe_kmem_read_uint32(KMEM_OFFSET(victim_zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET));
     uint32_t z_elems_avail = xe_kmem_read_uint32(KMEM_OFFSET(victim_zone, TYPE_ZONE_MEM_Z_ELEMS_AVAIL_OFFSET));
@@ -280,6 +293,14 @@ size_t xe_util_zalloc_steal_pages(uintptr_t recipient_zone, uint min_num_pages, 
 
 xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, uint num_pages) {
     assert(xe_kmem_read_uint64(zone) == zone);
+    _Bool z_percpu;
+    xe_kmem_read_bitfield(&z_percpu, zone, TYPE_ZONE_MEM_Z_PERCPU_BITFIELD_OFFSET, TYPE_ZONE_MEM_Z_PERCPU_BITFIELD_SIZE);
+    assert(z_percpu == 0);
+    uintptr_t z_pcpu_cache = xe_kmem_read_uint64(KMEM_OFFSET(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET));
+    if (z_pcpu_cache) {
+        printf("[INFO] disabling z_pcpu_cache for zone %p\n", (void*)zone);
+        xe_kmem_write_uint64(KMEM_OFFSET(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET), 0);
+    }
     
     uint16_t z_elem_size = xe_kmem_read_uint16(KMEM_OFFSET(zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET));
     xe_util_zalloc_t util = malloc(sizeof(struct xe_util_zalloc));
@@ -295,13 +316,14 @@ int xe_util_zba_scan_bitmap_ref(uintptr_t meta, uint* eidx_out) {
     uint bitmap_count = 1 << (zm_bitmap & 0x7);
     
     for (uint i=0; i<bitmap_count; i++) {
-        uint64_t bitmap = xe_kmem_read_uint64(KMEM_OFFSET(bitmaps, i * sizeof(uintptr_t)));
-        if (!bitmap) {
+        uintptr_t bitmap = KMEM_OFFSET(bitmaps, i * sizeof(uintptr_t));
+        uint64_t value = xe_kmem_read_uint64(bitmap);
+        if (!value) {
             continue;
         }
-        uint idx = __builtin_ctzll(bitmap);
-        bitmap ^= (1ULL << idx);
-        xe_kmem_write_uint64(KMEM_OFFSET(bitmaps, i * sizeof(uintptr_t)), bitmap);
+        uint idx = __builtin_ctzll(value);
+        value ^= (1ULL << idx);
+        xe_kmem_write_uint64(bitmap, value);
         *eidx_out = i * 64 + idx;
         return 0;
     }
@@ -339,7 +361,12 @@ int xe_util_meta_find_and_clear_bit(uintptr_t meta, uint* eidx_out) {
     } else {
         return xe_util_zba_scan_bitmap_ref(meta, eidx_out);
     }
-    return 0;
+}
+
+void xe_util_zalloc_apply_meta_alloc_size_diff(uintptr_t meta, int diff) {
+    uint16_t current = xe_kmem_read_uint16(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET));
+    assert(!(diff < 0 && -diff > current));
+    xe_kmem_write_uint16(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET), current + diff);
 }
 
 uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util) {
@@ -350,11 +377,81 @@ uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util) {
         uint eidx = 0;
         int error = xe_util_meta_find_and_clear_bit(meta, &eidx);
         if (!error) {
-            uintptr_t page = (uintptr_t)(int32_t)pageq << XE_PAGE_SHIFT;
+            xe_util_zalloc_apply_meta_alloc_size_diff(meta, z_elem_size);
+            uintptr_t page = xe_util_zalloc_pva_to_addr(pageq);
             return page + eidx * z_elem_size;
         }
     }
     printf("[ERROR] no memory to allocate\n");
+    abort();
+}
+
+int xe_util_zalloc_meta_clear_bitmap_inline(uintptr_t meta_base, int eidx) {
+    int meta_idx = eidx / 32;
+    uintptr_t meta = meta_base + meta_idx * TYPE_ZONE_PAGE_METADATA_SIZE;
+    uint32_t value = xe_kmem_read_uint32(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_BITMAP_OFFSET));
+    int bitmap_idx = eidx % 32;
+    if (!(value & (1 << bitmap_idx))) {
+        return EALREADY;
+    }
+    value ^= (1 << bitmap_idx);
+    xe_kmem_write_uint32(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_BITMAP_OFFSET), value);
+    return 0;
+}
+
+int xe_util_zalloc_meta_clear_bitmap_ref(uintptr_t meta_base, int eidx) {
+    uint32_t bitmap_offset = xe_kmem_read_uint32(KMEM_OFFSET(meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_BITMAP_OFFSET));
+    uintptr_t bitmap_base = xe_util_zalloc_bitmap_offset_to_ref(bitmap_offset);
+    int meta_idx = eidx / 64;
+    int bitmap_idx = eidx % 64;
+    uintptr_t bitmap = bitmap_base + meta_idx * 8;
+    uint64_t value = xe_kmem_read_uint64(bitmap);
+    if (!(value & (1ULL << bitmap_idx))) {
+        return EALREADY;
+    }
+    value ^= (1ULL << bitmap_idx);
+    xe_kmem_write_uint64(bitmap, value);
+    return 0;
+}
+
+int xe_util_zalloc_meta_clear_bit(uintptr_t meta, int eidx) {
+    uint16_t zm_inline_bitmap;
+    xe_kmem_read_bitfield(&zm_inline_bitmap, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_SIZE);
+    
+    if (zm_inline_bitmap) {
+        return xe_util_zalloc_meta_clear_bitmap_inline(meta, eidx);
+    } else {
+        return xe_util_zalloc_meta_clear_bitmap_ref(meta, eidx);
+    }
+}
+
+uintptr_t xe_util_zalloc_alloc_at(xe_util_zalloc_t util, uintptr_t address) {
+    uint32_t addr_pageq = (uint32_t)(address >> XE_PAGE_SHIFT);
+    uint16_t z_elem_size = xe_kmem_read_uint16(KMEM_OFFSET(util->zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET));
+    
+    for (size_t i=0; i<util->pageq_len; i++) {
+        uint32_t pageq = util->pageq[i];
+        uintptr_t meta = xe_util_zalloc_pageq_to_meta(pageq);
+        
+        uint16_t zm_chunk_len;
+        xe_kmem_read_bitfield(&zm_chunk_len, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
+        
+        if (addr_pageq < pageq || addr_pageq >= (pageq + zm_chunk_len)) {
+            continue;
+        }
+        
+        uintptr_t page = xe_util_zalloc_pva_to_addr(pageq);
+        int eidx = (int)((address - page) / z_elem_size);
+        int error = xe_util_zalloc_meta_clear_bit(meta, eidx);
+        if (error) {
+            printf("[ERROR] address already in use\n");
+            abort();
+        }
+        xe_util_zalloc_apply_meta_alloc_size_diff(meta, z_elem_size);
+        return 0;
+    }
+    
+    printf("[ERROR] address not allocated by allocator\n");
     abort();
 }
 
