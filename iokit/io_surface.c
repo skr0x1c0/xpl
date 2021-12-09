@@ -7,13 +7,36 @@
 
 #include <sys/errno.h>
 
+#include "kmem.h"
+#include "slider.h"
 #include "io_surface.h"
+#include "io_registry_entry.h"
+#include "io_array.h"
 #include "io_dictionary.h"
 #include "kmem.h"
 #include "platform_types.h"
 
 
-int xe_io_surface_find_surface_with_props_key(uintptr_t root_user_client, char* key, uintptr_t* out) {
+uintptr_t xe_io_surface_root(void) {
+    uintptr_t io_registry_root = xe_io_registry_entry_root();
+
+    uintptr_t pe_device;
+    int error = xe_io_registry_entry_find_child_by_name(io_registry_root, "J316sAP", &pe_device);
+    assert(error == 0);
+
+    uintptr_t io_resources;
+    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_slide(KMEM_OFFSET(TYPE_IO_RESOURCES_VTABLE, 0x10)), &io_resources);
+    assert(error == 0);
+
+    uintptr_t io_surface_root;
+    error = xe_io_registry_entry_find_child_by_name(io_resources, "IOSurfaceRoot", &io_surface_root);
+    assert(error == 0);
+
+    return io_surface_root;
+}
+
+
+int xe_io_surface_scan_user_client_for_prop(uintptr_t root_user_client, char* key, uintptr_t* out) {
     uint clients = xe_kmem_read_uint32(KMEM_OFFSET(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_COUNT_OFFSET));
     
     uintptr_t client_array_p = xe_kmem_read_uint64(KMEM_OFFSET(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_ARRAY_OFFSET));
@@ -29,10 +52,34 @@ int xe_io_surface_find_surface_with_props_key(uintptr_t root_user_client, char* 
         uintptr_t surface = xe_kmem_read_uint64(KMEM_OFFSET(user_client, TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET));
         uintptr_t props_dict = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
         
+        if (!props_dict) {
+            continue;
+        }
+        
         uintptr_t temp;
         int error = xe_io_os_dictionary_find_value(props_dict, key, &temp, NULL);
         if (!error) {
             *out = surface;
+            return 0;
+        }
+    }
+    
+    return ENOENT;
+}
+
+int xe_io_surface_scan_all_clients_for_prop(char* key, uintptr_t* out) {
+    uintptr_t root = xe_io_surface_root();
+
+    uintptr_t registry = xe_io_registry_entry_registry_table(root);
+    uintptr_t children;
+    int error = xe_io_os_dictionary_find_value(registry, "IOServiceChildLinks", &children, NULL);
+    assert(error == 0);
+
+    for (int i=xe_io_os_array_count(children)-1; i>=0; i--) {
+        uintptr_t target_surface = 0;
+        error = xe_io_surface_scan_user_client_for_prop(xe_io_os_array_value_at_index(children, i), key, &target_surface);
+        if (!error) {
+            *out = target_surface;
             return 0;
         }
     }
