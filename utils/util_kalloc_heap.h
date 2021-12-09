@@ -10,6 +10,6 @@
 
 #include <stdio.h>
 
-int xe_util_kalloc_heap_alloc(uintptr_t heap, size_t size, uintptr_t* ptr_out);
+uintptr_t xe_util_kh_find_zone_for_size(uintptr_t heap, size_t size);
 
 #endif /* util_kalloc_heap_h */

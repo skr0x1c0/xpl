@@ -8,10 +8,10 @@
 #include <sys/errno.h>
 
 #include "util_kalloc_heap.h"
-#include "util_zone.h"
 #include "platform_types.h"
 #include "platform_variables.h"
 #include "kmem.h"
+
 
 uintptr_t xe_util_kh_find_zone_for_size(uintptr_t heap, size_t size) {
     uintptr_t kh_zones = xe_kmem_read_uint64(KMEM_OFFSET(heap, TYPE_KALLOC_HEAP_MEM_KH_ZONES_OFFSET));
@@ -28,10 +28,3 @@ uintptr_t xe_util_kh_find_zone_for_size(uintptr_t heap, size_t size) {
     return 0;
 }
 
-int xe_util_kalloc_heap_alloc(uintptr_t heap, size_t size, uintptr_t* ptr_out) {
-    uintptr_t zone = xe_util_kh_find_zone_for_size(heap, size);
-    if (!zone) {
-        return ENOTSUP;
-    }
-    return xe_util_zone_allocate(zone, ptr_out);
-}

@@ -12,4 +12,6 @@
 #define XE_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define XE_MAX(a, b) ((a) > (b) ? (a) : (b))
 
+#define XE_BITFIELD_MASK(off, size) (((1ULL << (size)) - 1) << (off))
+
 #endif /* utils_misc_h */
