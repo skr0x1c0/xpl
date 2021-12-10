@@ -144,12 +144,10 @@ int main(int argc, const char* argv[]) {
     assert(helper_bridge_fd >= 0);
     
     uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-    uintptr_t proc;
-    int error = xe_xnu_proc_current_proc(kernproc, &proc);
-    assert(error == 0);
+    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
     
     uintptr_t worker_bridge_vnode;
-    error = xe_xnu_proc_find_fd_data(proc, worker_bridge_fd, &worker_bridge_vnode);
+    int error = xe_xnu_proc_find_fd_data(proc, worker_bridge_fd, &worker_bridge_vnode);
     assert(error == 0);
     
     uintptr_t helper_bridge_vnode;

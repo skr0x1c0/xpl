@@ -37,9 +37,7 @@ int main(void) {
     xe_slider_init();
     
     uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-    uintptr_t proc;
-    int error = xe_xnu_proc_current_proc(kernproc, &proc);
-    assert(error == 0);
+    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
 
     uintptr_t kheap_default = xe_slider_slide(VAR_KHEAP_DEFAULT_ADDR);
     uintptr_t kh_large_map = xe_kmem_read_uint64(KMEM_OFFSET(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET));

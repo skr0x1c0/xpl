@@ -32,8 +32,13 @@
 		8439B9F9275917CA0051ABD9 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
 		8439B9FB275917CA0051ABD9 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
 		8439B9FC275917CA0051ABD9 /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 8439B9F8275917CA0051ABD9 /* kmem_remote.c */; };
+		845D90542761EEF700062E02 /* util_kalloc_heap.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EAEE8C275E7F8A00ABB743 /* util_kalloc_heap.c */; };
+		845D90572761FC9F00062E02 /* util_kfunc_basic.c in Sources */ = {isa = PBXBuildFile; fileRef = 845D90562761FC9F00062E02 /* util_kfunc_basic.c */; };
+		84E65AEC275E447C000C05F6 /* io_surface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E65AEB275E447C000C05F6 /* io_surface.c */; };
 		84E8B2102758FEC000C7B462 /* util_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */; };
+		84E9C177275E23A200176F62 /* io_array.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E9C176275E23A200176F62 /* io_array.c */; };
 		84EA78B62758E8FB00ED2D28 /* util_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */; };
+		84EA956D2760FD0A008ED81B /* util_zalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EA956C2760FD0A008ED81B /* util_zalloc.c */; };
 		84ED2FA9275953FC002CC400 /* kmem_client_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 84ED2FA8275953FC002CC400 /* kmem_client_test.c */; };
 		84ED2FAE27595421002CC400 /* util_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 8405D9AA274F62B30094FFB0 /* util_binary.c */; };
 		84ED2FAF27595423002CC400 /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 841683362752230000840428 /* util_dispatch.c */; };
@@ -53,6 +58,8 @@
 		84ED2FC92759559E002CC400 /* libdwarf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD62750B3EA007B561F /* libdwarf.dylib */; };
 		84ED2FCB275955A1002CC400 /* libctf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDDC2750B3F6007B561F /* libctf.dylib */; };
 		84ED2FCD275955A4002CC400 /* libelf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD92750B3EF007B561F /* libelf.dylib */; };
+		84EECBD8275E11D0008BC4BF /* io_dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EECBD7275E11D0008BC4BF /* io_dictionary.c */; };
+		84EECBDB275E180D008BC4BF /* io_string.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EECBDA275E180D008BC4BF /* io_string.c */; };
 		84F33DFE2750E2C300EB3701 /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */; };
 		84F33E002750E2C700EB3701 /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */; };
 		84F33E062750E5F400EB3701 /* cmd_hdiutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F33E052750E5F400EB3701 /* cmd_hdiutil.c */; };
@@ -60,11 +67,13 @@
 		84F64E2B27512E6B0082A74B /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F64E2027512E2F0082A74B /* kmem_msdosfs.c */; };
 		84F64E2F27512E850082A74B /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8401FDD22750B3E3007B561F /* libxib.dylib */; };
 		84F64E3127512EE40082A74B /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F7864A274A2595000BA7BE /* libgym_client.dylib */; };
+		84F675E6275E26AC00957021 /* io_registry_entry.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F675E5275E26AC00957021 /* io_registry_entry.c */; };
 		84F7863D274A219A000BA7BE /* xe.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7863C274A219A000BA7BE /* xe.c */; };
 		84F78648274A21DE000BA7BE /* kmem_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78647274A21DE000BA7BE /* kmem_gym.c */; };
 		84F7864B274A2595000BA7BE /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F7864A274A2595000BA7BE /* libgym_client.dylib */; };
 		84F7864F274A25E3000BA7BE /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7864E274A25E3000BA7BE /* kmem.c */; };
 		84F78652274A2A1B000BA7BE /* xnu_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78651274A2A1B000BA7BE /* xnu_proc.c */; };
+		84F9EB6C275B4009004CF550 /* util_pacia.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F9EB6B275B4009004CF550 /* util_pacia.c */; };
 		84FE898727523E1800788A90 /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7864E274A25E3000BA7BE /* kmem.c */; };
 		84FE898A27523E2C00788A90 /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 8401FDB92750B0A0007B561F /* slider_kas.c */; };
 		84FE898B27523E3100788A90 /* xnu_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F78651274A2A1B000BA7BE /* xnu_proc.c */; };
@@ -143,11 +152,26 @@
 		8439B9F8275917CA0051ABD9 /* kmem_remote.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_remote.c; sourceTree = "<group>"; };
 		843DF9A327553C98006A5AAE /* kmem_tester.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_tester.h; sourceTree = "<group>"; };
 		843DF9A427553C98006A5AAE /* kmem_tester.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_tester.c; sourceTree = "<group>"; };
+		845D90552761FC9F00062E02 /* util_kfunc_basic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_kfunc_basic.h; sourceTree = "<group>"; };
+		845D90562761FC9F00062E02 /* util_kfunc_basic.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_kfunc_basic.c; sourceTree = "<group>"; };
 		84DDFEEA274FAA49006B01D5 /* util_ptrauth.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_ptrauth.h; sourceTree = "<group>"; };
+		84E2AE4D275CD6C100230716 /* platform_constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform_constants.h; sourceTree = "<group>"; };
+		84E65AEA275E447C000C05F6 /* io_surface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_surface.h; sourceTree = "<group>"; };
+		84E65AEB275E447C000C05F6 /* io_surface.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_surface.c; sourceTree = "<group>"; };
+		84E9C175275E23A200176F62 /* io_array.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_array.h; sourceTree = "<group>"; };
+		84E9C176275E23A200176F62 /* io_array.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_array.c; sourceTree = "<group>"; };
 		84EA78B42758E8FB00ED2D28 /* util_lck_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_lck_rw.h; sourceTree = "<group>"; };
 		84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_lck_rw.c; sourceTree = "<group>"; };
+		84EA956B2760FD0A008ED81B /* util_zalloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_zalloc.h; sourceTree = "<group>"; };
+		84EA956C2760FD0A008ED81B /* util_zalloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_zalloc.c; sourceTree = "<group>"; };
+		84EAEE8B275E7F8A00ABB743 /* util_kalloc_heap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_kalloc_heap.h; sourceTree = "<group>"; };
+		84EAEE8C275E7F8A00ABB743 /* util_kalloc_heap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_kalloc_heap.c; sourceTree = "<group>"; };
 		84ED2FA6275953FC002CC400 /* kmem_client_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kmem_client_test; sourceTree = BUILT_PRODUCTS_DIR; };
 		84ED2FA8275953FC002CC400 /* kmem_client_test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_client_test.c; sourceTree = "<group>"; };
+		84EECBD6275E11D0008BC4BF /* io_dictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_dictionary.h; sourceTree = "<group>"; };
+		84EECBD7275E11D0008BC4BF /* io_dictionary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_dictionary.c; sourceTree = "<group>"; };
+		84EECBD9275E180D008BC4BF /* io_string.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_string.h; sourceTree = "<group>"; };
+		84EECBDA275E180D008BC4BF /* io_string.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_string.c; sourceTree = "<group>"; };
 		84F33DFD2750E2C300EB3701 /* kmem_msdosfs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_msdosfs.c; sourceTree = "<group>"; };
 		84F33E042750E5F400EB3701 /* cmd_hdiutil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cmd_hdiutil.h; sourceTree = "<group>"; };
 		84F33E052750E5F400EB3701 /* cmd_hdiutil.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cmd_hdiutil.c; sourceTree = "<group>"; };
@@ -155,6 +179,8 @@
 		84F33E082750EBF300EB3701 /* kmem_gym.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_gym.h; sourceTree = "<group>"; };
 		84F64E1E27512E2F0082A74B /* kmem_msdosfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kmem_msdosfs; sourceTree = BUILT_PRODUCTS_DIR; };
 		84F64E2027512E2F0082A74B /* kmem_msdosfs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_msdosfs.c; sourceTree = "<group>"; };
+		84F675E4275E26AC00957021 /* io_registry_entry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_registry_entry.h; sourceTree = "<group>"; };
+		84F675E5275E26AC00957021 /* io_registry_entry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_registry_entry.c; sourceTree = "<group>"; };
 		84F78639274A219A000BA7BE /* xe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xe; sourceTree = BUILT_PRODUCTS_DIR; };
 		84F7863C274A219A000BA7BE /* xe.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xe.c; sourceTree = "<group>"; };
 		84F78646274A21DE000BA7BE /* kmem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem.h; sourceTree = "<group>"; };
@@ -164,6 +190,8 @@
 		84F78650274A2A1B000BA7BE /* xnu_proc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xnu_proc.h; sourceTree = "<group>"; };
 		84F78651274A2A1B000BA7BE /* xnu_proc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xnu_proc.c; sourceTree = "<group>"; };
 		84F78653274A2AA6000BA7BE /* platform_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform_types.h; sourceTree = "<group>"; };
+		84F9EB6A275B4009004CF550 /* util_pacia.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_pacia.h; sourceTree = "<group>"; };
+		84F9EB6B275B4009004CF550 /* util_pacia.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_pacia.c; sourceTree = "<group>"; };
 		84FC1469274A72330090885D /* platform_variables.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform_variables.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -248,6 +276,23 @@
 			path = iosurface;
 			sourceTree = "<group>";
 		};
+		84EECBD5275E11BA008BC4BF /* iokit */ = {
+			isa = PBXGroup;
+			children = (
+				84EECBD6275E11D0008BC4BF /* io_dictionary.h */,
+				84EECBD7275E11D0008BC4BF /* io_dictionary.c */,
+				84EECBD9275E180D008BC4BF /* io_string.h */,
+				84EECBDA275E180D008BC4BF /* io_string.c */,
+				84E9C175275E23A200176F62 /* io_array.h */,
+				84E9C176275E23A200176F62 /* io_array.c */,
+				84F675E4275E26AC00957021 /* io_registry_entry.h */,
+				84F675E5275E26AC00957021 /* io_registry_entry.c */,
+				84E65AEA275E447C000C05F6 /* io_surface.h */,
+				84E65AEB275E447C000C05F6 /* io_surface.c */,
+			);
+			path = iokit;
+			sourceTree = "<group>";
+		};
 		84F33E012750E2E100EB3701 /* allocators */ = {
 			isa = PBXGroup;
 			children = (
@@ -282,8 +327,10 @@
 			isa = PBXGroup;
 			children = (
 				84292CDF275A021C0058F246 /* .gitignore */,
+				84E2AE4D275CD6C100230716 /* platform_constants.h */,
 				84FC1469274A72330090885D /* platform_variables.h */,
 				84F78653274A2AA6000BA7BE /* platform_types.h */,
+				84EECBD5275E11BA008BC4BF /* iokit */,
 				84F33E012750E2E100EB3701 /* allocators */,
 				84F78645274A21C3000BA7BE /* memory */,
 				8401FDB62750AFE4007B561F /* slider */,
@@ -358,6 +405,14 @@
 				84EA78B52758E8FB00ED2D28 /* util_lck_rw.c */,
 				841DF238275A9B0500865C62 /* util_pacda.h */,
 				841DF239275A9B0500865C62 /* util_pacda.c */,
+				84F9EB6A275B4009004CF550 /* util_pacia.h */,
+				84F9EB6B275B4009004CF550 /* util_pacia.c */,
+				84EAEE8B275E7F8A00ABB743 /* util_kalloc_heap.h */,
+				84EAEE8C275E7F8A00ABB743 /* util_kalloc_heap.c */,
+				84EA956B2760FD0A008ED81B /* util_zalloc.h */,
+				84EA956C2760FD0A008ED81B /* util_zalloc.c */,
+				845D90552761FC9F00062E02 /* util_kfunc_basic.h */,
+				845D90562761FC9F00062E02 /* util_kfunc_basic.c */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -544,16 +599,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				84F7863D274A219A000BA7BE /* xe.c in Sources */,
+				84EECBD8275E11D0008BC4BF /* io_dictionary.c in Sources */,
+				84EECBDB275E180D008BC4BF /* io_string.c in Sources */,
+				845D90542761EEF700062E02 /* util_kalloc_heap.c in Sources */,
+				84E9C177275E23A200176F62 /* io_array.c in Sources */,
 				841DF23A275A9B0500865C62 /* util_pacda.c in Sources */,
 				841683372752230000840428 /* util_dispatch.c in Sources */,
+				84E65AEC275E447C000C05F6 /* io_surface.c in Sources */,
+				845D90572761FC9F00062E02 /* util_kfunc_basic.c in Sources */,
 				8416832F275210B500840428 /* allocator_msdosfs.c in Sources */,
+				84EA956D2760FD0A008ED81B /* util_zalloc.c in Sources */,
 				8439B9F9275917CA0051ABD9 /* kmem_remote.c in Sources */,
 				84F78652274A2A1B000BA7BE /* xnu_proc.c in Sources */,
 				8405D9AB274F62B30094FFB0 /* util_binary.c in Sources */,
 				84F7864F274A25E3000BA7BE /* kmem.c in Sources */,
+				84F9EB6C275B4009004CF550 /* util_pacia.c in Sources */,
 				8401FDBA2750B0A0007B561F /* slider_kas.c in Sources */,
 				84283089274D0337006FD852 /* allocator_iosurface.c in Sources */,
 				84F33DFE2750E2C300EB3701 /* kmem_msdosfs.c in Sources */,
+				84F675E6275E26AC00957021 /* io_registry_entry.c in Sources */,
 				84F78648274A21DE000BA7BE /* kmem_gym.c in Sources */,
 				84EA78B62758E8FB00ED2D28 /* util_lck_rw.c in Sources */,
 				84F33E062750E5F400EB3701 /* cmd_hdiutil.c in Sources */,

@@ -32,14 +32,10 @@ int xe_kmem_allocator_pipe_allocate(uintptr_t kernproc, size_t size, xe_allocato
         return errno;
     }
     
-    uintptr_t proc;
-    int error = xe_xnu_proc_current_proc(kernproc, &proc);
-    if (error) {
-        return error;
-    }
+    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
     
     uintptr_t pipe;
-    error = xe_xnu_proc_find_fd_data(proc, fds[0], &pipe);
+    int error = xe_xnu_proc_find_fd_data(proc, fds[0], &pipe);
     if (error) {
         return error;
     }

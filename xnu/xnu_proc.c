@@ -27,8 +27,11 @@ int xe_xnu_proc_find(uintptr_t kernproc, pid_t proc_id, uintptr_t* proc_out) {
     return ENOENT;
 }
 
-int xe_xnu_proc_current_proc(uintptr_t kernproc, uintptr_t* proc_out) {
-    return xe_xnu_proc_find(kernproc, getpid(), proc_out);
+uintptr_t xe_xnu_proc_current_proc(uintptr_t kernproc) {
+    uintptr_t proc;
+    int error = xe_xnu_proc_find(kernproc, getpid(), &proc);
+    assert(error == 0);
+    return proc;
 }
 
 int xe_xnu_proc_find_fd_data(uintptr_t proc, int fd, uintptr_t* out) {
