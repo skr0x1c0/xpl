@@ -62,7 +62,7 @@ int xe_io_registry_entry_find_child_by_type(uintptr_t entry, uintptr_t type, uin
     uint count = xe_io_os_array_count(child_array);
     for (int i=0; i<count; i++) {
         uintptr_t child = xe_io_os_array_value_at_index(child_array, i);
-        uintptr_t class = XE_UTIL_PTRAUTH_STRIP(xe_kmem_read_uint64(child));
+        uintptr_t class = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(child));
         if (class == type) {
             *out = child;
             return 0;

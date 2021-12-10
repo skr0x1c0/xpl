@@ -51,7 +51,7 @@ int xe_kmem_allocator_pipe_allocate(uintptr_t kernproc, size_t size, xe_allocato
     }
     free(temp);
     
-    uintptr_t buffer = XE_UTIL_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET)));
+    uintptr_t buffer = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET)));
     uint buffer_size = xe_kmem_read_uint32(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_SIZE_OFFSET));
     assert(buffer_size >= size);
     
