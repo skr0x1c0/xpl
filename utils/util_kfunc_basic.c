@@ -39,7 +39,7 @@ struct xe_util_kfunc_basic {
 
 uintptr_t xe_util_kfunc_sign_address(uintptr_t proc, uintptr_t address, uintptr_t ctx_base, uint16_t descriminator) {
     uintptr_t address_out;
-    int error = xe_util_pacda_sign(proc, address, XE_UTIL_PTRAUTH_BLEND_DISCRIMINATOR_WITH_ADDRESS(descriminator, ctx_base), &address_out);
+    int error = xe_util_pacda_sign(proc, address, XE_PTRAUTH_BLEND_DISCRIMINATOR_WITH_ADDRESS(descriminator, ctx_base), &address_out);
     assert(error == 0);
     return address_out;
 }
@@ -68,9 +68,9 @@ xe_util_kfunc_basic_t xe_util_kfunc_basic_create(uintptr_t proc, xe_util_zalloc_
 
 void xe_util_kfunc_setup_block_descriptor(xe_util_kfunc_basic_t util, uintptr_t target_func) {
     assert(util->state == STATE_CREATED);
-    int64_t diff = (target_func - XE_UTIL_PTRAUTH_STRIP(util->block_descriptor) - TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET);
+    int64_t diff = (target_func - XE_PTRAUTH_STRIP(util->block_descriptor) - TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET);
     assert(diff >= INT32_MIN && diff <= INT32_MAX);
-    xe_kmem_write_int32(KMEM_OFFSET(XE_UTIL_PTRAUTH_STRIP(util->block_descriptor), TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET), (int32_t)diff);
+    xe_kmem_write_int32(KMEM_OFFSET(XE_PTRAUTH_STRIP(util->block_descriptor), TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET), (int32_t)diff);
 }
 
 
