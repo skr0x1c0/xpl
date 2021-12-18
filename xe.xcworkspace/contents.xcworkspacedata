@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:libxe/libxe.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:kmem_msdosfs/kmem_msdosfs.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:locker/locker.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:kmem_remote/kmem_remote.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:kfunc/kfunc.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:kmem_xepg/kmem_xepg.xcodeproj">
+   </FileRef>
+</Workspace>

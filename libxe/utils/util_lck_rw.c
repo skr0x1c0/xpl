@@ -84,6 +84,7 @@ void xe_util_lck_read_nstat_controls_state(xe_util_lck_rw_t util) {
     util->nstat_controls_tail = tail;
 }
 
+// infinite loop at necp_uuid_lookup_uuid_with_service_id_locked
 void xe_util_lck_create_necp_mapping_cycle(xe_util_lck_rw_t util) {
     assert(util->necp_uuid_id_mapping_head != 0);
     assert(util->necp_uuid_id_mapping_tail != 0);
