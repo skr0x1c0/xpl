@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		845913A4276F857E00F15CBA /* smb_ssn_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A2276F84DC00F15CBA /* smb_ssn_allocator.c */; };
+		845913A5276F859800F15CBA /* smb_client.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A1276F84DC00F15CBA /* smb_client.c */; };
+		845913A7276F859F00F15CBA /* smb_nic_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 8459139F276F84DC00F15CBA /* smb_nic_allocator.c */; };
 		8466F429276DCE9E004F651E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8466F428276DCE9E004F651E /* main.c */; };
 		8466F431276DCEAB004F651E /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F430276DCEAB004F651E /* libxe.a */; };
 		8466F434276DCEB0004F651E /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F432276DCEB0004F651E /* libgym_client.dylib */; };
@@ -26,6 +29,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		84591399276F849200F15CBA /* smbfs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = smbfs; sourceTree = "<group>"; };
+		8459139C276F84DC00F15CBA /* smb_ssn_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_ssn_allocator.h; sourceTree = "<group>"; };
+		8459139D276F84DC00F15CBA /* smb_client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_client.h; sourceTree = "<group>"; };
+		8459139F276F84DC00F15CBA /* smb_nic_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smb_nic_allocator.c; sourceTree = "<group>"; };
+		845913A1276F84DC00F15CBA /* smb_client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smb_client.c; sourceTree = "<group>"; };
+		845913A2276F84DC00F15CBA /* smb_ssn_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smb_ssn_allocator.c; sourceTree = "<group>"; };
+		845913A3276F84DC00F15CBA /* smb_nic_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_nic_allocator.h; sourceTree = "<group>"; };
 		8466F425276DCE9E004F651E /* kmem_xepg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kmem_xepg; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F428276DCE9E004F651E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8466F430276DCEAB004F651E /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -47,6 +57,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		84591398276F847300F15CBA /* external */ = {
+			isa = PBXGroup;
+			children = (
+				84591399276F849200F15CBA /* smbfs */,
+			);
+			path = external;
+			sourceTree = "<group>";
+		};
+		8459139B276F84DC00F15CBA /* smb */ = {
+			isa = PBXGroup;
+			children = (
+				8459139C276F84DC00F15CBA /* smb_ssn_allocator.h */,
+				8459139D276F84DC00F15CBA /* smb_client.h */,
+				8459139F276F84DC00F15CBA /* smb_nic_allocator.c */,
+				845913A1276F84DC00F15CBA /* smb_client.c */,
+				845913A2276F84DC00F15CBA /* smb_ssn_allocator.c */,
+				845913A3276F84DC00F15CBA /* smb_nic_allocator.h */,
+			);
+			path = smb;
+			sourceTree = "<group>";
+		};
 		8466F41C276DCE9E004F651E = {
 			isa = PBXGroup;
 			children = (
@@ -67,6 +98,8 @@
 		8466F427276DCE9E004F651E /* kmem_xepg */ = {
 			isa = PBXGroup;
 			children = (
+				84591398276F847300F15CBA /* external */,
+				8459139B276F84DC00F15CBA /* smb */,
 				8466F428276DCE9E004F651E /* main.c */,
 			);
 			path = kmem_xepg;
@@ -139,7 +172,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				845913A7276F859F00F15CBA /* smb_nic_allocator.c in Sources */,
 				8466F429276DCE9E004F651E /* main.c in Sources */,
+				845913A5276F859800F15CBA /* smb_client.c in Sources */,
+				845913A4276F857E00F15CBA /* smb_ssn_allocator.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

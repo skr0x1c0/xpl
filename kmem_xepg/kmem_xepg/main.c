@@ -7,8 +7,10 @@
 
 #include <stdio.h>
 
+#include "smb/smb_client.h"
+
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    printf("Hello, World!\n");
+    smb_client_load_kext();
+    
     return 0;
 }
