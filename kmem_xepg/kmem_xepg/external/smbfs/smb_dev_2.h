@@ -41,5 +41,6 @@ struct smbioc_client_interface {
  */
 /* MC SMBIOC */
 #define SMBIOC_UPDATE_CLIENT_INTERFACES   _IOW('n', 127, struct smbioc_client_interface)
+#define SMBIOC_NOTIFIER_UPDATE_INTERFACES _IOW('n', 130, struct smbioc_client_interface)
 
 #endif /* smb_dev_2_h */

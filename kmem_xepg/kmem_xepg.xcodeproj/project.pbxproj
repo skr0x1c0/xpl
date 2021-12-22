@@ -7,13 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		845913A4276F857E00F15CBA /* smb_ssn_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A2276F84DC00F15CBA /* smb_ssn_allocator.c */; };
-		845913A5276F859800F15CBA /* smb_client.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A1276F84DC00F15CBA /* smb_client.c */; };
-		845913A7276F859F00F15CBA /* smb_nic_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 8459139F276F84DC00F15CBA /* smb_nic_allocator.c */; };
+		84079CA72770548400C4B188 /* libproc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 84079CA62770547F00C4B188 /* libproc.tbd */; platformFilter = maccatalyst; };
+		84079CAA2770687400C4B188 /* saddr_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 84079CA92770687400C4B188 /* saddr_allocator.c */; };
+		845913A4276F857E00F15CBA /* ssn_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A2276F84DC00F15CBA /* ssn_allocator.c */; };
+		845913A5276F859800F15CBA /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A1276F84DC00F15CBA /* client.c */; };
+		845913A7276F859F00F15CBA /* nic_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 8459139F276F84DC00F15CBA /* nic_allocator.c */; };
 		8466F429276DCE9E004F651E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8466F428276DCE9E004F651E /* main.c */; };
 		8466F431276DCEAB004F651E /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F430276DCEAB004F651E /* libxe.a */; };
 		8466F434276DCEB0004F651E /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F432276DCEB0004F651E /* libgym_client.dylib */; };
 		8466F436276DCEB0004F651E /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F433276DCEB0004F651E /* libxib.dylib */; };
+		84E77E9E2771A4790085EDC2 /* neighbor_reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E77E9D2771A4790085EDC2 /* neighbor_reader.c */; };
+		84E77EA12771B1630085EDC2 /* zfree_kext.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E77EA02771B1630085EDC2 /* zfree_kext.c */; };
+		84E8BC4F27722B70004E9C29 /* allocator_nic_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E8BC4E27722B70004E9C29 /* allocator_nic_parallel.c */; };
+		84F269C12771C2AD008C285E /* allocator_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F269C02771C2AD008C285E /* allocator_rw.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,18 +35,29 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		84079CA62770547F00C4B188 /* libproc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libproc.tbd; path = usr/lib/libproc.tbd; sourceTree = SDKROOT; };
+		84079CA82770687400C4B188 /* saddr_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saddr_allocator.h; sourceTree = "<group>"; };
+		84079CA92770687400C4B188 /* saddr_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saddr_allocator.c; sourceTree = "<group>"; };
 		84591399276F849200F15CBA /* smbfs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = smbfs; sourceTree = "<group>"; };
-		8459139C276F84DC00F15CBA /* smb_ssn_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_ssn_allocator.h; sourceTree = "<group>"; };
-		8459139D276F84DC00F15CBA /* smb_client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_client.h; sourceTree = "<group>"; };
-		8459139F276F84DC00F15CBA /* smb_nic_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smb_nic_allocator.c; sourceTree = "<group>"; };
-		845913A1276F84DC00F15CBA /* smb_client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smb_client.c; sourceTree = "<group>"; };
-		845913A2276F84DC00F15CBA /* smb_ssn_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smb_ssn_allocator.c; sourceTree = "<group>"; };
-		845913A3276F84DC00F15CBA /* smb_nic_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_nic_allocator.h; sourceTree = "<group>"; };
+		8459139C276F84DC00F15CBA /* ssn_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ssn_allocator.h; sourceTree = "<group>"; };
+		8459139D276F84DC00F15CBA /* client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client.h; sourceTree = "<group>"; };
+		8459139F276F84DC00F15CBA /* nic_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = nic_allocator.c; sourceTree = "<group>"; };
+		845913A1276F84DC00F15CBA /* client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client.c; sourceTree = "<group>"; };
+		845913A2276F84DC00F15CBA /* ssn_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ssn_allocator.c; sourceTree = "<group>"; };
+		845913A3276F84DC00F15CBA /* nic_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nic_allocator.h; sourceTree = "<group>"; };
 		8466F425276DCE9E004F651E /* kmem_xepg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kmem_xepg; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F428276DCE9E004F651E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8466F430276DCEAB004F651E /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F432276DCEB0004F651E /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
 		8466F433276DCEB0004F651E /* libxib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxib.dylib; path = ../../../../../usr/local/lib/libxib.dylib; sourceTree = "<group>"; };
+		84E77E9C2771A4790085EDC2 /* neighbor_reader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = neighbor_reader.h; sourceTree = "<group>"; };
+		84E77E9D2771A4790085EDC2 /* neighbor_reader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = neighbor_reader.c; sourceTree = "<group>"; };
+		84E77E9F2771B1630085EDC2 /* zfree_kext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = zfree_kext.h; sourceTree = "<group>"; };
+		84E77EA02771B1630085EDC2 /* zfree_kext.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zfree_kext.c; sourceTree = "<group>"; };
+		84E8BC4D27722B70004E9C29 /* allocator_nic_parallel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_nic_parallel.h; sourceTree = "<group>"; };
+		84E8BC4E27722B70004E9C29 /* allocator_nic_parallel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_nic_parallel.c; sourceTree = "<group>"; };
+		84F269BF2771C2AD008C285E /* allocator_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_rw.h; sourceTree = "<group>"; };
+		84F269C02771C2AD008C285E /* allocator_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_rw.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +67,7 @@
 			files = (
 				8466F436276DCEB0004F651E /* libxib.dylib in Frameworks */,
 				8466F431276DCEAB004F651E /* libxe.a in Frameworks */,
+				84079CA72770548400C4B188 /* libproc.tbd in Frameworks */,
 				8466F434276DCEB0004F651E /* libgym_client.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -63,19 +81,6 @@
 				84591399276F849200F15CBA /* smbfs */,
 			);
 			path = external;
-			sourceTree = "<group>";
-		};
-		8459139B276F84DC00F15CBA /* smb */ = {
-			isa = PBXGroup;
-			children = (
-				8459139C276F84DC00F15CBA /* smb_ssn_allocator.h */,
-				8459139D276F84DC00F15CBA /* smb_client.h */,
-				8459139F276F84DC00F15CBA /* smb_nic_allocator.c */,
-				845913A1276F84DC00F15CBA /* smb_client.c */,
-				845913A2276F84DC00F15CBA /* smb_ssn_allocator.c */,
-				845913A3276F84DC00F15CBA /* smb_nic_allocator.h */,
-			);
-			path = smb;
 			sourceTree = "<group>";
 		};
 		8466F41C276DCE9E004F651E = {
@@ -99,7 +104,9 @@
 			isa = PBXGroup;
 			children = (
 				84591398276F847300F15CBA /* external */,
-				8459139B276F84DC00F15CBA /* smb */,
+				84E77E9B2771A4390085EDC2 /* kmem */,
+				84E77E9A2771A2EB0085EDC2 /* xnu */,
+				84E77E992771A26F0085EDC2 /* smb */,
 				8466F428276DCE9E004F651E /* main.c */,
 			);
 			path = kmem_xepg;
@@ -108,11 +115,49 @@
 		8466F42F276DCEAB004F651E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84079CA62770547F00C4B188 /* libproc.tbd */,
 				8466F432276DCEB0004F651E /* libgym_client.dylib */,
 				8466F433276DCEB0004F651E /* libxib.dylib */,
 				8466F430276DCEAB004F651E /* libxe.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		84E77E992771A26F0085EDC2 /* smb */ = {
+			isa = PBXGroup;
+			children = (
+				8459139F276F84DC00F15CBA /* nic_allocator.c */,
+				845913A3276F84DC00F15CBA /* nic_allocator.h */,
+				845913A2276F84DC00F15CBA /* ssn_allocator.c */,
+				8459139C276F84DC00F15CBA /* ssn_allocator.h */,
+				845913A1276F84DC00F15CBA /* client.c */,
+				8459139D276F84DC00F15CBA /* client.h */,
+			);
+			path = smb;
+			sourceTree = "<group>";
+		};
+		84E77E9A2771A2EB0085EDC2 /* xnu */ = {
+			isa = PBXGroup;
+			children = (
+				84079CA92770687400C4B188 /* saddr_allocator.c */,
+				84079CA82770687400C4B188 /* saddr_allocator.h */,
+			);
+			path = xnu;
+			sourceTree = "<group>";
+		};
+		84E77E9B2771A4390085EDC2 /* kmem */ = {
+			isa = PBXGroup;
+			children = (
+				84E77E9C2771A4790085EDC2 /* neighbor_reader.h */,
+				84E77E9D2771A4790085EDC2 /* neighbor_reader.c */,
+				84F269BF2771C2AD008C285E /* allocator_rw.h */,
+				84F269C02771C2AD008C285E /* allocator_rw.c */,
+				84E77E9F2771B1630085EDC2 /* zfree_kext.h */,
+				84E77EA02771B1630085EDC2 /* zfree_kext.c */,
+				84E8BC4D27722B70004E9C29 /* allocator_nic_parallel.h */,
+				84E8BC4E27722B70004E9C29 /* allocator_nic_parallel.c */,
+			);
+			path = kmem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -172,10 +217,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				845913A7276F859F00F15CBA /* smb_nic_allocator.c in Sources */,
+				84F269C12771C2AD008C285E /* allocator_rw.c in Sources */,
+				845913A7276F859F00F15CBA /* nic_allocator.c in Sources */,
 				8466F429276DCE9E004F651E /* main.c in Sources */,
-				845913A5276F859800F15CBA /* smb_client.c in Sources */,
-				845913A4276F857E00F15CBA /* smb_ssn_allocator.c in Sources */,
+				84E8BC4F27722B70004E9C29 /* allocator_nic_parallel.c in Sources */,
+				84E77E9E2771A4790085EDC2 /* neighbor_reader.c in Sources */,
+				845913A5276F859800F15CBA /* client.c in Sources */,
+				845913A4276F857E00F15CBA /* ssn_allocator.c in Sources */,
+				84079CAA2770687400C4B188 /* saddr_allocator.c in Sources */,
+				84E77EA12771B1630085EDC2 /* zfree_kext.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,7 +349,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					$SOURCE_ROOT/../libxe,
+					"$SOURCE_ROOT/../libxe/**",
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -312,7 +362,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					$SOURCE_ROOT/../libxe,
+					"$SOURCE_ROOT/../libxe/**",
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";

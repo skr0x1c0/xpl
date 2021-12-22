@@ -2,8 +2,8 @@
 #include <unistd.h>
 #include <sys/errno.h>
 
-#include "smb_nic_allocator.h"
-#include "smb_client.h"
+#include "nic_allocator.h"
+#include "client.h"
 #include "assert.h"
 
 int smb_nic_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_len, smb_nic_allocator* id_out) {

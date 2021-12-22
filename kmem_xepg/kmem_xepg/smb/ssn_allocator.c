@@ -5,8 +5,8 @@
 
 #include <sys/errno.h>
 
-#include "smb_ssn_allocator.h"
-#include "smb_client.h"
+#include "ssn_allocator.h"
+#include "client.h"
 
 
 int smb_ssn_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_len, smb_ssn_allocator* id_out) {

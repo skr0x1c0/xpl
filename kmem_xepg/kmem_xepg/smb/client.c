@@ -16,7 +16,7 @@
 #include "../external/smbfs/smb_dev_2.h"
 #include "../external/smbfs/smb2_mc.h"
 
-#include "smb_client.h"
+#include "client.h"
 
 
 int smb_client_load_kext(void) {
@@ -105,6 +105,20 @@ int smb_client_ioc_update_client_interface(int fd_dev, struct network_nic_info* 
         return errno;
     }
     return 0;
+}
+
+
+int smb_client_ioc_notifier_update_interfaces(int fd_dev, struct network_nic_info* info, size_t info_count) {
+    struct smbioc_client_interface req;
+    req.ioc_info_array = info;
+    req.total_buffer_size = (uint32_t)(sizeof(struct network_nic_info) * info_count);
+    req.interface_instance_count = (uint32_t)info_count;
+    
+    if (ioctl(fd_dev, SMBIOC_NOTIFIER_UPDATE_INTERFACES, &req)) {
+        return errno;
+    }
+    
+    return req.ioc_errno;
 }
 
 

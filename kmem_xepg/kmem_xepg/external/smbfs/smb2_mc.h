@@ -48,4 +48,44 @@ struct network_nic_info {
     };
 };
 
+typedef enum _SMB2_MC_NIC_STATE {
+    SMB2_MC_STATE_IDLE          = 0x00, /* This NIC is ready to be used */
+    SMB2_MC_STATE_ON_TRIAL      = 0x01, /* This NIC was sent to connection trial */
+    SMB2_MC_STATE_USED          = 0x02, /* This NIC is being used */
+    SMB2_MC_STATE_DISCONNECTED  = 0x03, /* An update found this NIC to be disconnected */
+
+}_SMB2_MC_NIC_STATE;
+
+#define SMB2_MC_NIC_IN_BLACKLIST 0x0001
+
+
+/*
+ * The complete nic's info. Contains all available IP addresses.
+ * Will be saved in the session, in order to create alternative channels
+ */
+struct complete_nic_info_entry {
+    uint64_t nic_index;       /* the nic's index */
+    uint64_t nic_link_speed;  /* the link speed of the nic */
+    uint32_t nic_caps;        /* the nic's capabilities */
+    uint32_t nic_type;        /* indicates the type of the nic */
+    uint8_t  nic_ip_types;    /* indicates the types of IPs this nic has */
+    uint32_t nic_flags;       /* Black-listed, etc */
+    _SMB2_MC_NIC_STATE nic_state;
+
+    struct {
+        void* next;
+        void** prev;
+    } addr_list;
+    
+    struct {
+        struct complete_nic_info_entry* next;
+        struct complete_nic_info_entry** prev;
+    } next;
+    
+    struct {
+        void* next;
+        void** prev;
+    } possible_connections;
+};
+
 #endif /* smb2_mc_h */
