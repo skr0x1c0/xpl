@@ -35,7 +35,7 @@ struct kmem_neighbor_reader {
 void kmem_neighbor_reader_init_saddr_allocators(kmem_neighour_reader_t reader) {
     assert(reader->reader_allocator == NULL);
     assert(reader->pad_allocator == NULL);
-    reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 128);
+    reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 16);
     reader->pad_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64);
 }
 

