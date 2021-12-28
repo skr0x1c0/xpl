@@ -16,7 +16,7 @@
 #include "../smb/nic_allocator.h"
 #include "../smb/ssn_allocator.h"
 
-#include "zalloc_kext_small.h"
+#include "zkext_alloc_small.h"
 #include "zkext_neighbor_reader.h"
 #include "allocator_rw.h"
 #include "util_misc.h"
@@ -37,7 +37,7 @@ const int zone_kext_sizes[] = {
 };
 
 
-int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, size_t data_size, struct kmem_zalloc_kext_small_entry* out) {
+int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, size_t data_size, struct kmem_zkext_alloc_small_entry* out) {
     size_t alloc_size = data_size + 8;
     assert(alloc_size < 256);
     
@@ -174,11 +174,11 @@ done:
 }
 
 
-struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
+struct kmem_zkext_alloc_small_entry kmem_zalloc_kext_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
         XE_LOG_INFO("alloc session %d / %d", i, MAX_SESSIONS);
-        struct kmem_zalloc_kext_small_entry entry;
-        int error = kmem_zalloc_kext_small_try(smb_addr, data, data_size, &entry);
+        struct kmem_zkext_alloc_small_entry entry;
+        int error = kmem_zkext_alloc_small_try(smb_addr, data, data_size, &entry);
         if (!error) {
             return entry;
         }
