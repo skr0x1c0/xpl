@@ -150,7 +150,7 @@ int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, s
             uintptr_t* addr = (uintptr_t*)&modified[i].psi.soi_proto.pri_un.unsi_addr.ua_sun;
             for (int j = 0; j < 32; j += 4) {
                 // may need to be improved for smaller alloc size
-                if (addr[j] != 0 && (addr[j] & (zone_size - 1)) == 0) {
+                if (addr[j] != 0 && addr[j] % zone_size == 0) {
                     out->address = addr[j];
                     error = 0;
                     goto done;
