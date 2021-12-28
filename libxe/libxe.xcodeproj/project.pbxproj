@@ -43,6 +43,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8443C05C277B474700FBC453 /* util_log.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_log.h; sourceTree = "<group>"; };
 		8466F3BB276DCBAF004F651E /* libxib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxib.dylib; path = ../../../../../usr/local/lib/libxib.dylib; sourceTree = "<group>"; };
 		8466F3BD276DCBB4004F651E /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
 		8466F3BF276DCBB7004F651E /* libctf.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctf.dylib; path = ../../../../../usr/local/lib/libctf.dylib; sourceTree = "<group>"; };
@@ -256,6 +257,7 @@
 				84F7BB71276DC6E500138492 /* util_zalloc.c */,
 				84F7BB72276DC6E500138492 /* util_kfunc_basic.h */,
 				84F7BB73276DC6E500138492 /* util_kfunc_basic.c */,
+				8443C05C277B474700FBC453 /* util_log.h */,
 			);
 			path = utils;
 			sourceTree = "<group>";
