@@ -12,24 +12,24 @@
 
 #include "../smb/nic_allocator.h"
 
-#include "zone_prime_util.h"
+#include "zkext_prime_util.h"
 #include "util_misc.h"
 
 
-struct kmem_zone_prime_util {
+struct kmem_zkext_prime_util {
     smb_nic_allocator small_allocator;
     _Atomic uint32_t alloc_index;
 };
 
 
-kmem_zone_prime_util_t kmem_zone_prime_util_create(const struct sockaddr_in* smb_addr) {
-    struct kmem_zone_prime_util* util = malloc(sizeof(struct kmem_zone_prime_util));
+kmem_zkext_prime_util_t kmem_zkext_prime_util_create(const struct sockaddr_in* smb_addr) {
+    struct kmem_zkext_prime_util* util = malloc(sizeof(struct kmem_zkext_prime_util));
     util->small_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
     return util;
 }
 
 
-void kmem_zone_prime_util_prime(kmem_zone_prime_util_t util, uint num_elements, uint z_elem_size) {
+void kmem_zkext_prime_util_prime(kmem_zkext_prime_util_t util, uint num_elements, uint z_elem_size) {
     assert(z_elem_size <= 256);
     uint8_t alloc_size = XE_MIN(z_elem_size, UINT8_MAX);
     uint num_allocs = num_elements;
@@ -59,8 +59,8 @@ void kmem_zone_prime_util_prime(kmem_zone_prime_util_t util, uint num_elements, 
 }
 
 
-void kmem_zone_prime_util_destroy(kmem_zone_prime_util_t* util_p) {
-    kmem_zone_prime_util_t util = *util_p;
+void kmem_zkext_prime_util_destroy(kmem_zkext_prime_util_t* util_p) {
+    kmem_zkext_prime_util_t util = *util_p;
     int error = smb_nic_allocator_destroy(&util->small_allocator);
     assert(error == 0);
     free(util);

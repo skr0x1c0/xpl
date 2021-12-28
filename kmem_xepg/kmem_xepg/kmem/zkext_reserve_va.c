@@ -12,13 +12,13 @@
 #include "../smb/ssn_allocator.h"
 #include "../smb/nic_allocator.h"
 
-#include "zone_kext_reserve_va.h"
+#include "zkext_reserve_va.h"
 #include "allocator_rw.h"
 #include "util_misc.h"
 #include "platform_constants.h"
 
 
-void kmem_zone_kext_reserve_va_small(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {
+void kmem_zkext_reserve_va_small(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {
     assert(z_elem_size <= 256);
     uint8_t alloc_size = XE_MIN(z_elem_size, 255);
     
@@ -50,7 +50,7 @@ void kmem_zone_kext_reserve_va_small(const struct sockaddr_in* smb_addr, uint nu
 }
 
 
-void kmem_zone_kext_reserve_va_large(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {
+void kmem_zkext_reserve_va_large(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {
     uint num_allocs = XE_PAGE_SIZE * num_pages / (z_elem_size * 2);
     char* data = malloc(z_elem_size);
     
@@ -69,10 +69,10 @@ void kmem_zone_kext_reserve_va_large(const struct sockaddr_in* smb_addr, uint nu
 }
 
 
-void kmem_zone_kext_reserve_va(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {
+void kmem_zkext_reserve_va(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {
     if (z_elem_size <= 256) {
-        kmem_zone_kext_reserve_va_small(smb_addr, num_pages, z_elem_size);
+        kmem_zkext_reserve_va_small(smb_addr, num_pages, z_elem_size);
     } else {
-        kmem_zone_kext_reserve_va_large(smb_addr, num_pages, z_elem_size);
+        kmem_zkext_reserve_va_large(smb_addr, num_pages, z_elem_size);
     }
 }

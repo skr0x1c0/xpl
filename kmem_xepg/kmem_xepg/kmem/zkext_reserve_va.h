@@ -10,6 +10,6 @@
 
 #include <stdio.h>
 
-void kmem_zone_kext_reserve_va(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size);
+void kmem_zkext_reserve_va(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size);
 
 #endif /* zone_kext_reserve_va_h */

