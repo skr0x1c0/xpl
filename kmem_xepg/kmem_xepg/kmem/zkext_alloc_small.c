@@ -110,7 +110,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
     assert(error == 0);
     
     char* size_data = alloca(32);
-    memset(size_data, 0xff, 32);
+    *size_data = 0xff;
     size_data[31] = 0;
     
     dispatch_apply(NUM_SIZE_ELEMENTS / 4, DISPATCH_APPLY_AUTO, ^(size_t index) {
@@ -137,7 +137,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
     free(pad_infos);
     
     char data_reader[32];
-    memset(data_reader, 0x80, sizeof(data_reader));
+    data_reader[0] = 0x80;
         
     for (int try = 0; try < MAX_TRIES; try++) {
 //        XE_LOG_INFO("try %d / %d", try, MAX_TRIES);
