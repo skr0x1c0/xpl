@@ -14,6 +14,6 @@ int smb_client_ioc_nic_info(int fd_dev, struct smbioc_nic_info* out);
 int smb_client_ioc_update_client_interface(int fd_dev, struct network_nic_info* info, size_t info_count);
 int smb_client_ioc_notifier_update_interfaces(int fd_dev, struct network_nic_info* info, size_t info_count);
 int smb_client_ioc_multichannel_properties(int fd_dev, struct smbioc_multichannel_properties* out);
-
+int smb_client_ioc_tcon(int fd_dev, char* share_name);
 
 #endif /* smb_client_h */

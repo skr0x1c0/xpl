@@ -52,6 +52,7 @@ int smb_client_ioc_negotiate(int fd_dev, struct sockaddr_in* addr, int32_t ioc_s
     req.ioc_saddr = (struct sockaddr*)addr;
     req.ioc_saddr_len = ioc_saddr_len;
     req.ioc_extra_flags |= SMB_FORCE_NEW_SESSION;
+    req.ioc_ssn.ioc_owner = getuid();
     if (need_multichannel) {
         req.ioc_extra_flags |= SMB_SMB3_ENABLED;
         req.ioc_extra_flags |= SMB_MULTICHANNEL_ENABLE;
@@ -157,3 +158,22 @@ int smb_client_ioc_auth_info(int fd_dev, char* gss_cpn, uint32_t gss_cpn_size, c
 
     return 0;
 }
+
+
+int smb_client_ioc_tcon(int fd_dev, char* share_name) {
+    struct smbioc_share req;
+    bzero(&req, sizeof(req));
+    
+    req.ioc_version = SMB_IOC_STRUCT_VERSION;
+    if (strlcpy(req.ioc_share, share_name, sizeof(req.ioc_share)) >= sizeof(req.ioc_share)) {
+        return E2BIG;
+    }
+    
+    if (ioctl(fd_dev, SMBIOC_TCON, &req)) {
+        return errno;
+    }
+    
+    return 0;
+}
+
+

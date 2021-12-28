@@ -170,5 +170,6 @@
 /* Used for checking to see if we are connecting to a NT4 server */
 #define SMB_CAP_LARGE_RDWRX    (SMB_CAP_LARGE_WRITEX | SMB_CAP_LARGE_READX)
 
+#define    SMB_MAXSHARENAMELEN        240
 
 #endif /* _NETSMB_SMB_H_ */

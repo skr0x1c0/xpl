@@ -198,13 +198,22 @@ struct smbioc_nic_info {
     } nic_props[MAX_NUM_OF_NICS];
 };
 
+struct smbioc_share {
+    uint32_t    ioc_version;
+    uint32_t    ioc_optionalSupport;
+    uint16_t    ioc_fstype;
+    char        ioc_share[SMB_MAXSHARENAMELEN + 1] __attribute((aligned(8)));
+    uint64_t    ioc_reserved __attribute((aligned(8))); /* Force correct size always */
+};
+
 /*
  * Device IOCTLs
  */
 #define    SMBIOC_NEGOTIATE        _IOWR('n', 109, struct smbioc_negotiate)
 #define    SMBIOC_SSNSETUP         _IOW('n', 110, struct smbioc_setup)
 #define    SMBIOC_AUTH_INFO        _IOWR('n', 101, struct smbioc_auth_info)
-#define SMBIOC_MULTICHANNEL_PROPERTIES    _IOWR('n', 131, struct smbioc_multichannel_properties)
-#define SMBIOC_NIC_INFO         _IOWR('n', 132, struct smbioc_nic_info)
+#define    SMBIOC_MULTICHANNEL_PROPERTIES    _IOWR('n', 131, struct smbioc_multichannel_properties)
+#define    SMBIOC_NIC_INFO         _IOWR('n', 132, struct smbioc_nic_info)
+#define    SMBIOC_TCON             _IOWR('n', 111, struct smbioc_share)
 
 #endif /* _NETSMB_DEV_H_ */
