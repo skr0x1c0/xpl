@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdatomic.h>
@@ -28,28 +29,23 @@ struct kmem_allocator_rw {
 };
 
 
-int kmem_allocator_rw_create(const struct sockaddr_in* addr, int count, kmem_allocator_rw_t* allocator_out) {
-    if (count > MAX_BACKEND_COUNT) {
-        return EINVAL;
-    }
+kmem_allocator_rw_t kmem_allocator_rw_create(const struct sockaddr_in* addr, int count) {
+    assert(count <= MAX_BACKEND_COUNT);
 
     smb_ssn_allocator* backends = malloc(sizeof(smb_ssn_allocator) * count);
     int error = xe_util_dispatch_apply(backends, sizeof(smb_ssn_allocator), count, NULL, ^(void* ctx, void* data, size_t index) {
-        return smb_ssn_allocator_create(addr, DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN, (smb_ssn_allocator*)data);
+        smb_ssn_allocator* allocator = (smb_ssn_allocator*)data;
+        *allocator = smb_ssn_allocator_create(addr, DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN);
+        return 0;
     });
-    if (error) {
-        free(backends);
-        return error;
-    }
+    assert(error == 0);
 
     kmem_allocator_rw_t allocator = malloc(sizeof(struct kmem_allocator_rw));
     memcpy(&allocator->addr, addr, XE_MIN(sizeof(struct sockaddr_in), addr->sin_len));
     allocator->backends = backends;
     allocator->backend_count = count;
     atomic_init(&allocator->write_index, 0);
-    *allocator_out = allocator;
-
-    return 0;
+    return allocator;
 }
 
 int kmem_allocator_rw_allocate(kmem_allocator_rw_t allocator, int count, kmem_allocator_rw_data_reader data_reader, void* reader_ctx) {
@@ -151,7 +147,9 @@ int kmem_allocator_rw_grow_backend_count(kmem_allocator_rw_t allocator, int coun
     }
 
     int error = xe_util_dispatch_apply(&backends[allocator->backend_count], sizeof(backends[0]), count, NULL, ^(void* ctx, void* data, size_t index) {
-        return smb_ssn_allocator_create(&allocator->addr, DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN, (smb_ssn_allocator*)data);
+        smb_ssn_allocator* ssn_allocator = (smb_ssn_allocator*)data;
+        *ssn_allocator =  smb_ssn_allocator_create(&allocator->addr, DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN);
+        return 0;
     });
 
     if (error) {

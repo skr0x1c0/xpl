@@ -40,11 +40,9 @@ kmem_allocator_nic_parallel_t kmem_allocator_nic_parallel_create(const struct so
     }
     
     int error = xe_util_dispatch_apply(backends, sizeof(backends[0]), num_backends, NULL, ^(void* ctx, void* data, size_t index) {
-        int error = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr), (smb_nic_allocator*)data);
-        if (error) {
-            return error;
-        }
-        return smb_nic_allocator_allocate(*((smb_nic_allocator*)data), infos, MAX_NICS_PER_SMB_DEV, sizeof(struct network_nic_info) * MAX_NICS_PER_SMB_DEV);
+        smb_nic_allocator* allocator = (smb_nic_allocator*)data;
+        *allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
+        return smb_nic_allocator_allocate(*allocator, infos, MAX_NICS_PER_SMB_DEV, sizeof(struct network_nic_info) * MAX_NICS_PER_SMB_DEV);
     });
     assert(error == 0);
     free(infos);

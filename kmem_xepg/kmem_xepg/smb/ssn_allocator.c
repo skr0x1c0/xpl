@@ -9,11 +9,10 @@
 #include "client.h"
 
 
-int smb_ssn_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_len, smb_ssn_allocator* id_out) {
+smb_ssn_allocator smb_ssn_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_len) {
     int fd = smb_client_open_dev();
-    if (fd < 0) {
-        return errno;
-    }
+    assert(fd >= 0);
+    
     struct smbioc_negotiate req;
     bzero(&req, sizeof(req));
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
@@ -23,12 +22,9 @@ int smb_ssn_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_
     req.ioc_extra_flags |= SMB_SMB1_ENABLED;
 
     int error = smb_client_ioc(fd, SMBIOC_NEGOTIATE, &req);
-    if (error || req.ioc_errno) {
-        close(fd);
-        return error ? error : req.ioc_errno;
-    }
-    *id_out = fd;
-    return 0;
+    assert(error == 0);
+    assert(req.ioc_errno == 0);
+    return fd;
 }
 
 int smb_ssn_allocator_allocate(smb_ssn_allocator id, const char* data1, uint32_t data1_size, const char* data2, uint32_t data2_size, uint32_t user_size, uint32_t password_size, uint32_t domain_size) {
