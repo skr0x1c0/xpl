@@ -150,7 +150,7 @@ void kmem_zkext_free_reserve_va(struct sockaddr_in* smb_addr) {
 }
 
 
-int kmem_zkext_free_kext(struct sockaddr_in* smb_addr, uintptr_t tailq) {
+int kmem_zkext_free(struct sockaddr_in* smb_addr, uintptr_t tailq) {
     kmem_zkext_neighour_reader_t neighbor_reader = kmem_neighbor_reader_create();
     kmem_zkext_free_reserve_va(smb_addr);
     

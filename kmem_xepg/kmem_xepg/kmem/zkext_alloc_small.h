@@ -15,6 +15,6 @@ struct kmem_zkext_alloc_small_entry {
     smb_nic_allocator element_allocator;
 };
 
-struct kmem_zkext_alloc_small_entry kmem_zalloc_kext_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size);
+struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size);
 
 #endif /* zalloc_kext_small_h */

@@ -174,7 +174,7 @@ done:
 }
 
 
-struct kmem_zkext_alloc_small_entry kmem_zalloc_kext_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
+struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
         XE_LOG_INFO("alloc session %d / %d", i, MAX_SESSIONS);
         struct kmem_zkext_alloc_small_entry entry;
