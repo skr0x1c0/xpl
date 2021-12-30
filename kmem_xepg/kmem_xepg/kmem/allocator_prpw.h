@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 
 typedef struct kmem_allocator_prpw* kmem_allocator_prpw_t;
-typedef void(^kmem_allocator_prpw_data_reader)(void* ctx, uint8_t* len, sa_family_t* family, size_t index);
+typedef void(^kmem_allocator_prpw_data_reader)(void* ctx, uint8_t* len, sa_family_t* family, char** data, size_t* data_len, size_t index);
 typedef _Bool(^kmem_allocator_prpw_data_filter)(void* ctx, sa_family_t family, size_t index);
 
 kmem_allocator_prpw_t kmem_allocator_prpw_create(const struct sockaddr_in* addr, size_t num_allocs);

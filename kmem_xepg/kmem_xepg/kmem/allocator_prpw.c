@@ -88,19 +88,27 @@ int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, size_t count, 
             infos[i].next_offset = sizeof(struct network_nic_info);
             uint8_t len = 0;
             sa_family_t family = 0;
-            reader(reader_ctx, &len, &family, alloc_idx - start_idx);
+            char* data = NULL;
+            size_t data_len = 0;
+            reader(reader_ctx, &len, &family, &data, &data_len, alloc_idx - start_idx);
             if (family == AF_INET) {
                 infos[i].addr_4.sin_len = len;
                 infos[i].addr_4.sin_addr.s_addr = (uint32_t)alloc_idx;
                 infos[i].addr_4.sin_family = family;
+                assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in, sin_addr) - sizeof(struct in_addr));
+                memcpy((char*)&infos[i].addr_4 + offsetof(struct sockaddr_in, sin_addr) + sizeof(struct in_addr), data, data_len);
             } else if (family == AF_INET6) {
                 infos[i].addr_16.sin6_len = len;
                 memcpy(&infos[i].addr_16.sin6_addr, &alloc_idx, sizeof(alloc_idx));
                 infos[i].addr_16.sin6_family = family;
+                assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in6, sin6_addr) - sizeof(struct in6_addr));
+                memcpy((char*)&infos[i].addr_16 + offsetof(struct sockaddr_in6, sin6_addr) + sizeof(struct in6_addr), data, data_len);
             } else {
                 infos[i].addr.sa_len = len;
                 memcpy(infos[i].addr.sa_data, &alloc_idx, sizeof(alloc_idx));
                 infos[i].addr.sa_family = family;
+                assert(data_len <= UINT8_MAX - offsetof(struct sockaddr, sa_data) - sizeof(infos[i].addr.sa_data));
+                memcpy((char*)&infos[i].addr + offsetof(struct sockaddr, sa_data) + sizeof(infos[i].addr.sa_data), data, data_len);
             }
         }
 
