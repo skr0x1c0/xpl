@@ -10,9 +10,14 @@
 
 #include <stdio.h>
 
+#include "../smb/nic_allocator.h"
+
+#include "allocator_prpw.h"
+
+
 struct kmem_zkext_alloc_small_entry {
     uintptr_t address;
-    smb_nic_allocator element_allocator;
+    kmem_allocator_prpw_t element_allocator;
 };
 
 struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size);
