@@ -14,8 +14,8 @@
 #include "util_dispatch.h"
 #include "util_misc.h"
 
-#define MAX_SADDR_ALLOCS_PER_NIC 32
-#define MAX_NICS_PER_SMB_DEV 32
+#define MAX_SADDR_ALLOCS_PER_NIC 128
+#define MAX_NICS_PER_SMB_DEV 128
 
 struct kmem_allocator_nic_parallel {
     smb_nic_allocator* backends;
