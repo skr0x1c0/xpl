@@ -45,7 +45,7 @@ int smb_client_ioc(int fd_dev, unsigned long cmd, void* data) {
 }
 
 
-int smb_client_ioc_negotiate(int fd_dev, struct sockaddr_in* addr, int32_t ioc_saddr_len, _Bool need_multichannel) {
+int smb_client_ioc_negotiate(int fd_dev, const struct sockaddr_in* addr, int32_t ioc_saddr_len, _Bool need_multichannel) {
     struct smbioc_negotiate req;
     bzero(&req, sizeof(req));
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
