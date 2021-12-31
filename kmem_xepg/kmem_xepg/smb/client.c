@@ -142,7 +142,7 @@ int smb_client_ioc_nic_info(int fd_dev, struct smbioc_nic_info* out) {
 }
 
 
-int smb_client_ioc_auth_info(int fd_dev, char* gss_cpn, uint32_t gss_cpn_size, char* gss_spn, uint32_t gss_spn_size) {
+int smb_client_ioc_auth_info(int fd_dev, char* gss_cpn, uint32_t gss_cpn_size, char* gss_spn, uint32_t gss_spn_size, uint32_t* gss_target_nt) {
     struct smbioc_auth_info req;
     bzero(&req, sizeof(req));
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
@@ -154,6 +154,10 @@ int smb_client_ioc_auth_info(int fd_dev, char* gss_cpn, uint32_t gss_cpn_size, c
 
     if (ioctl(fd_dev, SMBIOC_AUTH_INFO, &req)) {
         return errno;
+    }
+    
+    if (gss_target_nt) {
+        *gss_target_nt = req.ioc_target_nt;
     }
 
     return 0;
