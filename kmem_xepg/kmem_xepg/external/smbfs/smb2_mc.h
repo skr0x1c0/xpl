@@ -73,8 +73,8 @@ struct complete_nic_info_entry {
     _SMB2_MC_NIC_STATE nic_state;
 
     struct {
-        void* next;
-        void** prev;
+        void* tqh_first;
+        void** tqh_last;
     } addr_list;
     
     struct {
@@ -83,8 +83,8 @@ struct complete_nic_info_entry {
     } next;
     
     struct {
-        void* next;
-        void** prev;
+        void* tqh_first;
+        void** tqh_last;
     } possible_connections;
 };
 
