@@ -140,6 +140,14 @@ int kmem_allocator_rw_release_backends(kmem_allocator_rw_t allocator, int offset
     return 0;
 }
 
+int kmem_allocator_rw_disown_backend(kmem_allocator_rw_t allocator, int index) {
+    assert(index < allocator->backend_count);
+    int fd = allocator->backends[index];
+    memcpy(&allocator->backends[index], &allocator->backends[index + 1], sizeof(allocator->backends[0]) * (allocator->backend_count - index - 1));
+    allocator->backend_count--;
+    return fd;
+}
+
 int kmem_allocator_rw_grow_backend_count(kmem_allocator_rw_t allocator, int count) {
     smb_ssn_allocator* backends = (smb_ssn_allocator*)malloc(sizeof(smb_ssn_allocator) * (allocator->backend_count + count));
     if (!backends) {

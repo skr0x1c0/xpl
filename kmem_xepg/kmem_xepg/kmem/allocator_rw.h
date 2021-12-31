@@ -14,6 +14,7 @@ kmem_allocator_rw_t kmem_allocator_rw_create(const struct sockaddr_in* addr, int
 int kmem_allocator_rw_allocate(kmem_allocator_rw_t allocator, int count, kmem_allocator_rw_data_reader data_reader, void* data_reader_ctx);
 int kmem_allocator_rw_filter(kmem_allocator_rw_t allocator, int offset, int count, uint32_t data1_size, uint32_t data2_size, kmem_allocator_rw_data_filter filter, void* filter_ctx, int64_t* found_idx_out);
 int kmem_allocator_rw_read(kmem_allocator_rw_t allocator, int index, char* data1_out, uint32_t data1_size, char* data2_out, uint32_t data2_size);
+int kmem_allocator_rw_disown_backend(kmem_allocator_rw_t allocator, int index);
 int kmem_allocator_rw_release_backends(kmem_allocator_rw_t allocator, int offset, int count);
 int kmem_allocator_rw_grow_backend_count(kmem_allocator_rw_t allocator, int count);
 int kmem_allocator_rw_destroy(kmem_allocator_rw_t* allocator);
