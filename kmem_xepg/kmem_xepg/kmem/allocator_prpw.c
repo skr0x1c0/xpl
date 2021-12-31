@@ -54,6 +54,10 @@ kmem_allocator_prpw_t kmem_allocator_prpw_create(const struct sockaddr_in* addr,
     return allocator;
 }
 
+size_t kmem_allocator_prpw_get_capacity(kmem_allocator_prpw_t allocator) {
+    return allocator->backend_count * MAX_ALLOCS_PER_BACKEND;
+}
+
 int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, size_t count, kmem_allocator_prpw_data_reader reader, void* reader_ctx) {
     size_t start_idx = atomic_fetch_add(&allocator->alloc_cursor, count);
     if ((start_idx + count) > (allocator->backend_count * MAX_ALLOCS_PER_BACKEND)) {
