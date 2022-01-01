@@ -8,6 +8,7 @@
 #ifndef platform_variables_h
 #define platform_variables_h
 
+#define VAR_MH_EXECUTE_HEADER_ADDR 0xfffffe0007004000
 #define VAR_KERNPROC_ADDR 0xfffffe00071edef0
 #define VAR_KHEAP_DEFAULT_ADDR 0xfffffe0007143220
 #define VAR_KHEAP_DATA_BUFFERS_ADDR 0xfffffe0007143818
@@ -21,5 +22,6 @@
 #define VAR_ZONE_IO_EVENT_SOURCE 0xfffffe000723fe40
 
 #define FUNC_KFREE_EXT_ADDR 0xfffffe00072a7adc
+#define FUNC_TCP_INPUT_ADDR 0xfffffe000769c300
 
 #endif /* platform_variables_h */
