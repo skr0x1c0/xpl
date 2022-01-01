@@ -38,6 +38,7 @@
 #include <sys/kernel_types.h>
 
 #include "netbios.h"
+#include "kern_types.h"
 
 enum nbstate {
     NBST_CLOSED,
@@ -54,10 +55,6 @@ enum nbstate {
 #define    NBF_UPCALLED    0x0010      /* unused */
 #define    NBF_NETBIOS        0x0020
 #define NBF_BOUND_IF    0x0040
-
-typedef struct {
-    uintptr_t opaque[2];
-} lck_mtx_t;
 
 /*
  * socket specific data
