@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		842A425D2780618500CB560F /* slider.c in Sources */ = {isa = PBXBuildFile; fileRef = 842A425C2780618500CB560F /* slider.c */; };
 		8466F398276DCA9B004F651E /* io_dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB46276DC6E500138492 /* io_dictionary.c */; };
 		8466F399276DCAC5004F651E /* io_array.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4A276DC6E500138492 /* io_array.c */; };
 		8466F39A276DCAC5004F651E /* io_surface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4E276DC6E500138492 /* io_surface.c */; };
@@ -22,7 +23,6 @@
 		8466F3A4276DCAE2004F651E /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB79276DC6E500138492 /* kmem.c */; };
 		8466F3A5276DCAE2004F651E /* kmem_tester.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB7E276DC6E500138492 /* kmem_tester.c */; };
 		8466F3A6276DCAE2004F651E /* kmem_smbfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB85276DC6E500138492 /* kmem_smbfs.c */; };
-		8466F3A7276DCAE8004F651E /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB54276DC6E500138492 /* slider_kas.c */; };
 		8466F3A8276DCAED004F651E /* xnu_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB51276DC6E500138492 /* xnu_proc.c */; };
 		8466F3A9276DCAF2004F651E /* cmd_hdiutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB76276DC6E500138492 /* cmd_hdiutil.c */; };
 		8466F3AA276DCAFE004F651E /* util_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB63276DC6E500138492 /* util_binary.c */; };
@@ -43,6 +43,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		842A425C2780618500CB560F /* slider.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider.c; sourceTree = "<group>"; };
 		8443C05C277B474700FBC453 /* util_log.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_log.h; sourceTree = "<group>"; };
 		8466F3BB276DCBAF004F651E /* libxib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxib.dylib; path = ../../../../../usr/local/lib/libxib.dylib; sourceTree = "<group>"; };
 		8466F3BD276DCBB4004F651E /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
@@ -192,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				84F7BB53276DC6E500138492 /* slider.h */,
+				842A425C2780618500CB560F /* slider.c */,
 				84F7BB54276DC6E500138492 /* slider_kas.c */,
 			);
 			path = slider;
@@ -375,6 +377,7 @@
 				8466F3B1276DCAFE004F651E /* util_zalloc.c in Sources */,
 				8466F3A2276DCAE2004F651E /* kmem_gym.c in Sources */,
 				8466F3AB276DCAFE004F651E /* util_lck_rw.c in Sources */,
+				842A425D2780618500CB560F /* slider.c in Sources */,
 				8466F39E276DCAD3004F651E /* allocator_msdosfs.c in Sources */,
 				8466F39B276DCAC5004F651E /* io_string.c in Sources */,
 				8466F3AF276DCAFE004F651E /* util_dispatch.c in Sources */,
@@ -385,7 +388,6 @@
 				8466F39A276DCAC5004F651E /* io_surface.c in Sources */,
 				8466F3A3276DCAE2004F651E /* kmem_xepg.c in Sources */,
 				8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */,
-				8466F3A7276DCAE8004F651E /* slider_kas.c in Sources */,
 				8466F39F276DCAD3004F651E /* allocator_pipe.c in Sources */,
 				8466F3AD276DCAFE004F651E /* util_kalloc_heap.c in Sources */,
 			);
