@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-void xe_slider_init(void);
+void xe_slider_init(uintptr_t mh_execute_header);
 uintptr_t xe_slider_slide(uintptr_t address);
 uintptr_t xe_slider_unslide(uintptr_t address);
 
