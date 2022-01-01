@@ -16,6 +16,7 @@
 struct xe_allocator_msdosfs {
     char directory[PATH_MAX];
     char dev[PATH_MAX];
+    int fd_mount;
 };
 
 
@@ -156,6 +157,9 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
         goto exit_error;
     }
     
+    int fd_mount = open(mount_point, O_RDONLY);
+    assert(fd_mount >= 0);
+    
     args.mask = ACCESSPERMS;
     args.uid = 501;
     args.gid = 20;
@@ -163,7 +167,7 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
     args.fspec = dev_path;
     args.flags = MSDOSFSMNT_LABEL | MNT_UNKNOWNPERMISSIONS;
 
-    if (mount("msdos", mount_point, MNT_WAIT | MNT_SYNCHRONOUS | MNT_LOCAL, &args)) {
+    if (fmount("msdos", fd_mount, MNT_WAIT | MNT_SYNCHRONOUS | MNT_LOCAL, &args)) {
         error = errno;
         goto exit_error;
     }
@@ -171,6 +175,7 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
     xe_allocator_msdosfs_t mount = (xe_allocator_msdosfs_t)malloc(sizeof(struct xe_allocator_msdosfs));
     strncpy(mount->directory, temp_dir, sizeof(mount->directory));
     strncpy(mount->dev, dev_path, sizeof(mount->dev));
+    mount->fd_mount = fd_mount;
     *mount_out = mount;
 
     return 0;
@@ -188,6 +193,10 @@ exit_error:
 
 size_t xe_allocator_msdosfs_get_mountpoint(xe_allocator_msdosfs_t mount, char* dst, size_t dst_size) {
     return snprintf(dst, dst_size, "%s/mount", mount->directory);
+}
+
+int xe_allocator_msdsofs_get_mount_fd(xe_allocator_msdosfs_t allocator) {
+    return allocator->fd_mount;
 }
 
 int xe_allocator_msdosfs_destroy(xe_allocator_msdosfs_t* mount_p) {
