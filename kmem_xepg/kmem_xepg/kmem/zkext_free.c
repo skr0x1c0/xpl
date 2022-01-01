@@ -182,8 +182,8 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
 void kmem_zkext_free_session_execute(kmem_zkext_free_session_t session, const struct complete_nic_info_entry* entry) {
     assert(session->state == STATE_PREPARED);
     
-    for (int i = 0; i < 50; i++) {
-        XE_LOG_DEBUG("allocate sockets for nic %d / %d", i, 50);
+    for (int i = 0; i < 100; i++) {
+        XE_LOG_DEBUG("allocate sockets for nic %d / %d", i, 100);
         kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, INT32_MAX - i, 10000, sizeof(struct sockaddr_in));
     }
 
