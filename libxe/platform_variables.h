@@ -21,6 +21,9 @@
 #define VAR_G_IO_REGISTRY_ROOT 0xfffffe0007bdd090
 #define VAR_ZONE_IO_EVENT_SOURCE 0xfffffe000723fe40
 
+#define VAR_PIDHASHTBL 0xfffffe00071f2378
+#define VAR_PIDHASH 0xfffffe00071f2370
+
 #define FUNC_KFREE_EXT_ADDR 0xfffffe00072a7adc
 #define FUNC_TCP_INPUT_ADDR 0xfffffe000769c300
 

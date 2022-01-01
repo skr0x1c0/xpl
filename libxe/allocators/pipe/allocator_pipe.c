@@ -22,7 +22,7 @@ struct allocator_pipe {
     int fd1;
 };
 
-int xe_kmem_allocator_pipe_allocate(uintptr_t kernproc, size_t size, xe_allocator_pipe_t* allocator_out, uintptr_t* buffer_ptr_out) {
+int xe_kmem_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_out, uintptr_t* buffer_ptr_out) {
     if (size > 4 * 16384) {
         return E2BIG;
     }
@@ -32,7 +32,7 @@ int xe_kmem_allocator_pipe_allocate(uintptr_t kernproc, size_t size, xe_allocato
         return errno;
     }
     
-    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
+    uintptr_t proc = xe_xnu_proc_current_proc();
     
     uintptr_t pipe;
     int error = xe_xnu_proc_find_fd_data(proc, fds[0], &pipe);

@@ -10,26 +10,31 @@
 
 #include "xnu_proc.h"
 #include "platform_types.h"
+#include "platform_variables.h"
 #include "kmem.h"
+#include "slider.h"
 
 
-int xe_xnu_proc_find(uintptr_t kernproc, pid_t proc_id, uintptr_t* proc_out) {
-    uintptr_t cursor = kernproc;
-    while(cursor) {
-        pid_t pid = xe_kmem_read_int32(cursor + TYPE_PROC_MEM_P_PID_OFFSET);
+int xe_xnu_proc_find(pid_t proc_id, uintptr_t* proc_out) {
+    uint64_t pidhash = xe_kmem_read_uint64(xe_slider_slide(VAR_PIDHASH));
+    uintptr_t pidhashtbl = xe_kmem_read_uint64(xe_slider_slide(VAR_PIDHASHTBL));
+    int index = proc_id & pidhash;
+    uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(pidhashtbl, index * 8));
+    while (cursor) {
+        pid_t pid = xe_kmem_read_int32(KMEM_OFFSET(cursor, TYPE_PROC_MEM_P_PID_OFFSET));
         if (pid == proc_id) {
             *proc_out = cursor;
             return 0;
         }
-        cursor = xe_kmem_read_uint64(cursor + TYPE_PROC_MEM_P_LIST_OFFSET + 8);
+        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_PROC_MEM_P_HASH_OFFSET));
     }
-    
     return ENOENT;
 }
 
-uintptr_t xe_xnu_proc_current_proc(uintptr_t kernproc) {
+
+uintptr_t xe_xnu_proc_current_proc() {
     uintptr_t proc;
-    int error = xe_xnu_proc_find(kernproc, getpid(), &proc);
+    int error = xe_xnu_proc_find(getpid(), &proc);
     assert(error == 0);
     return proc;
 }
