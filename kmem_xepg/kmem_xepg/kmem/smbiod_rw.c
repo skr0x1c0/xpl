@@ -16,7 +16,7 @@
 
 #include "smbiod_rw.h"
 
-#define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 256
+#define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 356
 
 
 struct kmem_smbiod_rw {
