@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		842A425D2780618500CB560F /* slider.c in Sources */ = {isa = PBXBuildFile; fileRef = 842A425C2780618500CB560F /* slider.c */; };
+		84374D6127817CE900E2E187 /* slider_kext.c in Sources */ = {isa = PBXBuildFile; fileRef = 84374D6027817B5200E2E187 /* slider_kext.c */; };
 		8466F398276DCA9B004F651E /* io_dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB46276DC6E500138492 /* io_dictionary.c */; };
 		8466F399276DCAC5004F651E /* io_array.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4A276DC6E500138492 /* io_array.c */; };
 		8466F39A276DCAC5004F651E /* io_surface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4E276DC6E500138492 /* io_surface.c */; };
@@ -44,6 +45,8 @@
 
 /* Begin PBXFileReference section */
 		842A425C2780618500CB560F /* slider.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider.c; sourceTree = "<group>"; };
+		84374D5F27817B5200E2E187 /* slider_kext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = slider_kext.h; sourceTree = "<group>"; };
+		84374D6027817B5200E2E187 /* slider_kext.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider_kext.c; sourceTree = "<group>"; };
 		8443C05C277B474700FBC453 /* util_log.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_log.h; sourceTree = "<group>"; };
 		8466F3BB276DCBAF004F651E /* libxib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxib.dylib; path = ../../../../../usr/local/lib/libxib.dylib; sourceTree = "<group>"; };
 		8466F3BD276DCBB4004F651E /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
@@ -195,6 +198,8 @@
 				84F7BB53276DC6E500138492 /* slider.h */,
 				842A425C2780618500CB560F /* slider.c */,
 				84F7BB54276DC6E500138492 /* slider_kas.c */,
+				84374D5F27817B5200E2E187 /* slider_kext.h */,
+				84374D6027817B5200E2E187 /* slider_kext.c */,
 			);
 			path = slider;
 			sourceTree = "<group>";
@@ -384,6 +389,7 @@
 				8466F3A8276DCAED004F651E /* xnu_proc.c in Sources */,
 				8466F3AE276DCAFE004F651E /* util_pacia.c in Sources */,
 				8466F3A6276DCAE2004F651E /* kmem_smbfs.c in Sources */,
+				84374D6127817CE900E2E187 /* slider_kext.c in Sources */,
 				8466F3A9276DCAF2004F651E /* cmd_hdiutil.c in Sources */,
 				8466F39A276DCAC5004F651E /* io_surface.c in Sources */,
 				8466F3A3276DCAE2004F651E /* kmem_xepg.c in Sources */,
