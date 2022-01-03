@@ -16,8 +16,6 @@
 		845913A7276F859F00F15CBA /* nic_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 8459139F276F84DC00F15CBA /* nic_allocator.c */; };
 		8466F429276DCE9E004F651E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8466F428276DCE9E004F651E /* main.c */; };
 		8466F431276DCEAB004F651E /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F430276DCEAB004F651E /* libxe.a */; };
-		8466F434276DCEB0004F651E /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F432276DCEB0004F651E /* libgym_client.dylib */; };
-		8466F436276DCEB0004F651E /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F433276DCEB0004F651E /* libxib.dylib */; };
 		84E558F62779938700ED4BE8 /* zkext_reserve_va.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E558F52779938700ED4BE8 /* zkext_reserve_va.c */; };
 		84E77E9E2771A4790085EDC2 /* zkext_neighbor_reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E77E9D2771A4790085EDC2 /* zkext_neighbor_reader.c */; };
 		84E77EA12771B1630085EDC2 /* zkext_free.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E77EA02771B1630085EDC2 /* zkext_free.c */; };
@@ -84,10 +82,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8466F436276DCEB0004F651E /* libxib.dylib in Frameworks */,
 				8466F431276DCEAB004F651E /* libxe.a in Frameworks */,
 				84079CA72770548400C4B188 /* libproc.tbd in Frameworks */,
-				8466F434276DCEB0004F651E /* libgym_client.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -19,11 +19,7 @@
 		8466F39F276DCAD3004F651E /* allocator_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5F276DC6E500138492 /* allocator_pipe.c */; };
 		8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB7C276DC6E500138492 /* kmem_msdosfs.c */; };
 		8466F3A1276DCAE2004F651E /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB80276DC6E500138492 /* kmem_remote.c */; };
-		8466F3A2276DCAE2004F651E /* kmem_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB7A276DC6E500138492 /* kmem_gym.c */; };
-		8466F3A3276DCAE2004F651E /* kmem_xepg.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB82276DC6E500138492 /* kmem_xepg.c */; };
 		8466F3A4276DCAE2004F651E /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB79276DC6E500138492 /* kmem.c */; };
-		8466F3A5276DCAE2004F651E /* kmem_tester.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB7E276DC6E500138492 /* kmem_tester.c */; };
-		8466F3A6276DCAE2004F651E /* kmem_smbfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB85276DC6E500138492 /* kmem_smbfs.c */; };
 		8466F3A8276DCAED004F651E /* xnu_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB51276DC6E500138492 /* xnu_proc.c */; };
 		8466F3A9276DCAF2004F651E /* cmd_hdiutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB76276DC6E500138492 /* cmd_hdiutil.c */; };
 		8466F3AA276DCAFE004F651E /* util_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB63276DC6E500138492 /* util_binary.c */; };
@@ -100,18 +96,10 @@
 		84F7BB76276DC6E500138492 /* cmd_hdiutil.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cmd_hdiutil.c; sourceTree = "<group>"; };
 		84F7BB78276DC6E500138492 /* kmem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem.h; sourceTree = "<group>"; };
 		84F7BB79276DC6E500138492 /* kmem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem.c; sourceTree = "<group>"; };
-		84F7BB7A276DC6E500138492 /* kmem_gym.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_gym.c; sourceTree = "<group>"; };
-		84F7BB7B276DC6E500138492 /* kmem_gym.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_gym.h; sourceTree = "<group>"; };
 		84F7BB7C276DC6E500138492 /* kmem_msdosfs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_msdosfs.c; sourceTree = "<group>"; };
 		84F7BB7D276DC6E500138492 /* kmem_msdosfs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_msdosfs.h; sourceTree = "<group>"; };
-		84F7BB7E276DC6E500138492 /* kmem_tester.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_tester.c; sourceTree = "<group>"; };
-		84F7BB7F276DC6E500138492 /* kmem_tester.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_tester.h; sourceTree = "<group>"; };
 		84F7BB80276DC6E500138492 /* kmem_remote.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_remote.c; sourceTree = "<group>"; };
 		84F7BB81276DC6E500138492 /* kmem_remote.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_remote.h; sourceTree = "<group>"; };
-		84F7BB82276DC6E500138492 /* kmem_xepg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_xepg.c; sourceTree = "<group>"; };
-		84F7BB83276DC6E500138492 /* kmem_xepg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_xepg.h; sourceTree = "<group>"; };
-		84F7BB84276DC6E500138492 /* kmem_smbfs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_smbfs.h; sourceTree = "<group>"; };
-		84F7BB85276DC6E500138492 /* kmem_smbfs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_smbfs.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -283,18 +271,10 @@
 			children = (
 				84F7BB78276DC6E500138492 /* kmem.h */,
 				84F7BB79276DC6E500138492 /* kmem.c */,
-				84F7BB7A276DC6E500138492 /* kmem_gym.c */,
-				84F7BB7B276DC6E500138492 /* kmem_gym.h */,
 				84F7BB7C276DC6E500138492 /* kmem_msdosfs.c */,
 				84F7BB7D276DC6E500138492 /* kmem_msdosfs.h */,
-				84F7BB7E276DC6E500138492 /* kmem_tester.c */,
-				84F7BB7F276DC6E500138492 /* kmem_tester.h */,
 				84F7BB80276DC6E500138492 /* kmem_remote.c */,
 				84F7BB81276DC6E500138492 /* kmem_remote.h */,
-				84F7BB82276DC6E500138492 /* kmem_xepg.c */,
-				84F7BB83276DC6E500138492 /* kmem_xepg.h */,
-				84F7BB84276DC6E500138492 /* kmem_smbfs.h */,
-				84F7BB85276DC6E500138492 /* kmem_smbfs.c */,
 			);
 			path = memory;
 			sourceTree = "<group>";
@@ -375,12 +355,10 @@
 				8466F399276DCAC5004F651E /* io_array.c in Sources */,
 				8466F39C276DCAC5004F651E /* io_registry_entry.c in Sources */,
 				8466F3AC276DCAFE004F651E /* util_pacda.c in Sources */,
-				8466F3A5276DCAE2004F651E /* kmem_tester.c in Sources */,
 				8466F3A1276DCAE2004F651E /* kmem_remote.c in Sources */,
 				8466F3AA276DCAFE004F651E /* util_binary.c in Sources */,
 				8466F39D276DCAD3004F651E /* allocator_iosurface.c in Sources */,
 				8466F3B1276DCAFE004F651E /* util_zalloc.c in Sources */,
-				8466F3A2276DCAE2004F651E /* kmem_gym.c in Sources */,
 				8466F3AB276DCAFE004F651E /* util_lck_rw.c in Sources */,
 				842A425D2780618500CB560F /* slider.c in Sources */,
 				8466F39E276DCAD3004F651E /* allocator_msdosfs.c in Sources */,
@@ -388,11 +366,9 @@
 				8466F3AF276DCAFE004F651E /* util_dispatch.c in Sources */,
 				8466F3A8276DCAED004F651E /* xnu_proc.c in Sources */,
 				8466F3AE276DCAFE004F651E /* util_pacia.c in Sources */,
-				8466F3A6276DCAE2004F651E /* kmem_smbfs.c in Sources */,
 				84374D6127817CE900E2E187 /* slider_kext.c in Sources */,
 				8466F3A9276DCAF2004F651E /* cmd_hdiutil.c in Sources */,
 				8466F39A276DCAC5004F651E /* io_surface.c in Sources */,
-				8466F3A3276DCAE2004F651E /* kmem_xepg.c in Sources */,
 				8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */,
 				8466F39F276DCAD3004F651E /* allocator_pipe.c in Sources */,
 				8466F3AD276DCAFE004F651E /* util_kalloc_heap.c in Sources */,
