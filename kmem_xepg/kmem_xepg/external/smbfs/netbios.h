@@ -42,6 +42,16 @@
 #include <netinet/in.h>
 
 /*
+ * Session packet types
+ */
+#define    NB_SSN_MESSAGE        0x0
+#define    NB_SSN_REQUEST        0x81
+#define    NB_SSN_POSRESP        0x82
+#define    NB_SSN_NEGRESP        0x83
+#define    NB_SSN_RTGRESP        0x84
+#define    NB_SSN_KEEPALIVE      0x85
+
+/*
  * Socket address
  */
 struct sockaddr_nb {

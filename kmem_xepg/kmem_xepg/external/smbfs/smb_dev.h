@@ -206,9 +206,28 @@ struct smbioc_share {
     uint64_t    ioc_reserved __attribute((aligned(8))); /* Force correct size always */
 };
 
+struct smbioc_rq {
+    uint32_t    ioc_version;
+    uint8_t        ioc_cmd;
+    uint8_t        ioc_twc;
+    uint16_t    ioc_tbc;
+    int32_t        ioc_rpbufsz;
+    uint32_t    ioc_ntstatus;
+    uint32_t    ioc_errno;
+    uint16_t    ioc_flags2;
+    uint8_t     ioc_flags;
+    uint8_t        ioc_padd;
+    SMB_IOC_POINTER(void *, twords);
+    SMB_IOC_POINTER(void *, tbytes);
+    SMB_IOC_POINTER(char *, rpbuf);
+    uint64_t    ioc_reserved __attribute((aligned(8))); /* Force correct size always */
+};
+
+
 /*
  * Device IOCTLs
  */
+#define    SMBIOC_REQUEST          _IOWR('n', 102, struct smbioc_rq)
 #define    SMBIOC_NEGOTIATE        _IOWR('n', 109, struct smbioc_negotiate)
 #define    SMBIOC_SSNSETUP         _IOW('n', 110, struct smbioc_setup)
 #define    SMBIOC_AUTH_INFO        _IOWR('n', 101, struct smbioc_auth_info)

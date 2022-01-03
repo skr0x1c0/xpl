@@ -15,6 +15,7 @@
 #include "../external/smbfs/netbios.h"
 #include "../external/smbfs/smb_dev_2.h"
 #include "../external/smbfs/smb2_mc.h"
+#include "../public/kmem_xepg/smb_custom.h"
 
 #include "client.h"
 
@@ -60,6 +61,26 @@ int smb_client_ioc_negotiate(int fd_dev, const struct sockaddr_in* addr, int32_t
         req.ioc_extra_flags |= SMB_SMB1_ENABLED;
     }
 
+    if (ioctl(fd_dev, SMBIOC_NEGOTIATE, &req)) {
+        return errno;
+    }
+    return req.ioc_errno;
+}
+
+
+int smb_client_ioc_negotiate_nb(int fd_dev, const struct sockaddr_nb* saddr, int32_t ioc_saddr_len, const struct sockaddr_nb* laddr, int32_t ioc_laddr_len) {
+    struct smbioc_negotiate req;
+    bzero(&req, sizeof(req));
+    
+    req.ioc_version = SMB_IOC_STRUCT_VERSION;
+    req.ioc_saddr = (struct sockaddr*)saddr;
+    req.ioc_saddr_len = ioc_saddr_len;
+    req.ioc_laddr = (struct sockaddr*)laddr;
+    req.ioc_laddr_len = ioc_laddr_len;
+    req.ioc_extra_flags |= SMB_FORCE_NEW_SESSION;
+    req.ioc_ssn.ioc_owner = getuid();
+    req.ioc_extra_flags |= SMB_SMB1_ENABLED;
+    
     if (ioctl(fd_dev, SMBIOC_NEGOTIATE, &req)) {
         return errno;
     }
@@ -180,4 +201,37 @@ int smb_client_ioc_tcon(int fd_dev, char* share_name) {
     return 0;
 }
 
+
+int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* dst, uint32_t dst_size) {
+    struct smbioc_rq req;
+    bzero(&req, sizeof(req));
+    
+    req.ioc_version = SMB_IOC_STRUCT_VERSION;
+    req.ioc_cmd = SMB_CUSTOM_CMD_GET_SAVED_NB_SSN_REQUEST;
+    req.ioc_twords = &key;
+    req.ioc_twc = sizeof(key) / 2;
+    req.ioc_rpbuf = dst;
+    req.ioc_rpbufsz = dst_size;
+    
+    if (ioctl(fd_dev, SMBIOC_REQUEST, &req)) {
+        return errno;
+    }
+    return req.ioc_errno;
+}
+
+
+int smb_client_ioc_read_last_nb_ssn_request(int fd_dev, char* dst, uint32_t dst_size) {
+    struct smbioc_rq req;
+    bzero(&req, sizeof(req));
+    
+    req.ioc_version = SMB_IOC_STRUCT_VERSION;
+    req.ioc_cmd = SMB_CUSTOM_CMD_GET_LAST_NB_SSN_REQUEST;
+    req.ioc_rpbuf = dst;
+    req.ioc_rpbufsz = dst_size;
+    
+    if (ioctl(fd_dev, SMBIOC_REQUEST, &req)) {
+        return errno;
+    }
+    return req.ioc_errno;
+}
 
