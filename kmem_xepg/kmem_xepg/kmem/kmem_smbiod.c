@@ -5,13 +5,13 @@
 //  Created by admin on 1/1/22.
 //
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "kmem_smbiod.h"
 #include "kmem.h"
 #include "smbiod_rw.h"
+#include "util_assert.h"
 
 
 #define MAX_READ_SIZE UINT32_MAX
@@ -19,7 +19,7 @@
 
 
 void xe_kmem_smbiod_read(void* ctx, void* dst, uintptr_t src, size_t size) {
-    assert(size <= MAX_READ_SIZE);
+    xe_assert(size <= MAX_READ_SIZE);
     kmem_smbiod_rw_t rw = (kmem_smbiod_rw_t)ctx;
     kmem_smbiod_rw_read_data(rw, dst, src, size);
 }

@@ -10,6 +10,7 @@
 #include "platform_types.h"
 #include "util_misc.h"
 #include "util_ptrauth.h"
+#include "util_assert.h"
 
 
 size_t xe_io_os_string_length(uintptr_t string) {

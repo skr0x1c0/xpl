@@ -13,6 +13,7 @@
 #include "kmem.h"
 #include "slider.h"
 #include "platform_variables.h"
+#include "util_assert.h"
 
 
 typedef struct {
@@ -31,22 +32,22 @@ struct xe_slider_kext {
 
 
 uintptr_t xe_slider_kext_find_kext_header(char* identifier, enum xe_kext_collection_type collection) {
-    assert(collection == XE_KC_BOOT || collection == XE_KC_AUX);
+    xe_assert(collection == XE_KC_BOOT || collection == XE_KC_AUX);
     uintptr_t header_location = xe_kmem_read_uint64(xe_slider_slide(collection == XE_KC_BOOT ? VAR_SEG_LOWEST_KC : VAR_AUXKC_MH));
     
     struct mach_header_64 header;
     xe_kmem_read(&header, header_location, sizeof(header));
-    assert(header.magic == MH_MAGIC_64);
+    xe_assert(header.magic == MH_MAGIC_64);
     
     struct load_command* commands = malloc(header.sizeofcmds);
     xe_kmem_read(commands, header_location + sizeof(header), header.sizeofcmds);
     
     struct load_command* cursor = commands;
     for (int i=0; i<header.ncmds; i++) {
-        assert((uintptr_t)cursor + cursor->cmdsize <= (uintptr_t)commands + header.sizeofcmds);
+        xe_assert((uintptr_t)cursor + cursor->cmdsize <= (uintptr_t)commands + header.sizeofcmds);
         if (cursor->cmd == LC_FILESET_ENTRY) {
             struct fileset_entry_command* fse_command = (struct fileset_entry_command*)cursor;
-            assert(cursor->cmdsize >= sizeof(struct fileset_entry_command));
+            xe_assert(cursor->cmdsize >= sizeof(struct fileset_entry_command));
             char* name = (char*)fse_command + fse_command->entry_id.offset;
             if (strncmp(identifier, name, fse_command->cmdsize - fse_command->entry_id.offset) == 0) {
                 uintptr_t vmaddr = fse_command->vmaddr;
@@ -69,17 +70,17 @@ xe_slider_kext_t xe_slider_kext_create(char* identifier, enum xe_kext_collection
     uintptr_t kext_header_location = xe_slider_kext_find_kext_header(identifier, collection);
     struct mach_header_64 header;
     xe_kmem_read(&header, kext_header_location, sizeof(header));
-    assert(header.magic == MH_MAGIC_64);
+    xe_assert(header.magic == MH_MAGIC_64);
     
     struct load_command* commands = malloc(header.sizeofcmds);
     xe_kmem_read(commands, kext_header_location + sizeof(header), header.sizeofcmds);
     
     struct load_command* cursor = commands;
     for (int i=0; i<header.ncmds; i++) {
-        assert((uintptr_t)cursor + cursor->cmdsize <= (uintptr_t)commands + header.sizeofcmds);
+        xe_assert((uintptr_t)cursor + cursor->cmdsize <= (uintptr_t)commands + header.sizeofcmds);
         if (cursor->cmd == LC_SEGMENT_64) {
             struct segment_command_64* seg_command = (struct segment_command_64*)cursor;
-            assert(cursor->cmdsize >= sizeof(struct segment_command_64));
+            xe_assert(cursor->cmdsize >= sizeof(struct segment_command_64));
             char* name = seg_command->segname;
             
             xe_slider_kext_segment_info_t info;
@@ -109,19 +110,19 @@ xe_slider_kext_t xe_slider_kext_create(char* identifier, enum xe_kext_collection
 uintptr_t xe_slider_kext_slide(xe_slider_kext_t slider, enum xe_kext_segment segment, uintptr_t offset) {
     switch (segment) {
         case XE_KEXT_SEGMENT_TEXT:
-            assert(offset <= slider->text.size);
+            xe_assert(offset <= slider->text.size);
             return slider->text.start + offset;
         case XE_KEXT_SEGMENT_TEXT_EXEC:
-            assert(offset <= slider->text_exec.size);
+            xe_assert(offset <= slider->text_exec.size);
             return slider->text_exec.start + offset;
         case XE_KEXT_SEGMENT_DATA_CONST:
-            assert(offset <= slider->data_const.size);
+            xe_assert(offset <= slider->data_const.size);
             return slider->data_const.start + offset;
         case XE_KEXT_SEGMENT_DATA:
-            assert(offset <= slider->data.size);
+            xe_assert(offset <= slider->data.size);
             return slider->data.start + offset;
         case XE_KEXT_SEGMENT_LINK_EDIT:
-            assert(offset <= slider->link_edit.size);
+            xe_assert(offset <= slider->link_edit.size);
             return slider->link_edit.start + offset;
         default:
             printf("[ERROR] unknown segment\n");
@@ -136,19 +137,19 @@ uintptr_t xe_slider_kext_slide(xe_slider_kext_t slider, enum xe_kext_segment seg
 uintptr_t xe_slider_kext_unslide(xe_slider_kext_t slider, enum xe_kext_segment segment, uintptr_t address) {
     switch (segment) {
         case XE_KEXT_SEGMENT_TEXT:
-            assert(IS_ADDRESS_IN_SEGMENT(address, slider->text));
+            xe_assert(IS_ADDRESS_IN_SEGMENT(address, slider->text));
             return address - slider->text.start;
         case XE_KEXT_SEGMENT_TEXT_EXEC:
-            assert(IS_ADDRESS_IN_SEGMENT(address, slider->text_exec));
+            xe_assert(IS_ADDRESS_IN_SEGMENT(address, slider->text_exec));
             return address - slider->text_exec.start;
         case XE_KEXT_SEGMENT_DATA:
-            assert(IS_ADDRESS_IN_SEGMENT(address, slider->data));
+            xe_assert(IS_ADDRESS_IN_SEGMENT(address, slider->data));
             return address - slider->data.start;
         case XE_KEXT_SEGMENT_DATA_CONST:
-            assert(IS_ADDRESS_IN_SEGMENT(address, slider->data_const));
+            xe_assert(IS_ADDRESS_IN_SEGMENT(address, slider->data_const));
             return address - slider->data_const.start;
         case XE_KEXT_SEGMENT_LINK_EDIT:
-            assert(IS_ADDRESS_IN_SEGMENT(address, slider->link_edit));
+            xe_assert(IS_ADDRESS_IN_SEGMENT(address, slider->link_edit));
             return address - slider->link_edit.start;
         default:
             printf("[ERROR] unknown segment\n");

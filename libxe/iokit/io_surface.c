@@ -15,6 +15,7 @@
 #include "io_dictionary.h"
 #include "kmem.h"
 #include "platform_types.h"
+#include "util_assert.h"
 
 
 uintptr_t xe_io_surface_root(void) {
@@ -22,15 +23,15 @@ uintptr_t xe_io_surface_root(void) {
 
     uintptr_t pe_device;
     int error = xe_io_registry_entry_find_child_by_name(io_registry_root, "J316sAP", &pe_device);
-    assert(error == 0);
+    xe_assert_err(error);
 
     uintptr_t io_resources;
     error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_slide(KMEM_OFFSET(TYPE_IO_RESOURCES_VTABLE, 0x10)), &io_resources);
-    assert(error == 0);
+    xe_assert_err(error);
 
     uintptr_t io_surface_root;
     error = xe_io_registry_entry_find_child_by_name(io_resources, "IOSurfaceRoot", &io_surface_root);
-    assert(error == 0);
+    xe_assert_err(error);
 
     return io_surface_root;
 }
@@ -73,7 +74,7 @@ int xe_io_surface_scan_all_clients_for_prop(char* key, uintptr_t* out) {
     uintptr_t registry = xe_io_registry_entry_registry_table(root);
     uintptr_t children;
     int error = xe_io_os_dictionary_find_value(registry, "IOServiceChildLinks", &children, NULL);
-    assert(error == 0);
+    xe_assert_err(error);
 
     for (int i=xe_io_os_array_count(children)-1; i>=0; i--) {
         uintptr_t target_surface = 0;

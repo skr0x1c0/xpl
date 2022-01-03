@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 #include <stdatomic.h>
 #include <sys/errno.h>
 
@@ -11,6 +10,7 @@
 #include "platform_constants.h"
 #include "util_dispatch.h"
 #include "util_misc.h"
+#include "util_assert.h"
 
 #define MAX_NICS_PER_BACKEND 16
 #define MAX_IPS_PER_NIC 8
@@ -50,7 +50,7 @@ kmem_allocator_prpw_t kmem_allocator_prpw_create(const struct sockaddr_in* addr,
         return smb_nic_allocator_allocate(*allocator, infos, MAX_NICS_PER_BACKEND, sizeof(infos));
     });
     
-    assert(error == 0);
+    xe_assert_err(error);
     return allocator;
 }
 
@@ -99,19 +99,19 @@ int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, size_t count, 
                 infos[i].addr_4.sin_len = len;
                 infos[i].addr_4.sin_addr.s_addr = (uint32_t)alloc_idx;
                 infos[i].addr_4.sin_family = family;
-                assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in, sin_addr) - sizeof(struct in_addr));
+                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in, sin_addr) - sizeof(struct in_addr));
                 memcpy((char*)&infos[i].addr_4 + offsetof(struct sockaddr_in, sin_addr) + sizeof(struct in_addr), data, data_len);
             } else if (family == AF_INET6) {
                 infos[i].addr_16.sin6_len = len;
                 memcpy(&infos[i].addr_16.sin6_addr, &alloc_idx, sizeof(alloc_idx));
                 infos[i].addr_16.sin6_family = family;
-                assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in6, sin6_addr) - sizeof(struct in6_addr));
+                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in6, sin6_addr) - sizeof(struct in6_addr));
                 memcpy((char*)&infos[i].addr_16 + offsetof(struct sockaddr_in6, sin6_addr) + sizeof(struct in6_addr), data, data_len);
             } else {
                 infos[i].addr.sa_len = len;
                 memcpy(infos[i].addr.sa_data, &alloc_idx, sizeof(alloc_idx));
                 infos[i].addr.sa_family = family;
-                assert(data_len <= UINT8_MAX - offsetof(struct sockaddr, sa_data) - sizeof(infos[i].addr.sa_data));
+                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr, sa_data) - sizeof(infos[i].addr.sa_data));
                 memcpy((char*)&infos[i].addr + offsetof(struct sockaddr, sa_data) + sizeof(infos[i].addr.sa_data), data, data_len);
             }
         }
@@ -147,11 +147,11 @@ int kmem_allocator_prpw_filter(kmem_allocator_prpw_t allocator, size_t offset, s
         if (error) {
             return error;
         }
-        assert(infos.num_of_nics == MAX_NICS_PER_BACKEND);
+        xe_assert(infos.num_of_nics == MAX_NICS_PER_BACKEND);
         for (int i=MAX_NICS_PER_BACKEND - 1; i>=(int)(MAX_NICS_PER_BACKEND - backend_num_nics); i--) {
             struct nic_properties props = infos.nic_props[i];
             uint32_t nic_idx = props.if_index & UINT32_MAX;
-            assert(nic_idx == MAX_NICS_PER_BACKEND - i - 1);
+            xe_assert(nic_idx == MAX_NICS_PER_BACKEND - i - 1);
             size_t nic_alloc_start_idx = backend_alloc_start_idx +  (nic_idx * MAX_IPS_PER_NIC);
             size_t nic_alloc_end_idx = XE_MIN(nic_alloc_start_idx + MAX_IPS_PER_NIC, alloc_cursor) - 1;
             size_t nic_num_allocs = nic_alloc_end_idx - nic_alloc_start_idx + 1;
@@ -188,12 +188,12 @@ int kmem_allocator_prpw_read(kmem_allocator_prpw_t allocator, size_t alloc_index
         return error;
     }
 
-    assert(info.num_of_nics == MAX_NICS_PER_BACKEND);
-    assert(nic_idx < info.num_of_nics);
+    xe_assert(info.num_of_nics == MAX_NICS_PER_BACKEND);
+    xe_assert(nic_idx < info.num_of_nics);
 
     struct nic_properties props = info.nic_props[MAX_NICS_PER_BACKEND - nic_idx - 1];
-    assert(props.if_index == nic_idx);
-    assert(props.num_of_addrs >= nic_alloc_count);
+    xe_assert(props.if_index == nic_idx);
+    xe_assert(props.num_of_addrs >= nic_alloc_count);
 
     *family = props.addr_list[local_idx].addr_family;
     return 0;

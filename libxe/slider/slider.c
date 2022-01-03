@@ -13,6 +13,7 @@
 #include "slider.h"
 #include "kmem.h"
 #include "platform_constants.h"
+#include "util_assert.h"
 
 
 typedef struct xe_slider_segment_info {
@@ -62,16 +63,16 @@ static struct xe_slider_segment_infos xe_slider_segment_infos_kern;
 void xe_slider_init(uintptr_t mh_execute_header) {
     struct mach_header_64 header;
     xe_kmem_read(&header, mh_execute_header, sizeof(header));
-    assert(header.magic == MH_MAGIC_64);
+    xe_assert(header.magic == MH_MAGIC_64);
     
     struct load_command* commands = malloc(header.sizeofcmds);
     xe_kmem_read(commands, mh_execute_header + sizeof(header), header.sizeofcmds);
     
     struct load_command* cursor = commands;
     for (int i=0; i<header.ncmds; i++) {
-        assert((uintptr_t)cursor + cursor->cmdsize <= (uintptr_t)commands + header.sizeofcmds);
+        xe_assert((uintptr_t)cursor + cursor->cmdsize <= (uintptr_t)commands + header.sizeofcmds);
         if (cursor->cmd == LC_SEGMENT_64) {
-            assert(cursor->cmdsize >= sizeof(struct segment_command_64));
+            xe_assert(cursor->cmdsize >= sizeof(struct segment_command_64));
             struct segment_command_64* seg_command = (struct segment_command_64*)cursor;
             char* seg_name = seg_command->segname;
             if (strcmp(seg_name, "__TEXT") == 0) {

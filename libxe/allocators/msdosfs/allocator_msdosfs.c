@@ -9,6 +9,7 @@
 
 #include "allocator_msdosfs.h"
 #include "msdosfs.h"
+#include "util_assert.h"
 
 #define BASE_IMAGE_NAME "exp_msdosfs_base.dmg"
 
@@ -158,7 +159,7 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
     }
     
     int fd_mount = open(mount_point, O_RDONLY);
-    assert(fd_mount >= 0);
+    xe_assert(fd_mount >= 0);
     
     args.mask = ACCESSPERMS;
     args.uid = 501;
@@ -171,6 +172,9 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
         error = errno;
         goto exit_error;
     }
+    
+    int res = fcntl(fd_mount, F_FULLFSYNC);
+    assert(res == 0);
 
     xe_allocator_msdosfs_t mount = (xe_allocator_msdosfs_t)malloc(sizeof(struct xe_allocator_msdosfs));
     strncpy(mount->directory, temp_dir, sizeof(mount->directory));

@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdatomic.h>
@@ -12,6 +11,7 @@
 #include "platform_constants.h"
 #include "util_dispatch.h"
 #include "util_misc.h"
+#include "util_assert.h"
 
 
 #define MAX_BACKEND_COUNT 1023
@@ -30,7 +30,7 @@ struct kmem_allocator_rw {
 
 
 kmem_allocator_rw_t kmem_allocator_rw_create(const struct sockaddr_in* addr, int count) {
-    assert(count <= MAX_BACKEND_COUNT);
+    xe_assert(count <= MAX_BACKEND_COUNT);
 
     smb_ssn_allocator* backends = malloc(sizeof(smb_ssn_allocator) * count);
     int error = xe_util_dispatch_apply(backends, sizeof(smb_ssn_allocator), count, NULL, ^(void* ctx, void* data, size_t index) {
@@ -38,7 +38,7 @@ kmem_allocator_rw_t kmem_allocator_rw_create(const struct sockaddr_in* addr, int
         *allocator = smb_ssn_allocator_create(addr, DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN);
         return 0;
     });
-    assert(error == 0);
+    xe_assert_err(error);
 
     kmem_allocator_rw_t allocator = malloc(sizeof(struct kmem_allocator_rw));
     memcpy(&allocator->addr, addr, XE_MIN(sizeof(struct sockaddr_in), addr->sin_len));
@@ -141,7 +141,7 @@ int kmem_allocator_rw_release_backends(kmem_allocator_rw_t allocator, int offset
 }
 
 int kmem_allocator_rw_disown_backend(kmem_allocator_rw_t allocator, int index) {
-    assert(index < allocator->backend_count);
+    xe_assert(index < allocator->backend_count);
     int fd = allocator->backends[index];
     memcpy(&allocator->backends[index], &allocator->backends[index + 1], sizeof(allocator->backends[0]) * (allocator->backend_count - index - 1));
     allocator->backend_count--;

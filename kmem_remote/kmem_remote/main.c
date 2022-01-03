@@ -12,11 +12,12 @@
 #include "kmem.h"
 #include "kmem_tester.h"
 #include "kmem_remote.h"
+#include "util_assert.h"
 
 int main(int argc, const char * argv[]) {
     srandom(1221);
     
-    assert(argc == 2);
+    xe_assert(argc == 2);
     const char* socket_path = argv[1];
     
     struct xe_kmem_backend* remote_backend = xe_kmem_remote_client_create(socket_path);

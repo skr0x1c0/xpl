@@ -42,7 +42,7 @@ IOSurfaceRef iosurface_create(void) {
     CFDictionarySetValue(props, CFSTR("IOSurfaceIsGlobal"), kCFBooleanTrue);
     
     IOSurfaceRef surface = IOSurfaceCreate(props);
-    assert(surface != NULL);
+    xe_assert(surface != NULL);
     
     CFRelease(alloc_size_cfnum);
     CFRelease(props);

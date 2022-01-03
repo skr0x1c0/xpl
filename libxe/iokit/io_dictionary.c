@@ -15,6 +15,8 @@
 #include "platform_types.h"
 #include "kmem.h"
 #include "util_ptrauth.h"
+#include "util_assert.h"
+
 
 uint xe_io_os_dictionary_count(uintptr_t dict) {
     return xe_kmem_read_uint32(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET));
@@ -62,7 +64,7 @@ int xe_io_os_dictionary_find_value(uintptr_t dict, const char* value, uintptr_t*
     char buffer[PATH_MAX];
     for (int i=0; i<count; i++) {
         size_t len = xe_io_os_string_read(buffer, xe_io_os_dictionary_key(dict_entry, i), sizeof(buffer));
-        assert(len <= sizeof(buffer));
+        xe_assert(len <= sizeof(buffer));
         
         if (strncmp(value, buffer, sizeof(buffer)) == 0) {
             if (ptr_out) *ptr_out = xe_io_os_dictionary_value(dict_entry, i);
@@ -82,7 +84,7 @@ void xe_io_os_dictionary_print_keys(uintptr_t dict) {
         
         char key_str[PATH_MAX];
         size_t key_len = xe_io_os_string_read(key_str, key, sizeof(key_str));
-        assert(key_len <= sizeof(key_str));
+        xe_assert(key_len <= sizeof(key_str));
         
         printf("%s\n", key_str);
     }

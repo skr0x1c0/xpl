@@ -72,7 +72,7 @@ int main(int argc, const char* argv[]) {
     
     uintptr_t record_function;
     int error = gym_get_record_function_address(&record_function);
-    assert(error == 0);
+    xe_assert_err(error);
     record_function = XE_PTRAUTH_STRIP(record_function);
     
     uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
@@ -90,23 +90,23 @@ int main(int argc, const char* argv[]) {
         
         iokit_iosurface_allocator_t allocator;
         error = iokit_iosurface_allocator_create(&allocator);
-        assert(error == 0);
+        xe_assert_err(error);
         
         size_t alloc_idx;
         error = iokit_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
-        assert(error == 0);
+        xe_assert_err(error);
         error = iokit_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
-        assert(error == 0);
+        xe_assert_err(error);
         
         uintptr_t surface;
         error = xe_io_surface_scan_all_clients_for_prop("iosurface_alloc_1", &surface);
-        assert(error == 0);
+        xe_assert_err(error);
         
         uintptr_t props = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
         error = xe_io_os_dictionary_set_value_of_key(props, "iosurface_alloc_0", io_event_source1);
-        assert(error == 0);
+        xe_assert_err(error);
         error = xe_io_os_dictionary_set_value_of_key(props, "iosurface_alloc_1", io_event_source2);
-        assert(error == 0);
+        xe_assert_err(error);
         
         iokit_iosurface_allocator_destroy(&allocator);
         xe_util_kfunc_reset(util1);

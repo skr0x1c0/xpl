@@ -4,11 +4,12 @@
 
 #include "nic_allocator.h"
 #include "client.h"
-#include "assert.h"
+#include "util_assert.h"
+
 
 smb_nic_allocator smb_nic_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_len) {
     int fd = smb_client_open_dev();
-    assert(fd >= 0);
+    xe_assert(fd >= 0);
 
     struct smbioc_negotiate req;
     bzero(&req, sizeof(req));
@@ -19,7 +20,7 @@ smb_nic_allocator smb_nic_allocator_create(const struct sockaddr_in* addr, uint3
     req.ioc_extra_flags |= SMB_SMB3_ENABLED;
     req.ioc_extra_flags |= SMB_MULTICHANNEL_ENABLE;
     int res = smb_client_ioc(fd, SMBIOC_NEGOTIATE, &req);
-    assert(res == 0);
+    xe_assert(res == 0);
     return fd;
 }
 

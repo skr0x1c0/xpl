@@ -15,6 +15,7 @@
 #include "xnu_proc.h"
 #include "util_ptrauth.h"
 #include "kmem.h"
+#include "util_assert.h"
 
 
 struct allocator_pipe {
@@ -49,7 +50,7 @@ int xe_kmem_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_
     
     uintptr_t buffer = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET)));
     uint buffer_size = xe_kmem_read_uint32(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_SIZE_OFFSET));
-    assert(buffer_size >= size);
+    xe_assert(buffer_size >= size);
     
     xe_allocator_pipe_t allocator = (xe_allocator_pipe_t)malloc(sizeof(struct allocator_pipe));
     allocator->fd0 = fds[0];

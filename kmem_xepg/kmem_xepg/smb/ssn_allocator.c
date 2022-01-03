@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdatomic.h>
@@ -7,11 +6,12 @@
 
 #include "ssn_allocator.h"
 #include "client.h"
+#include "util_assert.h"
 
 
 smb_ssn_allocator smb_ssn_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_len) {
     int fd = smb_client_open_dev();
-    assert(fd >= 0);
+    xe_assert(fd >= 0);
     
     struct smbioc_negotiate req;
     bzero(&req, sizeof(req));
@@ -22,8 +22,8 @@ smb_ssn_allocator smb_ssn_allocator_create(const struct sockaddr_in* addr, uint3
     req.ioc_extra_flags |= SMB_SMB1_ENABLED;
 
     int error = smb_client_ioc(fd, SMBIOC_NEGOTIATE, &req);
-    assert(error == 0);
-    assert(req.ioc_errno == 0);
+    xe_assert_err(error);
+    xe_assert_err(req.ioc_errno);
     return fd;
 }
 

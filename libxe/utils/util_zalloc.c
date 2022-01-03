@@ -5,7 +5,6 @@
 //  Created by admin on 12/8/21.
 //
 
-#include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -18,6 +17,7 @@
 #include "platform_constants.h"
 #include "platform_variables.h"
 #include "util_misc.h"
+#include "util_assert.h"
 
 #define MAX_PAGEQ_LEN 32
 
@@ -75,7 +75,7 @@ uint32_t xe_util_zalloc_find_last_secondary_page(uint32_t pageq_primary, uint* n
         
         uint16_t zm_index;
         xe_kmem_read_bitfield(&zm_index, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
-        assert(zm_index == zm_index_primary);
+        xe_assert(zm_index == zm_index_primary);
         
         idx++;
         tail = next;
@@ -178,7 +178,7 @@ void xe_util_init_bitmap_inline(uintptr_t meta_base, uint32_t elem_size) {
         xe_kmem_write_uint32(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_BITMAP_OFFSET), bitmap);
         elements -= batch_size;
     }
-    assert(elements == 0);
+    xe_assert(elements == 0);
 }
 
 void xe_util_init_bitmap_ref(uintptr_t meta_base, uint32_t elem_size) {
@@ -200,7 +200,7 @@ void xe_util_init_bitmap_ref(uintptr_t meta_base, uint32_t elem_size) {
         xe_kmem_write_uint64(bitmap, value);
         elements -= batch_size;
     }
-    assert(elements == 0);
+    xe_assert(elements == 0);
 }
 
 void xe_util_zalloc_init_bitmap(uintptr_t meta, uint elem_size) {
@@ -215,7 +215,7 @@ void xe_util_zalloc_init_bitmap(uintptr_t meta, uint elem_size) {
 
 void xe_util_zalloc_change_pageq_owner(uintptr_t meta_head, uint16_t zone_index) {
     uintptr_t cursor = meta_head;
-    assert(zone_index < VAR_ZONE_ARRAY_LEN);
+    xe_assert(zone_index < VAR_ZONE_ARRAY_LEN);
     while (cursor) {
         uint16_t bitfields = xe_kmem_read_uint16(cursor);
         uint16_t zm_index_mask = XE_BITFIELD_MASK(TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
@@ -225,7 +225,7 @@ void xe_util_zalloc_change_pageq_owner(uintptr_t meta_head, uint16_t zone_index)
         
         uint16_t written;
         xe_kmem_read_bitfield(&written, cursor, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
-        assert(written == zone_index);
+        xe_assert(written == zone_index);
         
         cursor = next_pageq ? xe_util_zalloc_pageq_to_meta(next_pageq) : 0;
     }
@@ -234,7 +234,7 @@ void xe_util_zalloc_change_pageq_owner(uintptr_t meta_head, uint16_t zone_index)
 uint32_t xe_util_zalloc_steal_pageq(uintptr_t recipient_zone, uint elem_size, uint* num_secodary_pages_out) {
     uintptr_t victim_zone = xe_util_zalloc_find_victim_zone(elem_size);
     uint32_t pageq_empty = xe_kmem_read_uint32(KMEM_OFFSET(victim_zone, TYPE_ZONE_MEM_Z_PAGEQ_EMPTY_OFFSET));
-    assert(pageq_empty != 0);
+    xe_assert(pageq_empty != 0);
     
     uint num_secondary_pages;
     uint32_t pageq = xe_util_zalloc_find_primary_pageq(pageq_empty, 10, NULL, &num_secondary_pages);
@@ -265,7 +265,7 @@ uint32_t xe_util_zalloc_steal_pageq(uintptr_t recipient_zone, uint elem_size, ui
     xe_util_zalloc_init_bitmap(meta_head, elem_size);
     xe_util_zalloc_change_pageq_owner(meta_head, xe_util_zalloc_zone_to_index(recipient_zone));
     
-    assert(xe_kmem_read_uint16(KMEM_OFFSET(meta_head, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET)) == 0);
+    xe_assert(xe_kmem_read_uint16(KMEM_OFFSET(meta_head, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET)) == 0);
     xe_kmem_write_uint16(KMEM_OFFSET(meta_head, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET), elem_size);
     
     uint16_t z_elem_size = xe_kmem_read_uint16(KMEM_OFFSET(victim_zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET));
@@ -287,15 +287,15 @@ size_t xe_util_zalloc_steal_pages(uintptr_t recipient_zone, uint min_num_pages, 
         pages_to_steal -= (num_secondary_pages + 1);
         pageq[idx++] = pageq_head;
     }
-    assert(pages_to_steal <= 0);
+    xe_assert(pages_to_steal <= 0);
     return idx;
 }
 
 xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, uint num_pages) {
-    assert(xe_kmem_read_uint64(zone) == zone);
+    xe_assert(xe_kmem_read_uint64(zone) == zone);
     _Bool z_percpu;
     xe_kmem_read_bitfield(&z_percpu, zone, TYPE_ZONE_MEM_Z_PERCPU_BITFIELD_OFFSET, TYPE_ZONE_MEM_Z_PERCPU_BITFIELD_SIZE);
-    assert(z_percpu == 0);
+    xe_assert(z_percpu == 0);
     uintptr_t z_pcpu_cache = xe_kmem_read_uint64(KMEM_OFFSET(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET));
     if (z_pcpu_cache) {
         printf("[INFO] disabling z_pcpu_cache for zone %p\n", (void*)zone);
@@ -334,7 +334,7 @@ int xe_util_zba_scan_bitmap_ref(uintptr_t meta, uint* eidx_out) {
 int xe_util_zba_scan_bitmap_inline(uintptr_t meta_base, uint* eidx_out) {
     uint8_t zm_chunk_len;
     xe_kmem_read_bitfield(&zm_chunk_len, meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
-    assert(zm_chunk_len <= 0x8);
+    xe_assert(zm_chunk_len <= 0x8);
     
     for (int i=0; i<zm_chunk_len; i++) {
         uintptr_t meta = meta_base * i * TYPE_ZONE_PAGE_METADATA_SIZE;
@@ -365,7 +365,7 @@ int xe_util_meta_find_and_clear_bit(uintptr_t meta, uint* eidx_out) {
 
 void xe_util_zalloc_apply_meta_alloc_size_diff(uintptr_t meta, int diff) {
     uint16_t current = xe_kmem_read_uint16(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET));
-    assert(!(diff < 0 && -diff > current));
+    xe_assert(!(diff < 0 && -diff > current));
     xe_kmem_write_uint16(KMEM_OFFSET(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET), current + diff);
 }
 

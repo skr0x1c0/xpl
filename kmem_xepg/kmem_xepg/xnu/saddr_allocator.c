@@ -5,7 +5,6 @@
 //  Created by admin on 12/19/21.
 //
 
-#include <assert.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <libproc.h>
@@ -17,6 +16,7 @@
 
 #include "saddr_allocator.h"
 #include "util_dispatch.h"
+#include "util_assert.h"
 
 #define SADDR_SIZE 64
 #define SADDR_PATH_SIZE (64 - offsetof(struct sockaddr_un, sun_path))
@@ -43,7 +43,7 @@ xnu_saddr_allocator_t xnu_saddr_allocator_create(int size) {
         *((int*)data) = fd;
         return 0;
     });
-    assert(error == 0);
+    xe_assert_err(error);
     
     xnu_saddr_allocator_t allocator = malloc(sizeof(struct xnu_saddr_allocator));
     allocator->fds = fds;
@@ -57,7 +57,7 @@ xnu_saddr_allocator_t xnu_saddr_allocator_create(int size) {
 
 
 void xnu_saddr_allocator_allocate(xnu_saddr_allocator_t allocator) {
-    assert(allocator->state == STATE_CREATED);
+    xe_assert(allocator->state == STATE_CREATED);
     int error = xe_util_dispatch_apply(allocator->fds, sizeof(allocator->fds[0]), allocator->fd_count, NULL, ^(void* ctx, void* data, size_t index) {
         struct sockaddr_un addr;
         bzero(&addr, sizeof(addr));
@@ -66,28 +66,28 @@ void xnu_saddr_allocator_allocate(xnu_saddr_allocator_t allocator) {
         addr.sun_family = AF_LOCAL;
         size_t sun_path_max_len = SADDR_PATH_SIZE;
         size_t required = snprintf(addr.sun_path, sun_path_max_len, "%s/%lu", allocator->root_dir, index);
-        assert(required <= sun_path_max_len);
+        xe_assert(required <= sun_path_max_len);
         
         if (bind(allocator->fds[index], (struct sockaddr*)&addr, 64)) {
             return errno;
         }
         return 0;
     });
-    assert(error == 0);
+    xe_assert_err(error);
     allocator->state = STATE_ALLOCATED;
 }
 
 
 void xnu_saddr_allocator_fragment(xnu_saddr_allocator_t allocator, int pf) {
-    assert(allocator->state == STATE_ALLOCATED);
+    xe_assert(allocator->state == STATE_ALLOCATED);
     dispatch_apply(allocator->fd_count / pf, DISPATCH_APPLY_AUTO, ^(size_t index) {
         size_t alloc_idx = pf * index;
         char path[SADDR_PATH_SIZE];
         snprintf(path, sizeof(path), "%s/%lu", allocator->root_dir, alloc_idx);
         int res = unlink(path);
-        assert(res == 0);
+        xe_assert(res == 0);
         res = close(allocator->fds[alloc_idx]);
-        assert(res == 0);
+        xe_assert(res == 0);
         allocator->fds[alloc_idx] = -1;
     });
     allocator->state = STATE_FRAGMENTED;
@@ -95,7 +95,7 @@ void xnu_saddr_allocator_fragment(xnu_saddr_allocator_t allocator, int pf) {
 
 
 int xnu_saddr_allocator_find_modified(xnu_saddr_allocator_t allocator, int* fd_out, size_t* fd_out_len) {
-    assert(allocator->state == STATE_ALLOCATED || allocator->state == STATE_FRAGMENTED);
+    xe_assert(allocator->state == STATE_ALLOCATED || allocator->state == STATE_FRAGMENTED);
     _Atomic int* found_idx = alloca(sizeof(int));
     *found_idx = 0;
     
@@ -108,7 +108,7 @@ int xnu_saddr_allocator_find_modified(xnu_saddr_allocator_t allocator, int* fd_o
         
         struct socket_fdinfo info;
         int res = proc_pidfdinfo(getpid(), fd, PROC_PIDFDSOCKETINFO, &info, sizeof(info));
-        assert(res != 0);
+        xe_assert(res != 0);
         
         uint8_t expected_sun_family = AF_LOCAL;
         uint8_t expected_sun_len = SADDR_SIZE;

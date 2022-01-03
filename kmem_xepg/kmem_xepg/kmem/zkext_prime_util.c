@@ -5,7 +5,6 @@
 //  Created by admin on 12/27/21.
 //
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdatomic.h>
@@ -14,6 +13,7 @@
 
 #include "zkext_prime_util.h"
 #include "util_misc.h"
+#include "util_assert.h"
 
 
 struct kmem_zkext_prime_util {
@@ -30,7 +30,7 @@ kmem_zkext_prime_util_t kmem_zkext_prime_util_create(const struct sockaddr_in* s
 
 
 void kmem_zkext_prime_util_prime(kmem_zkext_prime_util_t util, uint num_elements, uint z_elem_size) {
-    assert(z_elem_size <= 256);
+    xe_assert(z_elem_size <= 256);
     uint8_t alloc_size = XE_MIN(z_elem_size, UINT8_MAX);
     uint num_allocs = num_elements;
     if (alloc_size > 16 && alloc_size <= 32) {
@@ -38,7 +38,7 @@ void kmem_zkext_prime_util_prime(kmem_zkext_prime_util_t util, uint num_elements
     }
     
     uint alloc_idx_start = atomic_fetch_add(&util->alloc_index, num_allocs);
-    assert(alloc_idx_start + num_allocs > alloc_idx_start);
+    xe_assert(alloc_idx_start + num_allocs > alloc_idx_start);
     
     uint infos_size = sizeof(struct network_nic_info) * num_allocs;
     struct network_nic_info* infos = malloc(infos_size);
@@ -54,7 +54,7 @@ void kmem_zkext_prime_util_prime(kmem_zkext_prime_util_t util, uint num_elements
     }
     
     int error = smb_nic_allocator_allocate(util->small_allocator, infos, num_allocs, infos_size);
-    assert(error == 0);
+    xe_assert_err(error);
     free(infos);
 }
 
@@ -62,7 +62,7 @@ void kmem_zkext_prime_util_prime(kmem_zkext_prime_util_t util, uint num_elements
 void kmem_zkext_prime_util_destroy(kmem_zkext_prime_util_t* util_p) {
     kmem_zkext_prime_util_t util = *util_p;
     int error = smb_nic_allocator_destroy(&util->small_allocator);
-    assert(error == 0);
+    xe_assert_err(error);
     free(util);
     *util_p = NULL;
 }

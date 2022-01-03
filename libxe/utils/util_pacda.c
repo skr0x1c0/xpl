@@ -17,6 +17,7 @@
 #include "platform_variables.h"
 #include "kmem.h"
 #include "slider.h"
+#include "util_assert.h"
 
 
 #define KALLOC_TO_KERNEL_MAP_SWITCH_LEN 64512
@@ -33,7 +34,7 @@ IOSurfaceRef xe_util_pacda_iosurface_create(void) {
     CFDictionarySetValue(props, CFSTR("IOSurfaceIsGlobal"), kCFBooleanTrue);
     
     IOSurfaceRef surface = IOSurfaceCreate(props);
-    assert(surface != NULL);
+    xe_assert(surface != NULL);
     
     CFRelease(alloc_size_cfnum);
     CFRelease(props);

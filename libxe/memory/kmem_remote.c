@@ -5,7 +5,6 @@
 //  Created by admin on 12/2/21.
 //
 
-#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +19,7 @@
 #include "kmem_remote.h"
 #include "kmem.h"
 #include "util_misc.h"
+#include "util_assert.h"
 
 
 // MARK: server
@@ -175,9 +175,9 @@ void xe_kmem_server_spin_once(struct pollfd* fds, nfds_t* num_fds, _Bool* stop) 
             timeout.tv_sec = 1;
             timeout.tv_usec = 0;
             int res = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-            assert(res == 0);
+            xe_assert(res == 0);
             res = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
-            assert(res == 0);
+            xe_assert(res == 0);
             fds[*num_fds].fd = fd;
             fds[*num_fds].events = POLLIN;
             (*num_fds)++;
@@ -207,14 +207,14 @@ void xe_kmem_server_listen(int sock_fd) {
     _Bool stop = 0;
     while (!stop) {
         int num_fds_ready = poll(fds, num_poll_fds, -1);
-        assert(num_fds_ready >= 0);
+        xe_assert(num_fds_ready >= 0);
         xe_kmem_server_spin_once(fds, &num_poll_fds, &stop);
     }
 }
 
 void xe_kmem_remote_server_start(void) {
     int fd = socket(PF_UNIX, SOCK_STREAM, 0);
-    assert(fd >= 0);
+    xe_assert(fd >= 0);
     
     char data_directory[PATH_MAX] = "/tmp/xe_XXXXXXXX";
     mkdtemp(data_directory);
@@ -223,13 +223,13 @@ void xe_kmem_remote_server_start(void) {
     addr.sun_family = AF_UNIX;
     addr.sun_len = sizeof(addr);
     size_t path_size = snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/socket", data_directory);
-    assert(path_size < sizeof(addr.sun_path));
+    xe_assert(path_size < sizeof(addr.sun_path));
     
     int res = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
-    assert(res == 0);
+    xe_assert(res == 0);
     
     res = listen(fd, 10);
-    assert(res == 0);
+    xe_assert(res == 0);
     
     printf("[INFO] starting remote kmem server with socket %s\n", addr.sun_path);
     printf("[INFO] press any key to stop\n");
@@ -265,15 +265,15 @@ void xe_kmem_remote_client_read(void* ctx, void* dst, uintptr_t src, size_t size
     msg.msg_iovlen = XE_ARRAY_SIZE(iov);
     
     ssize_t tf_size = sendmsg(fd, &msg, MSG_WAITALL);
-    assert(tf_size == sizeof(cmd) + sizeof(req));
+    xe_assert(tf_size == sizeof(cmd) + sizeof(req));
     
     int status = 0;
     tf_size = recv(fd, &status, sizeof(status), MSG_WAITALL);
-    assert(tf_size == sizeof(status));
-    assert(status == 0);
+    xe_assert(tf_size == sizeof(status));
+    xe_assert(status == 0);
     
     tf_size = recv(fd, dst, size, MSG_WAITALL);
-    assert(tf_size == size);
+    xe_assert(tf_size == size);
 }
 
 
@@ -301,12 +301,12 @@ void xe_kmem_remote_client_write(void* ctx, uintptr_t dst, void* src, size_t siz
     msg.msg_iovlen = XE_ARRAY_SIZE(iov);
     
     ssize_t tf_size = sendmsg(fd, &msg, MSG_WAITALL);
-    assert(tf_size == sizeof(cmd) + sizeof(req) + size);
+    xe_assert(tf_size == sizeof(cmd) + sizeof(req) + size);
     
     int status = 0;
     tf_size = read(fd, &status, sizeof(status));
-    assert(tf_size == sizeof(status));
-    assert(status == 0);
+    xe_assert(tf_size == sizeof(status));
+    xe_assert(status == 0);
 }
 
 static struct xe_kmem_ops xe_kmem_remote_client_ops = {
@@ -325,7 +325,7 @@ struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path) {
     addr.sun_len = sizeof(addr);
     strlcpy(addr.sun_path, socket_path, sizeof(addr.sun_path));
     int res = connect(fd, (struct sockaddr*)&addr, sizeof(addr));
-    assert(res == 0);
+    xe_assert(res == 0);
     
     struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)malloc(sizeof(struct xe_kmem_remote_client));
     client->sock = fd;

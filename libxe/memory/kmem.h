@@ -54,7 +54,7 @@ void xe_kmem_copy(uintptr_t dst, uintptr_t src, size_t size);
 #define xe_kmem_read_bitfield(dst, src, bit_offset, bit_size) \
 { \
     size_t byte_size = ((bit_size) + NBBY - 1) / NBBY;\
-    assert(sizeof(*dst) >= byte_size);\
+    xe_assert(sizeof(*dst) >= byte_size);\
     xe_kmem_read(dst, (src) + ((bit_offset) / NBBY), byte_size); \
     (*dst) = (((*(dst)) >> ((bit_offset) % NBBY)) & ((1 << (bit_size)) - 1));\
 }

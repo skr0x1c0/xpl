@@ -5,7 +5,6 @@
 //  Created by admin on 12/26/21.
 //
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,10 +15,11 @@
 #include "allocator_rw.h"
 #include "util_misc.h"
 #include "platform_constants.h"
+#include "util_assert.h"
 
 
 void kmem_zkext_reserve_va_small(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {
-    assert(z_elem_size <= 256);
+    xe_assert(z_elem_size <= 256);
     uint8_t alloc_size = XE_MIN(z_elem_size, 255);
     
     smb_nic_allocator allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
@@ -43,10 +43,10 @@ void kmem_zkext_reserve_va_small(const struct sockaddr_in* smb_addr, uint num_pa
     }
     
     int error = smb_nic_allocator_allocate(allocator, infos, num_allocs, infos_size);
-    assert(error == 0);
+    xe_assert_err(error);
     free(infos);
     error = smb_nic_allocator_destroy(&allocator);
-    assert(error == 0);
+    xe_assert_err(error);
 }
 
 
@@ -61,11 +61,11 @@ void kmem_zkext_reserve_va_large(const struct sockaddr_in* smb_addr, uint num_pa
         *data2 = data;
         *data2_size = z_elem_size;
     }, NULL);
-    assert(error == 0);
+    xe_assert_err(error);
     free(data);
     
     error = kmem_allocator_rw_destroy(&allocator);
-    assert(error == 0);
+    xe_assert_err(error);
 }
 
 

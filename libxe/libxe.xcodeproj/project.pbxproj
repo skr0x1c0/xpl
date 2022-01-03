@@ -44,6 +44,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		840F13482781CBB300827BAE /* util_assert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_assert.h; sourceTree = "<group>"; };
 		842A425C2780618500CB560F /* slider.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider.c; sourceTree = "<group>"; };
 		84374D5F27817B5200E2E187 /* slider_kext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = slider_kext.h; sourceTree = "<group>"; };
 		84374D6027817B5200E2E187 /* slider_kext.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider_kext.c; sourceTree = "<group>"; };
@@ -69,7 +70,6 @@
 		84F7BB50276DC6E500138492 /* xnu_proc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xnu_proc.h; sourceTree = "<group>"; };
 		84F7BB51276DC6E500138492 /* xnu_proc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xnu_proc.c; sourceTree = "<group>"; };
 		84F7BB53276DC6E500138492 /* slider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = slider.h; sourceTree = "<group>"; };
-		84F7BB54276DC6E500138492 /* slider_kas.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider_kas.c; sourceTree = "<group>"; };
 		84F7BB56276DC6E500138492 /* allocator_msdosfs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = allocator_msdosfs.c; sourceTree = "<group>"; };
 		84F7BB57276DC6E500138492 /* allocator_msdosfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = allocator_msdosfs.h; sourceTree = "<group>"; };
 		84F7BB58276DC6E500138492 /* exp_msdosfs_base.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = exp_msdosfs_base.dmg; sourceTree = "<group>"; };
@@ -197,7 +197,6 @@
 			children = (
 				84F7BB53276DC6E500138492 /* slider.h */,
 				842A425C2780618500CB560F /* slider.c */,
-				84F7BB54276DC6E500138492 /* slider_kas.c */,
 				84374D5F27817B5200E2E187 /* slider_kext.h */,
 				84374D6027817B5200E2E187 /* slider_kext.c */,
 			);
@@ -265,6 +264,7 @@
 				84F7BB72276DC6E500138492 /* util_kfunc_basic.h */,
 				84F7BB73276DC6E500138492 /* util_kfunc_basic.c */,
 				8443C05C277B474700FBC453 /* util_log.h */,
+				840F13482781CBB300827BAE /* util_assert.h */,
 			);
 			path = utils;
 			sourceTree = "<group>";
