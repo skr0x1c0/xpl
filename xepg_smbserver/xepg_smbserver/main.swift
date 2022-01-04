@@ -450,14 +450,13 @@ var limit = rlimit(rlim_cur: 0, rlim_max: 0)
 getrlimit(RLIMIT_NOFILE, &limit)
 limit.rlim_cur = limit.rlim_max
 setrlimit(RLIMIT_NOFILE, &limit)
-print(limit.rlim_cur)
 
 let group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
 let bootstrap = ServerBootstrap(group: group)
     .serverChannelOption(ChannelOptions.backlog, value: 256)
     .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
     .childChannelInitializer { channel in
-        print(channel.remoteAddress!)
+        print("[INFO] new connection from", channel.remoteAddress!)
         return channel.pipeline.addHandler(ByteToMessageHandler(MessageReader())).flatMap { v in
             channel.pipeline.addHandler(RequestHandler())
         }
