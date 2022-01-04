@@ -100,17 +100,20 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
         xe_assert_cond(first_segment_size, ==, to_read);
         
         int bytes_to_skip = 64 - offsetof(struct sockaddr_nb, snb_name);
+        
+        _Bool is_hit = TRUE;
         for (int i=0; i<num_overwritten; i++) {
             struct sockaddr_un un;
             memcpy(&un, &buffer[4 + bytes_to_skip + i * 64], sizeof(struct sockaddr_un));
             if (un.sun_len != 64 || un.sun_family != AF_LOCAL) {
-                goto no_hit;
+                is_hit = FALSE;
+                break;
             }
         }
-        num_hits++;
         
-    no_hit:
-        continue;
+        if (is_hit) {
+            num_hits++;
+        }
     }
     
     free(buffer);
