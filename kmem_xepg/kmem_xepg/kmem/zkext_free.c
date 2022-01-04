@@ -162,7 +162,7 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
     struct complete_nic_info_entry entry;
     int tries = 10;
     do {
-        XE_LOG_DEBUG("attempt to capture nic");
+        xe_log_debug("attempt to capture nic");
         nic_allocator = smb_nic_allocator_create(&session->smb_addr, sizeof(session->smb_addr));
         int error = kmem_zkext_free_kext_leak_nic(nic_allocator, reader, &session->smb_addr, &entry);
         if (error) {

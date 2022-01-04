@@ -89,7 +89,7 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
         
         if (dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 3 * 1000000000ULL))) {
             reader->kmem_neighbor_reader = kmem_neighbor_reader_create(&reader->smb_addr);
-            XE_LOG_WARN("kmem neighbor read timed out");
+            xe_log_warn("kmem neighbor read timed out");
             continue;
         }
         
@@ -135,7 +135,7 @@ int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t
     for (int i=0; i<MAX_TRIES; i++) {
         double probability = kmem_zkext_neighbor_reader_check(reader, zone_size, zone_size * 2);
         if (probability < 0.9) {
-            XE_LOG_DEBUG("skipping read due to low success probability of %.2f", probability);
+            xe_log_debug("skipping read due to low success probability of %.2f", probability);
             continue;
         }
         
