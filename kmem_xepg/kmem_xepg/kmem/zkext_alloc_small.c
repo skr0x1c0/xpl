@@ -122,17 +122,14 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor
         kmem_neighbor_reader_read(reader, nb_len, ioc_len, snb_name, nb_len, ioc_len, snb_name, data, (uint32_t)sizeof(data));
         
         uint32_t saddr_len = *((uint32_t*)data);
-        xe_assert_cond(saddr_len + 4, <=, sizeof(data))
-        
-        if (!kmem_zkext_alloc_small_scan_nb_name(&data[4], saddr_len, zone_size, &value)) {
+        xe_assert_cond(saddr_len, ==, snb_name + 2);
+        if (!kmem_zkext_alloc_small_scan_nb_name(&data[4], ioc_len + 2, zone_size, &value)) {
             break;
         }
         
-        xe_assert_cond(saddr_len + 4 + 4, <=, sizeof(data));
         uint32_t paddr_len = *((uint32_t*)&data[saddr_len + 4]);
-        xe_assert_cond(saddr_len + paddr_len + 4 + 4, <=, sizeof(data));
-        
-        if (!kmem_zkext_alloc_small_scan_nb_name(&data[saddr_len + 4 + 4], paddr_len, zone_size, &value)) {
+        xe_assert_cond(paddr_len, ==, snb_name + 2);
+        if (!kmem_zkext_alloc_small_scan_nb_name(&data[saddr_len + 4 + 4], snb_name + 2, zone_size, &value)) {
             break;
         }
     }
