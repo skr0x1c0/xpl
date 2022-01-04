@@ -115,7 +115,10 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor
         XE_LOG_DEBUG("alloc session try %d / %d", try, MAX_TRIES);
         
         char data[1024];
-        kmem_neighbor_reader_read(reader, 64, 32, 36, 64, 32, 36, data, 1024);
+        uint8_t nb_len = XE_MAX(32 + 8, sizeof(struct sockaddr_nb));
+        uint32_t ioc_len = 32;
+        uint8_t snb_name = 36;
+        kmem_neighbor_reader_read(reader, nb_len, ioc_len, snb_name, nb_len, ioc_len, snb_name, data, 1024);
         
         uint32_t saddr_len = *((uint32_t*)data);
         xe_assert_cond(saddr_len + 4, <=, sizeof(data))
