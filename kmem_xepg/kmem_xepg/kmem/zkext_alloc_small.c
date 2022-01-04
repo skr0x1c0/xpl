@@ -112,7 +112,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor
     
     uintptr_t value = 0;
     for (int try = 0; try < MAX_TRIES; try++) {
-        XE_LOG_DEBUG("alloc session try %d / %d", try, MAX_TRIES);
+        xe_log_debug("alloc session try %d / %d", try, MAX_TRIES);
         
         uint8_t nb_len = 32 + sizeof(uintptr_t) * 3;
         uint32_t ioc_len = 32;
@@ -149,7 +149,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor
 
 struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, kmem_neighbor_reader_t reader, char* data, size_t data_size) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
-        XE_LOG_DEBUG("alloc session %d / %d", i, MAX_SESSIONS);
+        xe_log_debug("alloc session %d / %d", i, MAX_SESSIONS);
         struct kmem_zkext_alloc_small_entry entry;
         int error = kmem_zkext_alloc_small_try(smb_addr, reader, data, data_size, &entry);
         if (!error) {
