@@ -147,7 +147,7 @@ void kmem_zkext_free_kext_reserve_nics(smb_nic_allocator allocator, size_t count
 
 kmem_zkext_free_session_t kmem_zkext_free_session_create(const struct sockaddr_in* smb_addr) {
     kmem_zkext_free_session_t session = malloc(sizeof(struct kmem_zkext_free_session));
-    session->reader = kmem_neighbor_reader_create();
+    session->reader = kmem_zkext_neighbor_reader_create();
     session->smb_addr = *smb_addr;
     session->nic_allocator = -1;
     session->capture_allocator = NULL;

@@ -14,21 +14,21 @@
 #include "../smb/client.h"
 #include "../public/kmem_xepg/smb_custom.h"
 
-#include "zkext_neighbor_reader_xs.h"
+#include "kmem_neighbor_reader.h"
 #include "util_assert.h"
 
 
-static _Atomic uint32_t kmem_zkext_neighbor_reader_xs_keygen = 0;
+static _Atomic uint32_t kmem_neighbor_reader_keygen = 0;
 
-struct kmem_zkext_neighbor_reader_xs {
+struct kmem_neighbor_reader {
     int fd_paddr_reader;
     int fd_kmem_reader;
     struct sockaddr_in smb_addr;
 };
 
 
-kmem_zkext_neighbor_reader_xs_t kmem_zkext_neighbor_reader_xs_create(const struct sockaddr_in* smb_addr) {
-    kmem_zkext_neighbor_reader_xs_t reader = malloc(sizeof(struct kmem_zkext_neighbor_reader_xs));
+kmem_neighbor_reader_t kmem_neighbor_reader_create(const struct sockaddr_in* smb_addr) {
+    kmem_neighbor_reader_t reader = malloc(sizeof(struct kmem_neighbor_reader));
     reader->fd_paddr_reader = smb_client_open_dev();
     xe_assert_cond(reader->fd_paddr_reader, >=, 0);
     reader->fd_kmem_reader = smb_client_open_dev();
@@ -44,7 +44,7 @@ kmem_zkext_neighbor_reader_xs_t kmem_zkext_neighbor_reader_xs_create(const struc
     return reader;
 }
 
-void kmem_zkext_neighbor_reader_xs_read(kmem_zkext_neighbor_reader_xs_t reader, uint8_t saddr_snb_len, uint32_t saddr_ioc_len, uint8_t saddr_snb_name, uint8_t laddr_snb_len, uint32_t laddr_ioc_len, uint8_t laddr_snb_name, char* dst, uint32_t dst_size) {
+void kmem_neighbor_reader_read(kmem_neighbor_reader_t reader, uint8_t saddr_snb_len, uint32_t saddr_ioc_len, uint8_t saddr_snb_name, uint8_t laddr_snb_len, uint32_t laddr_ioc_len, uint8_t laddr_snb_name, char* dst, uint32_t dst_size) {
     xe_assert_cond(saddr_snb_name, !=, 0xff);
     xe_assert_cond(laddr_snb_name, !=, 0xff);
     xe_assert_cond(laddr_ioc_len, >=, offsetof(struct sockaddr_nb, snb_name) + sizeof(struct kmem_xepg_cmd_paddr) + 1);
@@ -65,7 +65,7 @@ void kmem_zkext_neighbor_reader_xs_read(kmem_zkext_neighbor_reader_xs_t reader, 
     laddr.snb_name[0] = laddr_snb_name;
     static_assert(sizeof(laddr.snb_name) >= sizeof(struct kmem_xepg_cmd_paddr) + 1, "");
     struct kmem_xepg_cmd_paddr* cmd_paddr = (struct kmem_xepg_cmd_paddr*)&laddr.snb_name[1];
-    cmd_paddr->key = atomic_fetch_add(&kmem_zkext_neighbor_reader_xs_keygen, 1);
+    cmd_paddr->key = atomic_fetch_add(&kmem_neighbor_reader_keygen, 1);
     cmd_paddr->magic = KMEM_XEPG_CMD_PADDR_MAGIC;
     cmd_paddr->flags = KMEM_XEPG_CMD_PADDR_FLAG_FAIL | KMEM_XEPG_CMD_PADDR_FLAG_SAVE;
     
@@ -76,8 +76,8 @@ void kmem_zkext_neighbor_reader_xs_read(kmem_zkext_neighbor_reader_xs_t reader, 
     xe_assert_err(error);
 }
 
-void kmem_zkext_neighbor_reader_xs_destroy(kmem_zkext_neighbor_reader_xs_t* reader_p) {
-    kmem_zkext_neighbor_reader_xs_t reader = *reader_p;
+void kmem_neighbor_reader_destroy(kmem_neighbor_reader_t* reader_p) {
+    kmem_neighbor_reader_t reader = *reader_p;
     close(reader->fd_kmem_reader);
     close(reader->fd_paddr_reader);
     free(reader);

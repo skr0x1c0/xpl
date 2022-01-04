@@ -17,7 +17,7 @@
 #include "../external/smbfs/netbios.h"
 
 #include "zkext_alloc_small.h"
-#include "zkext_neighbor_reader_xs.h"
+#include "kmem_neighbor_reader.h"
 #include "allocator_rw.h"
 #include "allocator_prpw.h"
 #include "util_misc.h"
@@ -56,7 +56,7 @@ int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_
 }
 
 
-int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_zkext_neighbor_reader_xs_t reader, char* data, size_t data_size, struct kmem_zkext_alloc_small_entry* out) {
+int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor_reader_t reader, char* data, size_t data_size, struct kmem_zkext_alloc_small_entry* out) {
     size_t alloc_size = data_size + 8;
     xe_assert(alloc_size < 256);
     
@@ -115,7 +115,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_zkext_ne
         XE_LOG_DEBUG("alloc session try %d / %d", try, MAX_TRIES);
         
         char data[1024];
-        kmem_zkext_neighbor_reader_xs_read(reader, 64, 32, 36, 64, 32, 36, data, 1024);
+        kmem_neighbor_reader_read(reader, 64, 32, 36, 64, 32, 36, data, 1024);
         
         uint32_t saddr_len = *((uint32_t*)data);
         xe_assert_cond(saddr_len + 4, <=, sizeof(data))
@@ -146,7 +146,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_zkext_ne
 }
 
 
-struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, kmem_zkext_neighbor_reader_xs_t reader, char* data, size_t data_size) {
+struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, kmem_neighbor_reader_t reader, char* data, size_t data_size) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
         XE_LOG_DEBUG("alloc session %d / %d", i, MAX_SESSIONS);
         struct kmem_zkext_alloc_small_entry entry;

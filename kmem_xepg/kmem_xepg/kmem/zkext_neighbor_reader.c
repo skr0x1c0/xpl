@@ -46,7 +46,7 @@ void kmem_neighbor_reader_init_saddr_allocators(kmem_zkext_neighour_reader_t rea
     reader->pad_end_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64);
 }
 
-kmem_zkext_neighour_reader_t kmem_neighbor_reader_create(void) {
+kmem_zkext_neighour_reader_t kmem_zkext_neighbor_reader_create(void) {
     int fd_smb = smb_client_open_dev();
     xe_assert(fd_smb >= 0);
     kmem_zkext_neighour_reader_t reader = malloc(sizeof(struct kmem_zkext_neighbor_reader));
