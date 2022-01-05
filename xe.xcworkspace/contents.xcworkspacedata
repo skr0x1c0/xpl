@@ -2,8 +2,11 @@
 <Workspace
    version = "1.0">
    <Group
-      location = "group:/Volumes/Developer/Developer/xe/macos"
+      location = "group:macos"
       name = "macos">
+      <FileRef
+         location = "group:platform_params.h">
+      </FileRef>
       <Group
          location = "group:common"
          name = "common">
@@ -18,6 +21,12 @@
          location = "group:21AXX"
          name = "21AXX">
          <FileRef
+            location = "group:types.h">
+         </FileRef>
+         <FileRef
+            location = "group:constants.h">
+         </FileRef>
+         <FileRef
             location = "group:functions.h">
          </FileRef>
          <FileRef
@@ -25,12 +34,6 @@
          </FileRef>
          <FileRef
             location = "group:image.h">
-         </FileRef>
-         <FileRef
-            location = "group:types.h">
-         </FileRef>
-         <FileRef
-            location = "group:constants.h">
          </FileRef>
       </Group>
       <Group
@@ -40,21 +43,18 @@
             location = "group:types.h">
          </FileRef>
          <FileRef
-            location = "group:variables.h">
+            location = "group:constants.h">
          </FileRef>
          <FileRef
             location = "group:functions.h">
          </FileRef>
          <FileRef
-            location = "group:image.h">
+            location = "group:variables.h">
          </FileRef>
          <FileRef
-            location = "group:constants.h">
+            location = "group:image.h">
          </FileRef>
       </Group>
-      <FileRef
-         location = "group:platform_params.h">
-      </FileRef>
    </Group>
    <FileRef
       location = "group:libxe_dev/libxe_dev.xcodeproj">
