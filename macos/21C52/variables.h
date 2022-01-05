@@ -23,6 +23,6 @@
 #define VAR_SEG_LOWEST_KC 0xfffffe000714d0c8
 #define VAR_AUXKC_MH 0xfffffe00071d8148
 #define VAR_PIDHASHTBL 0xfffffe00071f2420
-#define VAR_PIDHASH 0xfffffe00071f2420
+#define VAR_PIDHASH 0xfffffe00071f2418
 
 #endif /* macos_21axx_variables_h */
