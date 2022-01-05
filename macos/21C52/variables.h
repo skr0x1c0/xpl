@@ -18,11 +18,14 @@
 #define VAR_ZONE_ARRAY_ADDR 0xfffffe0007b59528
 #define VAR_ZONE_ARRAY_LEN 650 // ??
 #define VAR_G_IO_REGISTRY_PLANES 0xfffffe0007bf4f48
-#define VAR_G_IO_REGISTRY_ROOT 0xfffffe0007bdd090
+#define VAR_G_IO_REGISTRY_ROOT 0xfffffe0007bf4f50
 #define VAR_ZONE_IO_EVENT_SOURCE 0xfffffe0007240bb0
 #define VAR_SEG_LOWEST_KC 0xfffffe000714d0c8
 #define VAR_AUXKC_MH 0xfffffe00071d8148
 #define VAR_PIDHASHTBL 0xfffffe00071f2420
 #define VAR_PIDHASH 0xfffffe00071f2418
+
+#define VAR_IO_RESOURCES_VTABLE 0xfffffe000720b850
+#define VAR_IO_EVENT_SOURCE_VTABLE 0xfffffe0007211d08
 
 #endif /* macos_21axx_variables_h */
