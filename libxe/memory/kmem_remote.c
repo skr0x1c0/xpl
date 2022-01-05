@@ -31,6 +31,7 @@
 #define XE_KMEM_REMOTE_CMD_PING 11
 #define XE_KMEM_REMOTE_CMD_READ 12
 #define XE_KMEM_REMOTE_CMD_WRITE 13
+#define XE_KMEM_REMOTE_GET_MH_EXECUTE_HEADER 14
 
 
 struct cmd_read {
@@ -64,7 +65,7 @@ int xe_kmem_server_send_response(int fd, int status, void* data, size_t data_siz
 }
 
 
-int xe_kmem_server_handle_cmd_write(int fd) {
+int xe_kmem_server_handle_cmd_write(const struct xe_kmem_remote_server_ctx* ctx, int fd) {
     struct cmd_write cmd;
     ssize_t size = recv(fd, &cmd, sizeof(cmd), MSG_WAITALL);
     if (size != sizeof(cmd)) {
@@ -90,7 +91,7 @@ int xe_kmem_server_handle_cmd_write(int fd) {
     return xe_kmem_server_send_response(fd, 0, NULL, 0);
 }
 
-int xe_kmem_server_handle_cmd_read(int fd) {
+int xe_kmem_server_handle_cmd_read(const struct xe_kmem_remote_server_ctx* ctx, int fd) {
     struct cmd_read cmd;
     bzero(&cmd, sizeof(cmd));
     
@@ -112,12 +113,17 @@ int xe_kmem_server_handle_cmd_read(int fd) {
     return error;
 }
 
-int xe_kmem_server_handle_cmd_ping(int fd) {
+int xe_kmem_server_handle_cmd_ping(const struct xe_kmem_remote_server_ctx* ctx, int fd) {
     uint8_t resp = XE_KMEM_REMOTE_CMD_PING;
     return xe_kmem_server_send_response(fd, 0, &resp, sizeof(resp));
 }
 
-void xe_kmem_server_handle_incoming(int fd) {
+int xe_kmem_server_handle_cmd_get_mh_execute_header(const struct xe_kmem_remote_server_ctx* ctx, int fd) {
+    uintptr_t value = ctx->mh_execute_header;
+    return xe_kmem_server_send_response(fd, 0, (void*)&value, sizeof(value));
+}
+
+void xe_kmem_server_handle_incoming(const struct xe_kmem_remote_server_ctx* ctx, int fd) {
     uint8_t cmd;
     
     ssize_t size = recv(fd, &cmd, sizeof(cmd), MSG_WAITALL);
@@ -130,16 +136,20 @@ void xe_kmem_server_handle_incoming(int fd) {
     int error = ENOENT;
     switch (cmd) {
         case XE_KMEM_REMOTE_CMD_PING: {
-            error = xe_kmem_server_handle_cmd_ping(fd);
+            error = xe_kmem_server_handle_cmd_ping(ctx, fd);
             break;
         }
         case XE_KMEM_REMOTE_CMD_READ: {
-            error = xe_kmem_server_handle_cmd_read(fd);
+            error = xe_kmem_server_handle_cmd_read(ctx, fd);
             break;
         }
         case XE_KMEM_REMOTE_CMD_WRITE: {
-            error = xe_kmem_server_handle_cmd_write(fd);
+            error = xe_kmem_server_handle_cmd_write(ctx, fd);
             break;
+        case XE_KMEM_REMOTE_GET_MH_EXECUTE_HEADER: {
+            error = xe_kmem_server_handle_cmd_get_mh_execute_header(ctx, fd);
+            break;
+        }
         }
     }
     
@@ -149,7 +159,7 @@ void xe_kmem_server_handle_incoming(int fd) {
     }
 }
 
-void xe_kmem_server_spin_once(struct pollfd* fds, nfds_t* num_fds, _Bool* stop) {
+void xe_kmem_server_spin_once(const struct xe_kmem_remote_server_ctx* ctx, struct pollfd* fds, nfds_t* num_fds, _Bool* stop) {
     for (int i=0; i<*num_fds; i++) {
         if (fds[i].revents == 0) {
             continue;
@@ -186,7 +196,7 @@ void xe_kmem_server_spin_once(struct pollfd* fds, nfds_t* num_fds, _Bool* stop) 
             break;
         } else if (events & POLLIN) {
             // read incoming request
-            xe_kmem_server_handle_incoming(fds[i].fd);
+            xe_kmem_server_handle_incoming(ctx, fds[i].fd);
         } else {
             printf("[ERROR] unexpected event %d\n", events);
             abort();
@@ -194,7 +204,7 @@ void xe_kmem_server_spin_once(struct pollfd* fds, nfds_t* num_fds, _Bool* stop) 
     }
 }
 
-void xe_kmem_server_listen(int sock_fd) {
+void xe_kmem_server_listen(const struct xe_kmem_remote_server_ctx* ctx, int sock_fd) {
     struct pollfd fds[MAX_PEER_CONNECTIONS];
     bzero(&fds, sizeof(fds));
     
@@ -208,11 +218,11 @@ void xe_kmem_server_listen(int sock_fd) {
     while (!stop) {
         int num_fds_ready = poll(fds, num_poll_fds, -1);
         xe_assert(num_fds_ready >= 0);
-        xe_kmem_server_spin_once(fds, &num_poll_fds, &stop);
+        xe_kmem_server_spin_once(ctx, fds, &num_poll_fds, &stop);
     }
 }
 
-void xe_kmem_remote_server_start(void) {
+void xe_kmem_remote_server_start(const struct xe_kmem_remote_server_ctx* ctx) {
     int fd = socket(PF_UNIX, SOCK_STREAM, 0);
     xe_assert(fd >= 0);
     
@@ -233,7 +243,7 @@ void xe_kmem_remote_server_start(void) {
     
     printf("[INFO] starting remote kmem server with socket %s\n", addr.sun_path);
     printf("[INFO] press any key to stop\n");
-    xe_kmem_server_listen(fd);
+    xe_kmem_server_listen(ctx, fd);
 }
 
 
@@ -335,6 +345,35 @@ struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path) {
     backend->ops = &xe_kmem_remote_client_ops;
     
     return backend;
+}
+
+uintptr_t xe_kmem_remote_client_get_mh_execute_header(struct xe_kmem_backend* backend) {
+    struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)backend->ctx;
+    int fd = client->sock;
+    
+    uint8_t cmd = XE_KMEM_REMOTE_GET_MH_EXECUTE_HEADER;
+    
+    struct iovec iov_req[1];
+    iov_req[0].iov_base = &cmd;
+    iov_req[0].iov_len = sizeof(cmd);
+    
+    struct msghdr msg_req;
+    bzero(&msg_req, sizeof(msg_req));
+    msg_req.msg_iov = iov_req;
+    msg_req.msg_iovlen = XE_ARRAY_SIZE(iov_req);
+    
+    ssize_t tf_size = sendmsg(fd, &msg_req, MSG_WAITALL);
+    xe_assert(tf_size == sizeof(cmd));
+    
+    int status = 0;
+    tf_size = recv(fd, &status, sizeof(status), MSG_WAITALL);
+    xe_assert(tf_size == sizeof(status));
+    xe_assert(status == 0);
+    
+    uintptr_t value;
+    tf_size = recv(fd, &value, sizeof(value), MSG_WAITALL);
+    xe_assert(tf_size == sizeof(value));
+    return value;
 }
 
 void xe_kmem_remote_client_destroy(struct xe_kmem_backend* backend) {

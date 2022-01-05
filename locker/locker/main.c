@@ -14,7 +14,6 @@
 
 #include <sys/sysctl.h>
 #include <sys/errno.h>
-#include <gym_client.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -23,7 +22,7 @@
 #include <dispatch/dispatch.h>
 
 #include "kmem.h"
-#include "kmem_gym.h"
+#include "kmem_remote.h"
 #include "slider.h"
 #include "platform_params.h"
 #include "allocator_msdosfs.h"
@@ -31,6 +30,8 @@
 #include "xnu_proc.h"
 #include "util_lck_rw.h"
 #include "util_dispatch.h"
+#include "util_assert.h"
+#include "util_ptrauth.h"
 
 
 IOSurfaceRef iosurface_create(void) {
@@ -61,12 +62,14 @@ void iosurface_add_values(IOSurfaceRef surface, size_t idx_start, size_t count) 
 }
 
 
-int main(void) {
-    xe_kmem_use_backend(xe_kmem_gym_create());
-    xe_slider_init();
+int main(int argc, const char* argv[]) {
+    xe_assert_cond(argc, ==, 2);
     
-    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-    uintptr_t proc = xe_xnu_proc_current_proc(kernproc);
+    struct xe_kmem_backend* client = xe_kmem_remote_client_create(argv[1]);
+    xe_kmem_use_backend(client);
+    xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(client));
+    
+    uintptr_t proc = xe_xnu_proc_current_proc();
     
     printf("proc: %p\n", (void*)proc);
 
@@ -78,7 +81,7 @@ int main(void) {
     printf("[INFO] lock start\n");
     xe_util_lck_rw_t util_lock = xe_util_lck_rw_lock_exclusive(proc, lck_rw);
     printf("[INFO] lock done\n");
-    
+
     dispatch_async(xe_dispatch_queue(), ^() {
         IOSurfaceRef surface = iosurface_create();
         size_t array_len = (16384 * 3) / 8;
@@ -86,25 +89,29 @@ int main(void) {
         iosurface_add_values(surface, 0, array_len);
         printf("[INFO] done set value\n");
     });
-    
+
     sleep(3);
     
-    uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_P_UTHLIST_OFFSET));
-    while (cursor != 0) {
-        uintptr_t thread = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_UTHREAD_MEM_UU_THREAD_OFFSET));
-        uintptr_t kernel_stack = xe_kmem_read_uint64(KMEM_OFFSET(thread, TYPE_THREAD_MEM_KERNEL_STACK_OFFSET));
-        int state = xe_kmem_read_int32(KMEM_OFFSET(thread, TYPE_THREAD_MEM_STATE_OFFSET));
-        
-        printf("thread: %p\t kernel stack: %p\t state: %d\n", (void*)thread, (void*)kernel_stack, state);
-        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_UTHREAD_MEM_UU_LIST_OFFSET));
+    printf("pid: %d\n", xe_kmem_read_uint32(KMEM_OFFSET(proc, TYPE_PROC_MEM_P_PID_OFFSET)));
+    
+    uintptr_t task = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
+    printf("num_threads: %d\n", xe_kmem_read_uint32(KMEM_OFFSET(task, TYPE_TASK_MEM_THREAD_COUNT_OFFSET)));
+    
+    uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET));
+    while (cursor != 0 && cursor != KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET)) {
+        uintptr_t kernel_stack = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_THREAD_MEM_KERNEL_STACK_OFFSET));
+        int state = xe_kmem_read_int32(KMEM_OFFSET(cursor, TYPE_THREAD_MEM_STATE_OFFSET));
+
+        printf("thread: %p\t kernel stack: %p\t state: %d\n", (void*)cursor, (void*)kernel_stack, state);
+        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_THREAD_MEM_TASK_THREADS_OFFSET));
     }
-    
-    getpass("press enter to continue...\n");
-    
+
+//    getpass("press enter to continue...\n");
+
     printf("[INFO] release start\n");
     xe_util_lck_rw_lock_done(&util_lock);
     printf("[INFO] release done\n");
-    
+//    
     getpass("press enter to continue...\n");
     
     return 0;

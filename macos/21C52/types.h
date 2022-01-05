@@ -10,4 +10,7 @@
 
 #include "../common/types.h"
 
+// STRUCT proc
+#define TYPE_PROC_MEM_P_FD_OFFSET   216
+
 #endif /* macos_21axx_types_h */

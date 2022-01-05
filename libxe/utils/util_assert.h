@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "platform_params.h"
+
 #define xe_assert(val) if (!(val)) { printf("[ERROR] assertion %s failed at %s:%d\n", #val, __FILE__, __LINE__); getpass("press enter to exit\n"); abort(); }
 #define xe_assert_err(val) if ((val) != 0) { printf("[ERROR] error check failed at %s:%d, err: %s(%d)\n", __FILE__, __LINE__, strerror(val), val); getpass("press enter to exit\n"); abort(); }
 #define xe_assert_errno(res) if ((res) != 0) { printf("[ERROR] error check failed at %s:%d, err: %s(%d)\n", __FILE__, __LINE__, strerror(errno), errno); getpass("press enter to exit\n"); abort(); }

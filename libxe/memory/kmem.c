@@ -23,6 +23,7 @@ void xe_kmem_use_backend(struct xe_kmem_backend* backend) {
 
 void xe_kmem_read(void* dst, uintptr_t src, size_t size) {
     xe_assert(kmem_backend != NULL);
+    xe_assert_kaddr(src);
     size_t max_read_size = kmem_backend->ops->max_read_size;
     size_t done = 0;
     while (done < size) {
@@ -34,6 +35,7 @@ void xe_kmem_read(void* dst, uintptr_t src, size_t size) {
 
 void xe_kmem_write(uintptr_t dst, void* src, size_t size) {
     xe_assert(kmem_backend != NULL);
+    xe_assert_kaddr(dst);
     size_t max_write_size = kmem_backend->ops->max_write_size;
     size_t done = 0;
     while (done < size) {
