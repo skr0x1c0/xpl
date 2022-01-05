@@ -8,7 +8,7 @@
 #include "../smb/ssn_allocator.h"
 
 #include "allocator_rw.h"
-#include "platform_constants.h"
+#include "platform_params.h"
 #include "util_dispatch.h"
 #include "util_misc.h"
 #include "util_assert.h"

@@ -11,7 +11,7 @@
 #include <sys/errno.h>
 
 #include "allocator_pipe.h"
-#include "platform_types.h"
+#include "platform_params.h"
 #include "xnu_proc.h"
 #include "util_ptrauth.h"
 #include "kmem.h"

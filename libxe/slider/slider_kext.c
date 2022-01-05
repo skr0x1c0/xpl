@@ -12,7 +12,7 @@
 #include "slider_kext.h"
 #include "kmem.h"
 #include "slider.h"
-#include "platform_variables.h"
+#include "platform_params.h"
 #include "util_assert.h"
 
 

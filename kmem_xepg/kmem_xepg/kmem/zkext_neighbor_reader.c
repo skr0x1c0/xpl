@@ -17,7 +17,7 @@
 
 #include "zkext_neighbor_reader.h"
 #include "kmem_neighbor_reader.h"
-#include "platform_constants.h"
+#include "platform_params.h"
 #include "util_log.h"
 #include "util_assert.h"
 #include "util_dispatch.h"

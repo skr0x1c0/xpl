@@ -15,8 +15,7 @@
 #include "io_string.h"
 #include "kmem.h"
 #include "slider.h"
-#include "platform_types.h"
-#include "platform_variables.h"
+#include "platform_params.h"
 #include "util_ptrauth.h"
 
 

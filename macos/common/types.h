@@ -1,12 +1,12 @@
 //
-//  platform_types.h
+//  macos_types.h
 //  xe
 //
 //  Created by admin on 11/20/21.
 //
 
-#ifndef platform_types_h
-#define platform_types_h
+#ifndef macos_common_types_h
+#define macos_common_types_h
 
 // STRUCT proc
 #define TYPE_PROC_MEM_P_LIST_OFFSET 0
@@ -222,4 +222,4 @@
 // STRUCT Block_descriptor_small
 #define TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET 16
 
-#endif /* platform_types_h */
+#endif /* macos_common_types_h */

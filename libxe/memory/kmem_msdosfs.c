@@ -14,7 +14,7 @@
 #include "kmem_msdosfs.h"
 #include "msdosfs.h"
 #include "cmd_hdiutil.h"
-#include "platform_types.h"
+#include "platform_params.h"
 #include "util_misc.h"
 #include "util_assert.h"
 

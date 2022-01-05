@@ -8,8 +8,7 @@
 #include <sys/errno.h>
 
 #include "util_kalloc_heap.h"
-#include "platform_types.h"
-#include "platform_variables.h"
+#include "platform_params.h"
 #include "kmem.h"
 
 

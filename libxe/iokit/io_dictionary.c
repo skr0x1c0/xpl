@@ -12,7 +12,7 @@
 
 #include "io_dictionary.h"
 #include "io_string.h"
-#include "platform_types.h"
+#include "platform_params.h"
 #include "kmem.h"
 #include "util_ptrauth.h"
 #include "util_assert.h"

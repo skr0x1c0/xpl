@@ -22,7 +22,7 @@
 #include "allocator_prpw.h"
 #include "util_misc.h"
 #include "util_log.h"
-#include "platform_constants.h"
+#include "platform_params.h"
 #include "util_assert.h"
 
 

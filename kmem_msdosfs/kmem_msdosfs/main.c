@@ -17,7 +17,7 @@
 #include <sys/fcntl.h>
 #include <gym_client.h>
 
-#include "platform_variables.h"
+#include "platform_params.h"
 #include "allocator_msdosfs.h"
 #include "util_misc.h"
 #include "util_dispatch.h"

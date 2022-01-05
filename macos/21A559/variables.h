@@ -1,12 +1,12 @@
 //
-//  platform_variables.h
-//  xe
+//  variables.h
+//  
 //
-//  Created by admin on 11/21/21.
+//  Created by admin on 1/4/22.
 //
 
-#ifndef platform_variables_h
-#define platform_variables_h
+#ifndef macos_21a559_variables_h
+#define macos_21a559_variables_h
 
 #define VAR_MH_EXECUTE_HEADER_ADDR 0xfffffe0007004000
 #define VAR_KERNPROC_ADDR 0xfffffe00071edef0
@@ -22,11 +22,7 @@
 #define VAR_ZONE_IO_EVENT_SOURCE 0xfffffe000723fe40
 #define VAR_SEG_LOWEST_KC 0xfffffe000714ca38
 #define VAR_AUXKC_MH 0xfffffe00071d8148
-
 #define VAR_PIDHASHTBL 0xfffffe00071f2378
 #define VAR_PIDHASH 0xfffffe00071f2370
 
-#define FUNC_KFREE_EXT_ADDR 0xfffffe00072a7adc
-#define FUNC_TCP_INPUT_ADDR 0xfffffe000769c300
-
-#endif /* platform_variables_h */
+#endif /* macos_21a559_variables_h */

@@ -13,9 +13,7 @@
 #include "util_zalloc.h"
 #include "kmem.h"
 #include "slider.h"
-#include "platform_types.h"
-#include "platform_constants.h"
-#include "platform_variables.h"
+#include "platform_params.h"
 #include "util_misc.h"
 #include "util_assert.h"
 

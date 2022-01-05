@@ -25,8 +25,7 @@
 #include "kmem.h"
 #include "kmem_gym.h"
 #include "slider.h"
-#include "platform_types.h"
-#include "platform_variables.h"
+#include "platform_params.h"
 #include "allocator_msdosfs.h"
 
 #include "xnu_proc.h"

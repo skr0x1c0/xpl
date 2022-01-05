@@ -18,7 +18,7 @@
 #include "util_dispatch.h"
 #include "util_log.h"
 #include "util_binary.h"
-#include "platform_constants.h"
+#include "platform_params.h"
 
 
 #define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 512

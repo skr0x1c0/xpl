@@ -14,7 +14,7 @@
 #include "io_array.h"
 #include "io_dictionary.h"
 #include "kmem.h"
-#include "platform_types.h"
+#include "platform_params.h"
 #include "util_assert.h"
 
 

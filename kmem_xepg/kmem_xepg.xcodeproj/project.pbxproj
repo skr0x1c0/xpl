@@ -404,10 +404,12 @@
 		8466F42D276DCE9E004F651E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_VARIANTS = normal;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../macos,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -417,10 +419,12 @@
 		8466F42E276DCE9E004F651E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_VARIANTS = normal;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../macos,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";

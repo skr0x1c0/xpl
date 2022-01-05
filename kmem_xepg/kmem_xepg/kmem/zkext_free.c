@@ -18,7 +18,7 @@
 #include "allocator_rw.h"
 #include "allocator_nic_parallel.h"
 #include "zkext_neighbor_reader.h"
-#include "platform_constants.h"
+#include "platform_params.h"
 #include "util_misc.h"
 #include "util_dispatch.h"
 #include "util_log.h"

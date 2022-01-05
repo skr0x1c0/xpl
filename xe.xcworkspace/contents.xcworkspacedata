@@ -1,6 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace
    version = "1.0">
+   <Group
+      location = "group:/Volumes/Developer/Developer/xe/macos"
+      name = "macos">
+      <Group
+         location = "group:common"
+         name = "common">
+         <FileRef
+            location = "group:types.h">
+         </FileRef>
+         <FileRef
+            location = "group:constants.h">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:21AXX"
+         name = "21AXX">
+         <FileRef
+            location = "group:functions.h">
+         </FileRef>
+         <FileRef
+            location = "group:variables.h">
+         </FileRef>
+         <FileRef
+            location = "group:image.h">
+         </FileRef>
+         <FileRef
+            location = "group:types.h">
+         </FileRef>
+         <FileRef
+            location = "group:constants.h">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:21A559"
+         name = "21A559">
+         <FileRef
+            location = "group:types.h">
+         </FileRef>
+         <FileRef
+            location = "group:variables.h">
+         </FileRef>
+         <FileRef
+            location = "group:functions.h">
+         </FileRef>
+         <FileRef
+            location = "group:image.h">
+         </FileRef>
+         <FileRef
+            location = "group:constants.h">
+         </FileRef>
+      </Group>
+      <FileRef
+         location = "group:platform_params.h">
+      </FileRef>
+   </Group>
    <FileRef
       location = "group:libxe_dev/libxe_dev.xcodeproj">
    </FileRef>

@@ -7,7 +7,7 @@
 
 #include "io_string.h"
 #include "kmem.h"
-#include "platform_types.h"
+#include "platform_params.h"
 #include "util_misc.h"
 #include "util_ptrauth.h"
 #include "util_assert.h"

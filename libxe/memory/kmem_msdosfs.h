@@ -10,7 +10,7 @@
 
 #include <limits.h>
 
-#include "platform_types.h"
+#include "platform_params.h"
 
 struct kmem_msdosfs_init_args {
     char helper_mount_point[PATH_MAX];

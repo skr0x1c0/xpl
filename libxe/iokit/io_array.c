@@ -7,7 +7,7 @@
 
 #include "io_array.h"
 #include "kmem.h"
-#include "platform_types.h"
+#include "platform_params.h"
 #include "util_ptrauth.h"
 
 

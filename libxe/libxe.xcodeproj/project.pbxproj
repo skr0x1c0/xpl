@@ -34,9 +34,6 @@
 		8466F3BE276DCBB4004F651E /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3BD276DCBB4004F651E /* libgym_client.dylib */; };
 		8466F3C0276DCBB7004F651E /* libctf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3BF276DCBB7004F651E /* libctf.dylib */; };
 		8466F3C2276DCBBA004F651E /* libdwarf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3C1276DCBBA004F651E /* libdwarf.dylib */; };
-		84F7BB42276DC6CD00138492 /* platform_variables.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F7BB3F276DC6CC00138492 /* platform_variables.h */; };
-		84F7BB43276DC6CD00138492 /* platform_types.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F7BB40276DC6CD00138492 /* platform_types.h */; };
-		84F7BB44276DC6CD00138492 /* platform_constants.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F7BB41276DC6CD00138492 /* platform_constants.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,9 +47,6 @@
 		8466F3BF276DCBB7004F651E /* libctf.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctf.dylib; path = ../../../../../usr/local/lib/libctf.dylib; sourceTree = "<group>"; };
 		8466F3C1276DCBBA004F651E /* libdwarf.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdwarf.dylib; path = ../../../../../usr/local/lib/libdwarf.dylib; sourceTree = "<group>"; };
 		84F7BB38276DC6C000138492 /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		84F7BB3F276DC6CC00138492 /* platform_variables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = platform_variables.h; sourceTree = "<group>"; };
-		84F7BB40276DC6CD00138492 /* platform_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = platform_types.h; sourceTree = "<group>"; };
-		84F7BB41276DC6CD00138492 /* platform_constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = platform_constants.h; sourceTree = "<group>"; };
 		84F7BB45276DC6E500138492 /* io_dictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_dictionary.h; sourceTree = "<group>"; };
 		84F7BB46276DC6E500138492 /* io_dictionary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_dictionary.c; sourceTree = "<group>"; };
 		84F7BB47276DC6E500138492 /* io_string.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_string.h; sourceTree = "<group>"; };
@@ -131,9 +125,6 @@
 		84F7BB2F276DC6C000138492 = {
 			isa = PBXGroup;
 			children = (
-				84F7BB41276DC6CD00138492 /* platform_constants.h */,
-				84F7BB3F276DC6CC00138492 /* platform_variables.h */,
-				84F7BB40276DC6CD00138492 /* platform_types.h */,
 				84F7BB4F276DC6E500138492 /* iokit */,
 				84F7BB61276DC6E500138492 /* allocators */,
 				84F7BB86276DC6E500138492 /* memory */,
@@ -286,9 +277,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84F7BB42276DC6CD00138492 /* platform_variables.h in Headers */,
-				84F7BB43276DC6CD00138492 /* platform_types.h in Headers */,
-				84F7BB44276DC6CD00138492 /* platform_constants.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -494,7 +482,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = /usr/local/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					$SOURCE_ROOT/../macos,
+				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = xe;
@@ -507,7 +498,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = /usr/local/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					$SOURCE_ROOT/../macos,
+				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = xe;
