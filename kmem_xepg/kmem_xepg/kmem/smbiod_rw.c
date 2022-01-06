@@ -81,7 +81,9 @@ void kmem_smbiod_rw_write_iod(kmem_smbiod_rw_t rw, const struct smbiod* value) {
         struct smbiod iod2 = *value;
         iod2.iod_gss.gss_target_nt = iod1.iod_gss.gss_target_nt + 1;
         int error = smb_client_ioc_ssn_setup(fds_capture[index], (char*)&iod1, sizeof(iod1), (char*)&iod2, sizeof(iod2));
-        xe_assert_err(error);
+        if (error) {
+            xe_log_warn("smb ssn setup failed, err: %s\n", strerror(error));
+        }
     });
     
     uint32_t new_gss_target_nt;
