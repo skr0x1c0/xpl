@@ -20,6 +20,7 @@
 #include "kmem.h"
 #include "util_misc.h"
 #include "util_assert.h"
+#include "util_log.h"
 
 
 // MARK: server
@@ -69,7 +70,7 @@ int xe_kmem_server_handle_cmd_write(const struct xe_kmem_remote_server_ctx* ctx,
     struct cmd_write cmd;
     ssize_t size = recv(fd, &cmd, sizeof(cmd), MSG_WAITALL);
     if (size != sizeof(cmd)) {
-        printf("[WARN] write cmd failed to recv req\n");
+        xe_log_warn("write cmd failed to recv req");
         return EIO;
     }
     
@@ -80,7 +81,7 @@ int xe_kmem_server_handle_cmd_write(const struct xe_kmem_remote_server_ctx* ctx,
     char* buffer = malloc(cmd.size);
     size = recv(fd, buffer, cmd.size, MSG_WAITALL);
     if (size != cmd.size) {
-        printf("[WARN] write cmd failed to recv data\n");
+        xe_log_warn("write cmd failed to recv data");
         free(buffer);
         return EIO;
     }
@@ -97,7 +98,7 @@ int xe_kmem_server_handle_cmd_read(const struct xe_kmem_remote_server_ctx* ctx, 
     
     ssize_t size = recv(fd, &cmd, sizeof(cmd), MSG_WAITALL);
     if (size != sizeof(cmd)) {
-        printf("[WARN] read cmd failed to recv req\n");
+        xe_log_warn("read cmd failed to recv req");
         return EIO;
     }
     
@@ -128,7 +129,7 @@ void xe_kmem_server_handle_incoming(const struct xe_kmem_remote_server_ctx* ctx,
     
     ssize_t size = recv(fd, &cmd, sizeof(cmd), MSG_WAITALL);
     if (size != sizeof(cmd)) {
-        printf("[WARN] ignoring request with no cmd data\n");
+        xe_log_warn("ignoring request with no cmd data");
         close(fd);
         return;
     }
@@ -154,7 +155,7 @@ void xe_kmem_server_handle_incoming(const struct xe_kmem_remote_server_ctx* ctx,
     }
     
     if (error) {
-        printf("[WARN] error %s handling request\n", strerror(error));
+        xe_log_error("error %s handling request", strerror(error));
         close(fd);
     }
 }
@@ -177,7 +178,7 @@ void xe_kmem_server_spin_once(const struct xe_kmem_remote_server_ctx* ctx, struc
             // accept incoming connection
             int fd = accept(fds[0].fd, NULL, NULL);
             if (*num_fds >= MAX_PEER_CONNECTIONS) {
-                printf("[WARN] dropped peer connection due to connection max limit\n");
+                xe_log_warn("dropped peer connection due to connection max limit");
                 close(fd);
                 continue;
             }
@@ -198,7 +199,7 @@ void xe_kmem_server_spin_once(const struct xe_kmem_remote_server_ctx* ctx, struc
             // read incoming request
             xe_kmem_server_handle_incoming(ctx, fds[i].fd);
         } else {
-            printf("[ERROR] unexpected event %d\n", events);
+            xe_log_warn("[ERROR] unexpected event %d\n", events);
             abort();
         }
     }
@@ -241,8 +242,8 @@ void xe_kmem_remote_server_start(const struct xe_kmem_remote_server_ctx* ctx) {
     res = listen(fd, 10);
     xe_assert(res == 0);
     
-    printf("[INFO] starting remote kmem server with socket %s\n", addr.sun_path);
-    printf("[INFO] press any key to stop\n");
+    xe_log_info("starting remote kmem server with socket %s", addr.sun_path);
+    xe_log_info("press any key to stop");
     xe_kmem_server_listen(ctx, fd);
 }
 

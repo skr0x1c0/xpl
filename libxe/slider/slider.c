@@ -14,6 +14,7 @@
 #include "kmem.h"
 #include "platform_params.h"
 #include "util_assert.h"
+#include "util_log.h"
 
 
 typedef struct xe_slider_segment_info {
@@ -151,7 +152,7 @@ uintptr_t xe_slider_slide_internal(uintptr_t address, struct xe_slider_segment_i
         return SLIDE(address, from, to, boot_data);
     }
     
-    printf("[ERROR] address does not belong to any known segment\n");
+    xe_log_error("address does not belong to any known segment");
     abort();
 }
 

@@ -65,7 +65,7 @@ int find_server_pid(void) {
         }
     }
     
-    printf("[ERROR] smb_server process not found\n");
+    xe_log_error("smb_server process not found");
     abort();
 }
 
@@ -95,7 +95,7 @@ ushort find_lport_for_fport(int server_pid, ushort fport) {
         }
     }
     
-    printf("[ERROR] failed to match fport on server\n");
+    xe_log_error("failed to match fport on server");
     abort();
 }
 
@@ -426,7 +426,6 @@ int main(void) {
     char backup_worker[368];
     xe_kmem_read(backup_worker, msdosfs_worker, sizeof(backup_worker));
     
-    printf("msdosfsmount worker: \n");
     xe_log_debug_hexdump(backup_worker, sizeof(backup_worker), "msdosfsmount worker:");
     
     char backup_helper[368];

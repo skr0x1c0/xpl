@@ -10,12 +10,13 @@
 
 #include "kmem.h"
 #include "gym_client.h"
+#include "util_log.h"
 
 
 void xe_kmem_gym_read(void* ctx, void* dst, uintptr_t src, size_t size) {
     int error = gym_privileged_read((char*)dst, src, size);
     if (error) {
-        printf("[ERROR] gym privileged read failed, src: %p, size: %lu, err: %d\n", (void*)src, size, error);
+        xe_log_error("gym privileged read failed, src: %p, size: %lu, err: %d", (void*)src, size, error);
         abort();
     }
 }
@@ -23,7 +24,7 @@ void xe_kmem_gym_read(void* ctx, void* dst, uintptr_t src, size_t size) {
 void xe_kmem_gym_write(void* ctx, uintptr_t dst, void* src, size_t size) {
     int error = gym_destructible_write(dst, (char*)src, size);
     if (error) {
-        printf("[ERROR] gym destructible write failed, dst: %p, size: %lu, err: %d\n", (void*)dst, size, error);
+        xe_log_error("gym destructible write failed, dst: %p, size: %lu, err: %d", (void*)dst, size, error);
         abort();
     }
 }
@@ -38,7 +39,7 @@ static struct xe_kmem_ops xe_kmem_gym_ops = {
 
 struct xe_kmem_backend* xe_kmem_gym_create(void) {
     if (getuid() != 0) {
-        printf("[ERROR] root privileges are required for gym kmem read / write\n");
+        xe_log_error("root privileges are required for gym kmem read / write");
         abort();
     }
     gym_init();

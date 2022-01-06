@@ -14,6 +14,7 @@
 #include "slider.h"
 #include "platform_params.h"
 #include "util_assert.h"
+#include "util_log.h"
 
 
 typedef struct {
@@ -59,7 +60,7 @@ uintptr_t xe_slider_kext_find_kext_header(char* identifier, enum xe_kext_collect
     }
     
     free(commands);
-    printf("[ERROR] failed to find fileset entry\n");
+    xe_log_error("failed to find fileset entry");
     abort();
 }
 
@@ -125,7 +126,7 @@ uintptr_t xe_slider_kext_slide(xe_slider_kext_t slider, enum xe_kext_segment seg
             xe_assert(offset <= slider->link_edit.size);
             return slider->link_edit.start + offset;
         default:
-            printf("[ERROR] unknown segment\n");
+            xe_log_error("unknown segment");
             abort();
     }
 }
@@ -152,7 +153,7 @@ uintptr_t xe_slider_kext_unslide(xe_slider_kext_t slider, enum xe_kext_segment s
             xe_assert(IS_ADDRESS_IN_SEGMENT(address, slider->link_edit));
             return address - slider->link_edit.start;
         default:
-            printf("[ERROR] unknown segment\n");
+            xe_log_error("unknown segment");
             abort();
     }
 }

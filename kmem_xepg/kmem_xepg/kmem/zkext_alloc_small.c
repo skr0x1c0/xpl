@@ -156,6 +156,6 @@ struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr
             return entry;
         }
     }
-    printf("[ERROR] alloc failed\n");
+    xe_log_error("alloc failed");
     abort();
 }

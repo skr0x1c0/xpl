@@ -56,7 +56,7 @@ void kmem_smbiod_rw_read_iod(kmem_smbiod_rw_t rw, struct smbiod* out) {
     } else if (iod2.iod_gss.gss_target_nt == gss_target_nt && XE_VM_KERNEL_ADDRESS_VALID((uintptr_t)iod2.iod_tdesc)) {
         *out = iod2;
     } else {
-        printf("[ERROR] read failed, gss_target_nt does not match\n");
+        xe_log_error("read failed, gss_target_nt does not match");
         abort();
     }
 }

@@ -16,6 +16,7 @@
 #include "platform_params.h"
 #include "util_misc.h"
 #include "util_assert.h"
+#include "util_log.h"
 
 #define MAX_PAGEQ_LEN 32
 
@@ -157,7 +158,7 @@ uintptr_t xe_util_zalloc_find_victim_zone(uint elem_size) {
         return victim_zone;
     }
     
-    printf("[ERROR] failed to find victim zone for elem size %u\n", elem_size);
+    xe_log_error("[ERROR] failed to find victim zone for elem size %u", elem_size);
     abort();
 }
 
@@ -296,7 +297,7 @@ xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, uint num_pages) {
     xe_assert(z_percpu == 0);
     uintptr_t z_pcpu_cache = xe_kmem_read_uint64(KMEM_OFFSET(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET));
     if (z_pcpu_cache) {
-        printf("[INFO] disabling z_pcpu_cache for zone %p\n", (void*)zone);
+        xe_log_info("disabling z_pcpu_cache for zone %p", (void*)zone);
         xe_kmem_write_uint64(KMEM_OFFSET(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET), 0);
     }
     
@@ -380,7 +381,7 @@ uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util) {
             return page + eidx * z_elem_size;
         }
     }
-    printf("[ERROR] no memory to allocate\n");
+    xe_log_error("no memory to allocate");
     abort();
 }
 
@@ -442,18 +443,18 @@ uintptr_t xe_util_zalloc_alloc_at(xe_util_zalloc_t util, uintptr_t address) {
         int eidx = (int)((address - page) / z_elem_size);
         int error = xe_util_zalloc_meta_clear_bit(meta, eidx);
         if (error) {
-            printf("[ERROR] address already in use\n");
+            xe_log_error("address already in use");
             abort();
         }
         xe_util_zalloc_apply_meta_alloc_size_diff(meta, z_elem_size);
         return 0;
     }
     
-    printf("[ERROR] address not allocated by allocator\n");
+    xe_log_error("address not allocated by allocator");
     abort();
 }
 
 void xe_util_zalloc_free(xe_util_zalloc_t util, uintptr_t address) {
-    printf("[ERROR] not implemented\n");
+    xe_log_error("not implemented");
     abort();
 }

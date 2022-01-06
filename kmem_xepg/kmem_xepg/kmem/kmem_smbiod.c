@@ -12,6 +12,7 @@
 #include "kmem.h"
 #include "smbiod_rw.h"
 #include "util_assert.h"
+#include "util_log.h"
 
 
 #define MAX_READ_SIZE UINT32_MAX
@@ -25,7 +26,7 @@ void xe_kmem_smbiod_read(void* ctx, void* dst, uintptr_t src, size_t size) {
 }
 
 void xe_kmem_smbiod_write(void* ctx, uintptr_t dst, void* src, size_t size) {
-    printf("[ERROR] write not supported by kmem_smbiod\n");
+    xe_log_error("write not supported by kmem_smbiod");
     abort();
 }
 

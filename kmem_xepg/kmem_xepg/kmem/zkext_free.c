@@ -186,14 +186,14 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
 void kmem_zkext_free_session_execute(kmem_zkext_free_session_t session, const struct complete_nic_info_entry* entry) {
     xe_assert(session->state == STATE_PREPARED);
     
-    printf("[INFO] preparing for free\n");
+    xe_log_info("preparing for free");
     for (int i = 0; i < NUM_SLOW_DOWN_NICS; i++) {
         if ((i % ((NUM_SLOW_DOWN_NICS + 9) / 10)) == 0) {
-            printf("[PROGRESS] %.2f%%\n", ((double)i / NUM_SLOW_DOWN_NICS) * 100.0);
+            xe_log_info("progress: %.2f%%", ((double)i / NUM_SLOW_DOWN_NICS) * 100.0);
         }
         kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, INT32_MAX - i, NUM_SOCKETS_PER_SLOW_DOWN_NIC, sizeof(struct sockaddr_in));
     }
-    printf("[INFO] done\n");
+    xe_log_info("[INFO] done");
 
     kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, (uint32_t)entry->nic_index, 512, 96);
     kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 512);
