@@ -90,9 +90,10 @@ void xe_util_kfunc_setup_block_descriptor(xe_util_kfunc_basic_t util, uintptr_t 
 }
 
 
-void xe_util_kfunc_setup_block(xe_util_kfunc_basic_t util) {
+void xe_util_kfunc_setup_block(xe_util_kfunc_basic_t util, char arg0[8]) {
     xe_assert(util->state == STATE_CREATED);
     int32_t flags = (BLOCK_SMALL_DESCRIPTOR | BLOCK_NEEDS_FREE | BLOCK_HAS_COPY_DISPOSE) + 2;
+    xe_kmem_write(util->block, arg0, 8);
     xe_kmem_write_int32(KMEM_OFFSET(util->block, TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET), flags);
     xe_kmem_write_uint64(KMEM_OFFSET(util->block, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET), util->block_descriptor);
 }
@@ -109,11 +110,11 @@ void xe_util_kfunc_setup_event_source(xe_util_kfunc_basic_t util) {
 }
 
 
-uintptr_t xe_util_kfunc_build_event_source(xe_util_kfunc_basic_t util, uintptr_t target_func) {
+uintptr_t xe_util_kfunc_build_event_source(xe_util_kfunc_basic_t util, uintptr_t target_func, char arg0[8]) {
     xe_assert(util->state == STATE_CREATED);
     
     xe_util_kfunc_setup_event_source(util);
-    xe_util_kfunc_setup_block(util);
+    xe_util_kfunc_setup_block(util, arg0);
     xe_util_kfunc_setup_block_descriptor(util, target_func);
     
     util->state = STATE_BUILD;
