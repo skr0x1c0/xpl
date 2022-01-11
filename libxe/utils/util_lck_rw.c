@@ -22,6 +22,9 @@
 #include "util_assert.h"
 
 
+#define MAX_NECP_UUID_MAPPING_ID 128
+
+
 struct xe_util_lck_rw {
     int sock_fd;
     uintptr_t lck;
@@ -104,7 +107,7 @@ void xe_util_lck_invalidate_necp_ids(xe_util_lck_rw_t util) {
     uintptr_t cursor = util->necp_uuid_id_mapping_head;
     do {
         uint32_t id = xe_kmem_read_uint32(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET));
-        xe_assert(id <= 16);
+        xe_assert_cond(id, <=, MAX_NECP_UUID_MAPPING_ID);
         xe_kmem_write_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET), UINT16_MAX - id);
         cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET));
         xe_assert(cursor != 0);
@@ -117,7 +120,7 @@ void xe_util_lck_restore_necp_ids(xe_util_lck_rw_t util) {
     uintptr_t cursor = util->necp_uuid_id_mapping_head;
     do {
         uint32_t id = xe_kmem_read_uint32(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET));
-        xe_assert(id >= UINT16_MAX - 16);
+        xe_assert_cond(id, >=, UINT16_MAX - MAX_NECP_UUID_MAPPING_ID);
         xe_kmem_write_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET), UINT16_MAX - id);
         cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET));
         xe_assert(cursor != 0);
