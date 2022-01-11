@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <gym_client.h>
 
 #include "kmem.h"
 #include "kmem_tester.h"
@@ -22,6 +23,8 @@ int main(int argc, const char * argv[]) {
     
     struct xe_kmem_backend* remote_backend = xe_kmem_remote_client_create(socket_path);
     xe_kmem_use_backend(remote_backend);
+    gym_init();
+    
     xe_kmem_tester_run(100000, 32 * 1024);
     xe_kmem_remote_client_destroy(remote_backend);
     return 0;
