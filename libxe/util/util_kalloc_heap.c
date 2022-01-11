@@ -7,9 +7,10 @@
 
 #include <sys/errno.h>
 
-#include "util_kalloc_heap.h"
+#include "util/kalloc_heap.h"
+#include "memory/kmem.h"
+
 #include "platform_params.h"
-#include "kmem.h"
 
 
 uintptr_t xe_util_kh_find_zone_for_size(uintptr_t heap, size_t size) {

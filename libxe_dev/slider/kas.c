@@ -7,7 +7,7 @@
 
 #include <sys/errno.h>
 
-#include "slider_kas.h"
+#include "slider/kas.h"
 
 
 /* The slide of the main kernel compared to its static link address */

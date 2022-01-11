@@ -7,22 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		84340301278DD1DA003AE43D /* slider_kas.h in Headers */ = {isa = PBXBuildFile; fileRef = 843402FF278DD1DA003AE43D /* slider_kas.h */; };
-		84340302278DD1DA003AE43D /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 84340300278DD1DA003AE43D /* slider_kas.c */; };
-		84F5CCFD2782CEB900BF7B64 /* kmem_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F5CCFB2782CEB900BF7B64 /* kmem_gym.c */; };
-		84F5CCFE2782CEB900BF7B64 /* kmem_gym.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F5CCFC2782CEB900BF7B64 /* kmem_gym.h */; };
-		84F5CD082782CF4000BF7B64 /* kmem_tester.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F5CD062782CF4000BF7B64 /* kmem_tester.c */; };
-		84F5CD092782CF4000BF7B64 /* kmem_tester.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F5CD072782CF4000BF7B64 /* kmem_tester.h */; };
+		84340301278DD1DA003AE43D /* kas.h in Headers */ = {isa = PBXBuildFile; fileRef = 843402FF278DD1DA003AE43D /* kas.h */; };
+		84340302278DD1DA003AE43D /* kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 84340300278DD1DA003AE43D /* kas.c */; };
+		84F5CCFD2782CEB900BF7B64 /* gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F5CCFB2782CEB900BF7B64 /* gym.c */; };
+		84F5CCFE2782CEB900BF7B64 /* gym.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F5CCFC2782CEB900BF7B64 /* gym.h */; };
+		84F5CD082782CF4000BF7B64 /* tester.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F5CD062782CF4000BF7B64 /* tester.c */; };
+		84F5CD092782CF4000BF7B64 /* tester.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F5CD072782CF4000BF7B64 /* tester.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		843402FF278DD1DA003AE43D /* slider_kas.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = slider_kas.h; sourceTree = "<group>"; };
-		84340300278DD1DA003AE43D /* slider_kas.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider_kas.c; sourceTree = "<group>"; };
+		843402FF278DD1DA003AE43D /* kas.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kas.h; sourceTree = "<group>"; };
+		84340300278DD1DA003AE43D /* kas.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kas.c; sourceTree = "<group>"; };
 		84F5CCF32782CE9D00BF7B64 /* libxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		84F5CCFB2782CEB900BF7B64 /* kmem_gym.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kmem_gym.c; sourceTree = "<group>"; };
-		84F5CCFC2782CEB900BF7B64 /* kmem_gym.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kmem_gym.h; sourceTree = "<group>"; };
-		84F5CD062782CF4000BF7B64 /* kmem_tester.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kmem_tester.c; sourceTree = "<group>"; };
-		84F5CD072782CF4000BF7B64 /* kmem_tester.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kmem_tester.h; sourceTree = "<group>"; };
+		84F5CCFB2782CEB900BF7B64 /* gym.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gym.c; sourceTree = "<group>"; };
+		84F5CCFC2782CEB900BF7B64 /* gym.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gym.h; sourceTree = "<group>"; };
+		84F5CD062782CF4000BF7B64 /* tester.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tester.c; sourceTree = "<group>"; };
+		84F5CD072782CF4000BF7B64 /* tester.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tester.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,11 +36,44 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8405D069278E0CE80032FD1F /* public */ = {
+			isa = PBXGroup;
+			children = (
+				8405D06A278E0CED0032FD1F /* xe_dev */,
+			);
+			path = public;
+			sourceTree = "<group>";
+		};
+		8405D06A278E0CED0032FD1F /* xe_dev */ = {
+			isa = PBXGroup;
+			children = (
+				8405D06C278E0D0A0032FD1F /* memory */,
+				8405D06B278E0CF40032FD1F /* slider */,
+			);
+			path = xe_dev;
+			sourceTree = "<group>";
+		};
+		8405D06B278E0CF40032FD1F /* slider */ = {
+			isa = PBXGroup;
+			children = (
+				843402FF278DD1DA003AE43D /* kas.h */,
+			);
+			path = slider;
+			sourceTree = "<group>";
+		};
+		8405D06C278E0D0A0032FD1F /* memory */ = {
+			isa = PBXGroup;
+			children = (
+				84F5CCFC2782CEB900BF7B64 /* gym.h */,
+				84F5CD072782CF4000BF7B64 /* tester.h */,
+			);
+			path = memory;
+			sourceTree = "<group>";
+		};
 		843402FE278DD1C7003AE43D /* slider */ = {
 			isa = PBXGroup;
 			children = (
-				843402FF278DD1DA003AE43D /* slider_kas.h */,
-				84340300278DD1DA003AE43D /* slider_kas.c */,
+				84340300278DD1DA003AE43D /* kas.c */,
 			);
 			path = slider;
 			sourceTree = "<group>";
@@ -48,6 +81,7 @@
 		84F5CCEA2782CE9C00BF7B64 = {
 			isa = PBXGroup;
 			children = (
+				8405D069278E0CE80032FD1F /* public */,
 				843402FE278DD1C7003AE43D /* slider */,
 				84F5CCFA2782CEAE00BF7B64 /* memory */,
 				84F5CCF42782CE9D00BF7B64 /* Products */,
@@ -65,10 +99,8 @@
 		84F5CCFA2782CEAE00BF7B64 /* memory */ = {
 			isa = PBXGroup;
 			children = (
-				84F5CCFB2782CEB900BF7B64 /* kmem_gym.c */,
-				84F5CCFC2782CEB900BF7B64 /* kmem_gym.h */,
-				84F5CD062782CF4000BF7B64 /* kmem_tester.c */,
-				84F5CD072782CF4000BF7B64 /* kmem_tester.h */,
+				84F5CCFB2782CEB900BF7B64 /* gym.c */,
+				84F5CD062782CF4000BF7B64 /* tester.c */,
 			);
 			path = memory;
 			sourceTree = "<group>";
@@ -80,9 +112,9 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84F5CCFE2782CEB900BF7B64 /* kmem_gym.h in Headers */,
-				84340301278DD1DA003AE43D /* slider_kas.h in Headers */,
-				84F5CD092782CF4000BF7B64 /* kmem_tester.h in Headers */,
+				84F5CCFE2782CEB900BF7B64 /* gym.h in Headers */,
+				84340301278DD1DA003AE43D /* kas.h in Headers */,
+				84F5CD092782CF4000BF7B64 /* tester.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,9 +175,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84340302278DD1DA003AE43D /* slider_kas.c in Sources */,
-				84F5CD082782CF4000BF7B64 /* kmem_tester.c in Sources */,
-				84F5CCFD2782CEB900BF7B64 /* kmem_gym.c in Sources */,
+				84340302278DD1DA003AE43D /* kas.c in Sources */,
+				84F5CD082782CF4000BF7B64 /* tester.c in Sources */,
+				84F5CCFD2782CEB900BF7B64 /* gym.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,9 +301,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
-					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
 					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/public/xe_dev,
 				);
 				PRODUCT_NAME = xe_dev;
 				SKIP_INSTALL = YES;
@@ -284,9 +317,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
-					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
 					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/public/xe_dev,
 				);
 				PRODUCT_NAME = xe_dev;
 				SKIP_INSTALL = YES;

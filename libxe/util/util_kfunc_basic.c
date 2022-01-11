@@ -7,14 +7,15 @@
 
 #include <stdlib.h>
 
-#include "util_kfunc_basic.h"
-#include "kmem.h"
-#include "slider.h"
-#include "util_ptrauth.h"
-#include "util_zalloc.h"
-#include "util_pacda.h"
+#include "util/kfunc_basic.h"
+#include "memory/kmem.h"
+#include "slider/kernel.h"
+#include "util/ptrauth.h"
+#include "util/zalloc.h"
+#include "util/pacda.h"
+#include "util/assert.h"
+
 #include "platform_params.h"
-#include "util_assert.h"
 
 
 enum {
@@ -66,7 +67,7 @@ xe_util_kfunc_basic_t xe_util_kfunc_basic_create(uintptr_t proc, xe_util_zalloc_
     xe_assert(xe_kmem_read_uint64(free_zone) == 0);
     uintptr_t io_event_source = xe_util_zalloc_alloc(io_event_source_allocator);
     uintptr_t block = xe_util_zalloc_alloc(block_allocator);
-    uintptr_t io_event_source_vtable = xe_util_kfunc_sign_address(proc, xe_slider_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), io_event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
+    uintptr_t io_event_source_vtable = xe_util_kfunc_sign_address(proc, xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), io_event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
     uintptr_t block_descriptor = xe_util_kfunc_sign_address(proc, free_zone, KMEM_OFFSET(block, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET), TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_DESCRIMINATOR);
     
     xe_util_kfunc_basic_t util = malloc(sizeof(struct xe_util_kfunc_basic));

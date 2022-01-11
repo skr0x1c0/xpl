@@ -10,13 +10,14 @@
 #include <stdlib.h>
 #include <sys/errno.h>
 
-#include "xe_allocator_pipe.h"
+#include "allocator/pipe.h"
+#include "xnu/proc.h"
+#include "util/ptrauth.h"
+#include "memory/kmem.h"
+#include "util/assert.h"
+#include "util/log.h"
+
 #include "platform_params.h"
-#include "xnu_proc.h"
-#include "util_ptrauth.h"
-#include "kmem.h"
-#include "util_assert.h"
-#include "util_log.h"
 
 
 struct xe_allocator_pipe {

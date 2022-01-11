@@ -8,17 +8,18 @@
 #include <unistd.h>
 #include <sys/errno.h>
 
-#include "xnu_proc.h"
+#include "xnu/proc.h"
+#include "memory/kmem.h"
+#include "slider/kernel.h"
+#include "util/assert.h"
+#include "util/ptrauth.h"
+
 #include "platform_params.h"
-#include "kmem.h"
-#include "slider.h"
-#include "util_assert.h"
-#include "util_ptrauth.h"
 
 
 int xe_xnu_proc_find(pid_t proc_id, uintptr_t* proc_out) {
-    uint64_t pidhash = xe_kmem_read_uint64(xe_slider_slide(VAR_PIDHASH));
-    uintptr_t pidhashtbl = xe_kmem_read_uint64(xe_slider_slide(VAR_PIDHASHTBL));
+    uint64_t pidhash = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_PIDHASH));
+    uintptr_t pidhashtbl = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_PIDHASHTBL));
     int index = proc_id & pidhash;
     uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(pidhashtbl, index * 8));
     while (cursor) {

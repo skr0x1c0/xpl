@@ -2,11 +2,12 @@
 #include <string.h>
 #include <stdatomic.h>
 
+#include <xe/util/assert.h>
+
 #include <sys/errno.h>
 
 #include "ssn_allocator.h"
 #include "client.h"
-#include "util_assert.h"
 
 
 smb_ssn_allocator smb_ssn_allocator_create(const struct sockaddr_in* addr, uint32_t ioc_saddr_len) {

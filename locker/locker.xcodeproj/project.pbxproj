@@ -259,7 +259,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
@@ -273,7 +273,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;

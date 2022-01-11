@@ -8,9 +8,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "kmem.h"
+#include <xe/memory/kmem.h>
+#include <xe/util/log.h>
+
 #include "gym_client.h"
-#include "util_log.h"
 
 
 void xe_kmem_gym_read(void* ctx, void* dst, uintptr_t src, size_t size) {

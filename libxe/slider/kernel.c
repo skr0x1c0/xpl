@@ -10,11 +10,12 @@
 
 #include <mach-o/loader.h>
 
-#include "slider.h"
-#include "kmem.h"
+#include "slider/kernel.h"
+#include "memory/kmem.h"
+#include "util/assert.h"
+#include "util/log.h"
+
 #include "platform_params.h"
-#include "util_assert.h"
-#include "util_log.h"
 
 
 typedef struct xe_slider_segment_info {
@@ -61,7 +62,7 @@ static struct xe_slider_segment_infos xe_slider_segment_infos_image = {
 static struct xe_slider_segment_infos xe_slider_segment_infos_kern;
 
 
-void xe_slider_init(uintptr_t mh_execute_header) {
+void xe_slider_kernel_init(uintptr_t mh_execute_header) {
     struct mach_header_64 header;
     xe_kmem_read(&header, mh_execute_header, sizeof(header));
     xe_assert(header.magic == MH_MAGIC_64);
@@ -123,7 +124,7 @@ void xe_slider_init(uintptr_t mh_execute_header) {
 #define IS_ADDR_IN(addr, infos, segment) (addr >= infos->segment.base && addr < infos->segment.base + infos->segment.size)
 #define SLIDE(addr, from, to, segment) (addr + ((int64_t)to->segment.base - (int64_t)from->segment.base))
 
-uintptr_t xe_slider_slide_internal(uintptr_t address, struct xe_slider_segment_infos* to, struct xe_slider_segment_infos* from) {
+uintptr_t xe_slider_kernel_slide_internal(uintptr_t address, struct xe_slider_segment_infos* to, struct xe_slider_segment_infos* from) {
     if (IS_ADDR_IN(address, from, text)) {
         return SLIDE(address, from, to, text);
     } else if (IS_ADDR_IN(address, from, data_const)) {
@@ -156,10 +157,10 @@ uintptr_t xe_slider_slide_internal(uintptr_t address, struct xe_slider_segment_i
     abort();
 }
 
-uintptr_t xe_slider_slide(uintptr_t address) {
-    return xe_slider_slide_internal(address, &xe_slider_segment_infos_kern, &xe_slider_segment_infos_image);
+uintptr_t xe_slider_kernel_slide(uintptr_t address) {
+    return xe_slider_kernel_slide_internal(address, &xe_slider_segment_infos_kern, &xe_slider_segment_infos_image);
 }
 
-uintptr_t xe_slider_unslide(uintptr_t address) {
-    return xe_slider_slide_internal(address, &xe_slider_segment_infos_image, &xe_slider_segment_infos_kern);
+uintptr_t xe_slider_kernel_unslide(uintptr_t address) {
+    return xe_slider_kernel_slide_internal(address, &xe_slider_segment_infos_image, &xe_slider_segment_infos_kern);
 }

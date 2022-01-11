@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "kmem.h"
-#include "util_misc.h"
-#include "util_assert.h"
+#include "memory/kmem.h"
+#include "util/misc.h"
+#include "util/assert.h"
 
 static struct xe_kmem_backend* kmem_backend;
 

@@ -259,7 +259,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -272,7 +272,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$SOURCE_ROOT/../libxe/**",
+					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";

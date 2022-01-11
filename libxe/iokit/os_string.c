@@ -5,12 +5,13 @@
 //  Created by admin on 12/6/21.
 //
 
-#include "os_string.h"
-#include "kmem.h"
+#include "iokit/os_string.h"
+#include "memory/kmem.h"
+#include "util/misc.h"
+#include "util/ptrauth.h"
+#include "util/assert.h"
+
 #include "platform_params.h"
-#include "util_misc.h"
-#include "util_ptrauth.h"
-#include "util_assert.h"
 
 
 size_t xe_os_string_length(uintptr_t string) {

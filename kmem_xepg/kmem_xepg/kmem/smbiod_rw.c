@@ -10,14 +10,16 @@
 
 #include <dispatch/dispatch.h>
 
+#include <xe/util/assert.h>
+#include <xe/util/dispatch.h>
+#include <xe/util/log.h>
+#include <xe/util/binary.h>
+
 #include "../external/smbfs/smb_conn.h"
 #include "../smb/client.h"
 
 #include "smbiod_rw.h"
-#include "util_assert.h"
-#include "util_dispatch.h"
-#include "util_log.h"
-#include "util_binary.h"
+
 #include "platform_params.h"
 
 

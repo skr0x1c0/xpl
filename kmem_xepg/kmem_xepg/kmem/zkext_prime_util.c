@@ -9,11 +9,12 @@
 #include <string.h>
 #include <stdatomic.h>
 
+#include <xe/util/misc.h>
+#include <xe/util/assert.h>
+
 #include "../smb/nic_allocator.h"
 
 #include "zkext_prime_util.h"
-#include "util_misc.h"
-#include "util_assert.h"
 
 
 struct kmem_zkext_prime_util {

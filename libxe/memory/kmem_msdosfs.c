@@ -10,14 +10,14 @@
 
 #include <IOKit/kext/KextManager.h>
 
-#include "kmem.h"
-#include "kmem_msdosfs.h"
+#include "memory/kmem.h"
+#include "memory/kmem_msdosfs.h"
 #include "msdosfs.h"
-#include "cmd_hdiutil.h"
-#include "platform_params.h"
-#include "util_misc.h"
-#include "util_assert.h"
+#include "cmd/hdiutil.h"
+#include "util/misc.h"
+#include "util/assert.h"
 
+#include "platform_params.h"
 
 #define MAX_READ_SIZE 1024
 #define MAX_WRITE_SIZE 1024

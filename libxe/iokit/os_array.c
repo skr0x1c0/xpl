@@ -5,10 +5,11 @@
 //  Created by admin on 12/6/21.
 //
 
-#include "os_array.h"
-#include "kmem.h"
+#include "iokit/os_array.h"
+#include "memory/kmem.h"
+#include "util/ptrauth.h"
+
 #include "platform_params.h"
-#include "util_ptrauth.h"
 
 
 uint xe_os_array_count(uintptr_t array) {

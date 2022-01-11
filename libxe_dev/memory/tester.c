@@ -11,9 +11,10 @@
 #include <stdlib.h>
 #include <gym_client.h>
 
-#include "kmem.h"
-#include "kmem_tester.h"
-#include "util_assert.h"
+#include <xe/memory/kmem.h>
+#include <xe/util/assert.h>
+
+#include "memory/tester.h"
 
 
 void xe_kmem_random_fill_buffer(char* buffer, size_t buffer_len) {

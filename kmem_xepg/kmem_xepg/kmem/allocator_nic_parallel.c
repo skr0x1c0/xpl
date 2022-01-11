@@ -10,9 +10,10 @@
 #include "../smb/nic_allocator.h"
 
 #include "allocator_nic_parallel.h"
-#include "util_dispatch.h"
-#include "util_misc.h"
-#include "util_assert.h"
+
+#include <xe/util/dispatch.h>
+#include <xe/util/misc.h>
+#include <xe/util/assert.h>
 
 #define MAX_SADDR_ALLOCS_PER_NIC 128
 #define MAX_NICS_PER_SMB_DEV 128

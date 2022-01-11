@@ -15,13 +15,14 @@
 #include <sys/errno.h>
 #include <dispatch/dispatch.h>
 
+#include <xe/util/log.h>
+#include <xe/util/assert.h>
+#include <xe/util/dispatch.h>
+#include <xe/util/binary.h>
+
 #include "zkext_neighbor_reader.h"
 #include "kmem_neighbor_reader.h"
 #include "platform_params.h"
-#include "util_log.h"
-#include "util_assert.h"
-#include "util_dispatch.h"
-#include "util_binary.h"
 
 #include "../xnu/saddr_allocator.h"
 #include "../smb/client.h"

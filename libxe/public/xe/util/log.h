@@ -8,7 +8,7 @@
 #ifndef util_log_h
 #define util_log_h
 
-#include "util_binary.h"
+#include "binary.h"
 
 #define xe_log_debug(...) printf("[DEBUG] "); printf(__VA_ARGS__); printf("\n")
 #define xe_log_info(...) printf("[INFO] "); printf(__VA_ARGS__); printf("\n")

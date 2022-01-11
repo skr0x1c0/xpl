@@ -13,17 +13,16 @@
 #include <sys/fcntl.h>
 #include <sys/errno.h>
 
-#include "kmem.h"
-#include "kmem_remote.h"
-#include "slider.h"
-#include "util_log.h"
-#include "util_assert.h"
-#include "xe_allocator_pipe.h"
-#include "util_binary.h"
+#include <xe/memory/kmem.h>
+#include <xe/memory/kmem_remote.h>
+#include <xe/slider/kernel.h>
+#include <xe/util/log.h>
+#include <xe/allocator/pipe.h>
+#include <xe/util/assert.h>
 
 
 int find_mac_policy_conf(char* mpc_name, uintptr_t* out, int* index_out) {
-    uintptr_t mac_policy_list = xe_slider_slide(VAR_MAC_POLICY_LIST);
+    uintptr_t mac_policy_list = xe_slider_kernel_slide(VAR_MAC_POLICY_LIST);
     
     uint maxindex = xe_kmem_read_uint32(KMEM_OFFSET(mac_policy_list, TYPE_MAC_POLICY_LIST_MEM_MAXINDEX_OFFSET));
     uintptr_t entries = xe_kmem_read_uint64(KMEM_OFFSET(mac_policy_list, TYPE_MAC_POLICY_LIST_MEM_ENTRIES_OFFSET));
@@ -50,9 +49,9 @@ int main(int argc, const char * argv[]) {
     xe_assert_cond(argc, ==, 2);
     struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(backend);
-    xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(backend));
+    xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
-    uintptr_t mac_policy_list = xe_slider_slide(VAR_MAC_POLICY_LIST);
+    uintptr_t mac_policy_list = xe_slider_kernel_slide(VAR_MAC_POLICY_LIST);
     uintptr_t mac_policy_entries = xe_kmem_read_uint64(KMEM_OFFSET(mac_policy_list, TYPE_MAC_POLICY_LIST_MEM_ENTRIES_OFFSET));
 
     xe_allocator_pipe_t fake_mpc_allocator;

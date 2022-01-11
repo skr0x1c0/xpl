@@ -11,7 +11,6 @@
 /* Variables */
 #define XE_SMB_VAR_SMB_SESSION_LIST_OFFSET_DATA 0x1e48
 
-
 /* Types */
 // STRUCT smb_connobj
 #define XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_CHILDREN_OFFSET 64

@@ -7,9 +7,10 @@
 
 #include <IOKit/kext/KextManager.h>
 
-#include "allocator_msdosfs.h"
-#include "msdosfs.h"
-#include "util_assert.h"
+#include "../external/msdosfs/msdosfs.h"
+
+#include "allocator/msdosfs.h"
+#include "util/assert.h"
 
 #define BASE_IMAGE_NAME "exp_msdosfs_base.dmg"
 
@@ -106,7 +107,7 @@ int msdosfs_hdiutil_attach(const char* image, char* dev_out, size_t dev_size) {
 
 
 int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount_out) {
-    char* base_img_path = "allocators/msdosfs/"BASE_IMAGE_NAME;
+    char* base_img_path = "allocators/"BASE_IMAGE_NAME;
     char temp_dir[PATH_MAX] = "/tmp/exp_msdos.XXXXXXXX";
 
     if (!mkdtemp(temp_dir)) {

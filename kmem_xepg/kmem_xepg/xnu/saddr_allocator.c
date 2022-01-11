@@ -14,9 +14,10 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <xe/util/dispatch.h>
+#include <xe/util/assert.h>
+
 #include "saddr_allocator.h"
-#include "util_dispatch.h"
-#include "util_assert.h"
 
 #define SADDR_SIZE 64
 #define SADDR_PATH_SIZE (64 - offsetof(struct sockaddr_un, sun_path))

@@ -21,17 +21,17 @@
 
 #include <dispatch/dispatch.h>
 
-#include "kmem.h"
-#include "kmem_remote.h"
-#include "slider.h"
-#include "platform_params.h"
-#include "allocator_msdosfs.h"
+#include <xe/memory/kmem.h>
+#include <xe/memory/kmem_remote.h>
+#include <xe/slider/kernel.h>
+#include <xe/allocator/msdosfs.h>
+#include <xe/xnu/proc.h>
+#include <xe/util/lck_rw.h>
+#include <xe/util/dispatch.h>
+#include <xe/util/ptrauth.h>
+#include <xe/util/assert.h>
 
-#include "xnu_proc.h"
-#include "util_lck_rw.h"
-#include "util_dispatch.h"
-#include "util_assert.h"
-#include "util_ptrauth.h"
+#include "platform_params.h"
 
 
 IOSurfaceRef iosurface_create(void) {
@@ -67,13 +67,13 @@ int main(int argc, const char* argv[]) {
     
     struct xe_kmem_backend* client = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(client);
-    xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(client));
+    xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(client));
     
     uintptr_t proc = xe_xnu_proc_current_proc();
     
     printf("proc: %p\n", (void*)proc);
 
-    uintptr_t kheap_default = xe_slider_slide(VAR_KHEAP_DEFAULT_ADDR);
+    uintptr_t kheap_default = xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR);
     uintptr_t kh_large_map = xe_kmem_read_uint64(KMEM_OFFSET(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET));
     uintptr_t lck_rw = KMEM_OFFSET(kh_large_map, TYPE_VM_MAP_MEM_LCK_RW_OFFSET);
     printf("[INFO] locking %p\n", (void*)lck_rw);

@@ -11,11 +11,12 @@
 
 #include <sys/errno.h>
 
+#include <xe/util/assert.h>
+
 #include "../smb/client.h"
 #include "../public/kmem_xepg/smb_custom.h"
 
 #include "kmem_neighbor_reader.h"
-#include "util_assert.h"
 
 
 static _Atomic uint32_t kmem_neighbor_reader_keygen = 0;

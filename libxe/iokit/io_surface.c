@@ -7,15 +7,15 @@
 
 #include <sys/errno.h>
 
-#include "kmem.h"
-#include "slider.h"
-#include "io_surface.h"
-#include "io_registry_entry.h"
-#include "os_array.h"
-#include "os_dictionary.h"
-#include "kmem.h"
+#include "memory/kmem.h"
+#include "slider/kernel.h"
+#include "iokit/io_surface.h"
+#include "iokit/io_registry_entry.h"
+#include "iokit/os_array.h"
+#include "iokit/os_dictionary.h"
+#include "util/assert.h"
+
 #include "platform_params.h"
-#include "util_assert.h"
 
 
 uintptr_t xe_io_surface_root(void) {
@@ -26,7 +26,7 @@ uintptr_t xe_io_surface_root(void) {
     xe_assert_err(error);
 
     uintptr_t io_resources;
-    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_slide(KMEM_OFFSET(VAR_IO_RESOURCES_VTABLE, 0x10)), &io_resources);
+    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_kernel_slide(KMEM_OFFSET(VAR_IO_RESOURCES_VTABLE, 0x10)), &io_resources);
     xe_assert_err(error);
 
     uintptr_t io_surface_root;

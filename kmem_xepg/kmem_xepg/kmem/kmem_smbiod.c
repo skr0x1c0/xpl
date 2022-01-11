@@ -8,11 +8,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <xe/memory/kmem.h>
+#include <xe/util/assert.h>
+#include <xe/util/log.h>
+
+
 #include "kmem_smbiod.h"
-#include "kmem.h"
 #include "smbiod_rw.h"
-#include "util_assert.h"
-#include "util_log.h"
 
 
 #define MAX_READ_SIZE UINT32_MAX

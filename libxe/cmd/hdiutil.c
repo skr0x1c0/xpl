@@ -12,7 +12,7 @@
 #include <limits.h>
 #include <sys/errno.h>
 
-#include "cmd_hdiutil.h"
+#include "cmd/hdiutil.h"
 
 
 int xe_cmd_hdiutil_attach_nomount(const char* image, char* dev_out, size_t dev_size) {

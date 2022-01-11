@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "util_zalloc.h"
+#include "zalloc.h"
 
 typedef struct xe_util_kfunc_basic* xe_util_kfunc_basic_t;
 

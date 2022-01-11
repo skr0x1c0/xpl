@@ -16,11 +16,11 @@
 #include <sys/un.h>
 #include <sys/errno.h>
 
-#include "kmem_remote.h"
-#include "kmem.h"
-#include "util_misc.h"
-#include "util_assert.h"
-#include "util_log.h"
+#include "memory/kmem_remote.h"
+#include "memory/kmem.h"
+#include "util/misc.h"
+#include "util/assert.h"
+#include "util/log.h"
 
 
 // MARK: server

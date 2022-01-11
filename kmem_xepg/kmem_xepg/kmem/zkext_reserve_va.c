@@ -8,14 +8,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <xe/util/misc.h>
+#include <xe/util/assert.h>
+
 #include "../smb/ssn_allocator.h"
 #include "../smb/nic_allocator.h"
 
 #include "zkext_reserve_va.h"
 #include "allocator_rw.h"
-#include "util_misc.h"
+
 #include "platform_params.h"
-#include "util_assert.h"
 
 
 void kmem_zkext_reserve_va_small(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {

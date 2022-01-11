@@ -12,6 +12,10 @@
 #include <sys/proc_info.h>
 #include <sys/errno.h>
 
+#include <xe/util/misc.h>
+#include <xe/util/log.h>
+#include <xe/util/assert.h>
+
 #include "../smb/nic_allocator.h"
 #include "../smb/ssn_allocator.h"
 #include "../external/smbfs/netbios.h"
@@ -20,10 +24,8 @@
 #include "kmem_neighbor_reader.h"
 #include "allocator_rw.h"
 #include "allocator_prpw.h"
-#include "util_misc.h"
-#include "util_log.h"
+
 #include "platform_params.h"
-#include "util_assert.h"
 
 
 #define NUM_PAD_ELEMENTS (XE_PAGE_SIZE / 32)

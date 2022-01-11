@@ -10,12 +10,13 @@
 
 #include <sys/errno.h>
 
-#include "os_dictionary.h"
-#include "os_string.h"
+#include "iokit/os_dictionary.h"
+#include "iokit/os_string.h"
+#include "memory/kmem.h"
+#include "util/ptrauth.h"
+#include "util/assert.h"
+
 #include "platform_params.h"
-#include "kmem.h"
-#include "util_ptrauth.h"
-#include "util_assert.h"
 
 
 uint xe_os_dictionary_count(uintptr_t dict) {

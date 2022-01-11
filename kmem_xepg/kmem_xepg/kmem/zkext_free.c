@@ -11,6 +11,11 @@
 #include <sys/errno.h>
 #include <dispatch/dispatch.h>
 
+#include <xe/util/misc.h>
+#include <xe/util/dispatch.h>
+#include <xe/util/log.h>
+#include <xe/util/assert.h>
+
 #include "../smb/nic_allocator.h"
 #include "../smb/client.h"
 
@@ -18,11 +23,8 @@
 #include "allocator_rw.h"
 #include "allocator_nic_parallel.h"
 #include "zkext_neighbor_reader.h"
+
 #include "platform_params.h"
-#include "util_misc.h"
-#include "util_dispatch.h"
-#include "util_log.h"
-#include "util_assert.h"
 
 
 #define NUM_SLOW_DOWN_NICS 150

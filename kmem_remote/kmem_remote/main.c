@@ -10,10 +10,10 @@
 #include <stdio.h>
 #include <gym_client.h>
 
-#include "kmem.h"
-#include "kmem_tester.h"
-#include "kmem_remote.h"
-#include "util_assert.h"
+#include <xe/memory/kmem.h>
+#include <xe/memory/kmem_remote.h>
+#include <xe_dev/memory/tester.h>
+#include <xe/util/assert.h>
 
 int main(int argc, const char * argv[]) {
     srandom(1221);

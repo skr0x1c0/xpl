@@ -3,7 +3,7 @@
 #include <IOKit/IOKitLib.h>
 #include <IOSurface/IOSurface.h>
 
-#include "allocator_iosurface.h"
+#include "allocator/iosurface.h"
 
 
 struct xe_iosurface_allocator {

@@ -10,13 +10,14 @@
 
 #include <sys/errno.h>
 
-#include "util_zalloc.h"
-#include "kmem.h"
-#include "slider.h"
+#include "util/zalloc.h"
+#include "memory/kmem.h"
+#include "slider/kernel.h"
+#include "util/misc.h"
+#include "util/assert.h"
+#include "util/log.h"
+
 #include "platform_params.h"
-#include "util_misc.h"
-#include "util_assert.h"
-#include "util_log.h"
 
 #define MAX_PAGEQ_LEN 32
 
@@ -31,20 +32,20 @@ uintptr_t xe_util_zalloc_pva_to_addr(uint32_t pva) {
 }
 
 uintptr_t xe_util_zalloc_find_zone_at_index(uint zone_index) {
-    return xe_slider_slide(VAR_ZONE_ARRAY_ADDR) + zone_index * TYPE_ZONE_SIZE;
+    return xe_slider_kernel_slide(VAR_ZONE_ARRAY_ADDR) + zone_index * TYPE_ZONE_SIZE;
 }
 
 uint xe_util_zalloc_zone_to_index(uintptr_t zone) {
-    return (uint)((zone - xe_slider_slide(VAR_ZONE_ARRAY_ADDR)) / TYPE_ZONE_SIZE);
+    return (uint)((zone - xe_slider_kernel_slide(VAR_ZONE_ARRAY_ADDR)) / TYPE_ZONE_SIZE);
 }
 
 uintptr_t xe_util_zalloc_pageq_to_meta(uint32_t pageq) {
-    uintptr_t zi_meta_base = xe_kmem_read_uint64(KMEM_OFFSET(xe_slider_slide(VAR_ZONE_INFO_ADDR), TYPE_ZONE_INFO_MEM_ZI_META_BASE_OFFSET)) ;
+    uintptr_t zi_meta_base = xe_kmem_read_uint64(KMEM_OFFSET(xe_slider_kernel_slide(VAR_ZONE_INFO_ADDR), TYPE_ZONE_INFO_MEM_ZI_META_BASE_OFFSET)) ;
     return zi_meta_base + ((uintptr_t)pageq * TYPE_ZONE_PAGE_METADATA_SIZE);
 }
 
 uintptr_t xe_util_zalloc_bitmap_offset_to_ref(uint32_t offset) {
-    uintptr_t zone_info = xe_slider_slide(VAR_ZONE_INFO_ADDR);
+    uintptr_t zone_info = xe_slider_kernel_slide(VAR_ZONE_INFO_ADDR);
     uintptr_t zi_bits_range = KMEM_OFFSET(zone_info, TYPE_ZONE_INFO_MEM_ZI_BITS_RANGE_OFFSET);
     uintptr_t zba_slot_base = xe_kmem_read_uint64(KMEM_OFFSET(zi_bits_range, TYPE_ZONE_MAP_RANGE_MEM_MIN_ADDRESS_OFFSET));
     return zba_slot_base + (offset & ~0x7);

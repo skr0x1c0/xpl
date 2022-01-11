@@ -9,12 +9,13 @@
 #include <string.h>
 #include <mach-o/loader.h>
 
-#include "slider_kext.h"
-#include "kmem.h"
-#include "slider.h"
+#include "slider/kext.h"
+#include "slider/kernel.h"
+#include "memory/kmem.h"
+#include "util/assert.h"
+#include "util/log.h"
+
 #include "platform_params.h"
-#include "util_assert.h"
-#include "util_log.h"
 
 
 typedef struct {
@@ -34,7 +35,7 @@ struct xe_slider_kext {
 
 uintptr_t xe_slider_kext_find_kext_header(char* identifier, enum xe_kext_collection_type collection) {
     xe_assert(collection == XE_KC_BOOT || collection == XE_KC_AUX);
-    uintptr_t header_location = xe_kmem_read_uint64(xe_slider_slide(collection == XE_KC_BOOT ? VAR_SEG_LOWEST_KC : VAR_AUXKC_MH));
+    uintptr_t header_location = xe_kmem_read_uint64(xe_slider_kernel_slide(collection == XE_KC_BOOT ? VAR_SEG_LOWEST_KC : VAR_AUXKC_MH));
     
     struct mach_header_64 header;
     xe_kmem_read(&header, header_location, sizeof(header));

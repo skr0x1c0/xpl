@@ -10,7 +10,8 @@
 
 #include <stdio.h>
 
-#include "kmem.h"
+#include <xe/memory/kmem.h>
+
 #include "smbiod_rw.h"
 
 struct xe_kmem_backend* xe_kmem_smbiod_create(kmem_smbiod_rw_t rw);
