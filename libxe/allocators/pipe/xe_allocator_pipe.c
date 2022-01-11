@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <sys/errno.h>
 
-#include "allocator_pipe.h"
+#include "xe_allocator_pipe.h"
 #include "platform_params.h"
 #include "xnu_proc.h"
 #include "util_ptrauth.h"
@@ -19,7 +19,7 @@
 #include "util_log.h"
 
 
-struct allocator_pipe {
+struct xe_allocator_pipe {
     int fd0;
     int fd1;
 };
@@ -54,7 +54,7 @@ int xe_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_out, 
     xe_assert(buffer_size >= size);
     xe_log_debug("pipe allocator allocated entry size: %d", buffer_size);
     
-    xe_allocator_pipe_t allocator = (xe_allocator_pipe_t)malloc(sizeof(struct allocator_pipe));
+    xe_allocator_pipe_t allocator = (xe_allocator_pipe_t)malloc(sizeof(struct xe_allocator_pipe));
     allocator->fd0 = fds[0];
     allocator->fd1 = fds[1];
     *allocator_out = allocator;

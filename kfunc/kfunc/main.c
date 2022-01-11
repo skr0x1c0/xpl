@@ -75,14 +75,14 @@ int main(int argc, const char* argv[]) {
     
     uintptr_t io_event_source = xe_util_kfunc_build_event_source(kfunc, record_function, "XE: Hi!");
     
-    iokit_iosurface_allocator_t allocator;
-    int error = iokit_iosurface_allocator_create(&allocator);
+    xe_iosurface_allocator_t allocator;
+    int error = xe_iosurface_allocator_create(&allocator);
     xe_assert_err(error);
     
     size_t alloc_idx;
-    error = iokit_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
+    error = xe_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
     xe_assert_err(error);
-    error = iokit_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
+    error = xe_iosurface_allocator_allocate(allocator, 64, 1, &alloc_idx);
     xe_assert_err(error);
     
     uintptr_t surface;
@@ -92,7 +92,7 @@ int main(int argc, const char* argv[]) {
     uintptr_t props = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
     error = xe_os_dictionary_set_value_of_key(props, "iosurface_alloc_0", io_event_source);
     xe_assert_err(error);
-    iokit_iosurface_allocator_destroy(&allocator);
+    xe_iosurface_allocator_destroy(&allocator);
     xe_util_kfunc_reset(kfunc);
     return 0;
 }

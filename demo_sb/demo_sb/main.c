@@ -18,7 +18,7 @@
 #include "slider.h"
 #include "util_log.h"
 #include "util_assert.h"
-#include "allocator_pipe.h"
+#include "xe_allocator_pipe.h"
 #include "util_binary.h"
 
 

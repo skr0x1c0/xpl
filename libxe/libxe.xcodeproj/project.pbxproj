@@ -16,7 +16,7 @@
 		8466F39C276DCAC5004F651E /* io_registry_entry.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4C276DC6E500138492 /* io_registry_entry.c */; };
 		8466F39D276DCAD3004F651E /* allocator_iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5B276DC6E500138492 /* allocator_iosurface.c */; };
 		8466F39E276DCAD3004F651E /* allocator_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB56276DC6E500138492 /* allocator_msdosfs.c */; };
-		8466F39F276DCAD3004F651E /* allocator_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5F276DC6E500138492 /* allocator_pipe.c */; };
+		8466F39F276DCAD3004F651E /* xe_allocator_pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5F276DC6E500138492 /* xe_allocator_pipe.c */; };
 		8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB7C276DC6E500138492 /* kmem_msdosfs.c */; };
 		8466F3A1276DCAE2004F651E /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB80276DC6E500138492 /* kmem_remote.c */; };
 		8466F3A4276DCAE2004F651E /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB79276DC6E500138492 /* kmem.c */; };
@@ -26,7 +26,6 @@
 		8466F3AB276DCAFE004F651E /* util_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB69276DC6E500138492 /* util_lck_rw.c */; };
 		8466F3AC276DCAFE004F651E /* util_pacda.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB6B276DC6E500138492 /* util_pacda.c */; };
 		8466F3AD276DCAFE004F651E /* util_kalloc_heap.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB6F276DC6E500138492 /* util_kalloc_heap.c */; };
-		8466F3AE276DCAFE004F651E /* util_pacia.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB6D276DC6E500138492 /* util_pacia.c */; };
 		8466F3AF276DCAFE004F651E /* util_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB67276DC6E500138492 /* util_dispatch.c */; };
 		8466F3B0276DCAFE004F651E /* util_kfunc_basic.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB73276DC6E500138492 /* util_kfunc_basic.c */; };
 		8466F3B1276DCAFE004F651E /* util_zalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB71276DC6E500138492 /* util_zalloc.c */; };
@@ -66,8 +65,8 @@
 		84F7BB59276DC6E500138492 /* msdosfs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = msdosfs.h; sourceTree = "<group>"; };
 		84F7BB5B276DC6E500138492 /* allocator_iosurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = allocator_iosurface.c; sourceTree = "<group>"; };
 		84F7BB5C276DC6E500138492 /* allocator_iosurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = allocator_iosurface.h; sourceTree = "<group>"; };
-		84F7BB5E276DC6E500138492 /* allocator_pipe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_pipe.h; sourceTree = "<group>"; };
-		84F7BB5F276DC6E500138492 /* allocator_pipe.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_pipe.c; sourceTree = "<group>"; };
+		84F7BB5E276DC6E500138492 /* xe_allocator_pipe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xe_allocator_pipe.h; sourceTree = "<group>"; };
+		84F7BB5F276DC6E500138492 /* xe_allocator_pipe.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xe_allocator_pipe.c; sourceTree = "<group>"; };
 		84F7BB62276DC6E500138492 /* util_binary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_binary.h; sourceTree = "<group>"; };
 		84F7BB63276DC6E500138492 /* util_binary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_binary.c; sourceTree = "<group>"; };
 		84F7BB64276DC6E500138492 /* util_ptrauth.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_ptrauth.h; sourceTree = "<group>"; };
@@ -78,8 +77,6 @@
 		84F7BB69276DC6E500138492 /* util_lck_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_lck_rw.c; sourceTree = "<group>"; };
 		84F7BB6A276DC6E500138492 /* util_pacda.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_pacda.h; sourceTree = "<group>"; };
 		84F7BB6B276DC6E500138492 /* util_pacda.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_pacda.c; sourceTree = "<group>"; };
-		84F7BB6C276DC6E500138492 /* util_pacia.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_pacia.h; sourceTree = "<group>"; };
-		84F7BB6D276DC6E500138492 /* util_pacia.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_pacia.c; sourceTree = "<group>"; };
 		84F7BB6E276DC6E500138492 /* util_kalloc_heap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_kalloc_heap.h; sourceTree = "<group>"; };
 		84F7BB6F276DC6E500138492 /* util_kalloc_heap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = util_kalloc_heap.c; sourceTree = "<group>"; };
 		84F7BB70276DC6E500138492 /* util_zalloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_zalloc.h; sourceTree = "<group>"; };
@@ -205,8 +202,8 @@
 		84F7BB60276DC6E500138492 /* pipe */ = {
 			isa = PBXGroup;
 			children = (
-				84F7BB5E276DC6E500138492 /* allocator_pipe.h */,
-				84F7BB5F276DC6E500138492 /* allocator_pipe.c */,
+				84F7BB5E276DC6E500138492 /* xe_allocator_pipe.h */,
+				84F7BB5F276DC6E500138492 /* xe_allocator_pipe.c */,
 			);
 			path = pipe;
 			sourceTree = "<group>";
@@ -234,8 +231,6 @@
 				84F7BB69276DC6E500138492 /* util_lck_rw.c */,
 				84F7BB6A276DC6E500138492 /* util_pacda.h */,
 				84F7BB6B276DC6E500138492 /* util_pacda.c */,
-				84F7BB6C276DC6E500138492 /* util_pacia.h */,
-				84F7BB6D276DC6E500138492 /* util_pacia.c */,
 				84F7BB6E276DC6E500138492 /* util_kalloc_heap.h */,
 				84F7BB6F276DC6E500138492 /* util_kalloc_heap.c */,
 				84F7BB70276DC6E500138492 /* util_zalloc.h */,
@@ -353,12 +348,11 @@
 				8466F39B276DCAC5004F651E /* os_string.c in Sources */,
 				8466F3AF276DCAFE004F651E /* util_dispatch.c in Sources */,
 				8466F3A8276DCAED004F651E /* xnu_proc.c in Sources */,
-				8466F3AE276DCAFE004F651E /* util_pacia.c in Sources */,
 				84374D6127817CE900E2E187 /* slider_kext.c in Sources */,
 				8466F3A9276DCAF2004F651E /* cmd_hdiutil.c in Sources */,
 				8466F39A276DCAC5004F651E /* io_surface.c in Sources */,
 				8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */,
-				8466F39F276DCAD3004F651E /* allocator_pipe.c in Sources */,
+				8466F39F276DCAD3004F651E /* xe_allocator_pipe.c in Sources */,
 				8466F3AD276DCAFE004F651E /* util_kalloc_heap.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

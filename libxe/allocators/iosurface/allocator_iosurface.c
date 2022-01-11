@@ -6,13 +6,13 @@
 #include "allocator_iosurface.h"
 
 
-struct iokit_iosurface_allocator {
+struct xe_iosurface_allocator {
     _Atomic size_t alloc_idx;
     IOSurfaceRef surface;
 };
 
 
-int iokit_iosurface_allocator_create(iokit_iosurface_allocator_t* allocator_out) {
+int xe_iosurface_allocator_create(xe_iosurface_allocator_t* allocator_out) {
     CFMutableDictionaryRef props = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     int alloc_size_raw_value = 8;
     CFNumberRef alloc_size_cfnum = CFNumberCreate(NULL, kCFNumberSInt32Type, &alloc_size_raw_value);
@@ -24,7 +24,7 @@ int iokit_iosurface_allocator_create(iokit_iosurface_allocator_t* allocator_out)
         return EFAULT;
     }
 
-    iokit_iosurface_allocator_t allocator = (iokit_iosurface_allocator_t)malloc(sizeof(struct iokit_iosurface_allocator));
+    xe_iosurface_allocator_t allocator = (xe_iosurface_allocator_t)malloc(sizeof(struct xe_iosurface_allocator));
     allocator->surface = surface;
     atomic_init(&allocator->alloc_idx, 0);
     *allocator_out = allocator;
@@ -33,7 +33,7 @@ int iokit_iosurface_allocator_create(iokit_iosurface_allocator_t* allocator_out)
     return 0;
 }
 
-int iokit_iosurface_allocator_allocate(iokit_iosurface_allocator_t allocator, int size, int count, size_t* alloc_idx_out) {
+int xe_iosurface_allocator_allocate(xe_iosurface_allocator_t allocator, int size, int count, size_t* alloc_idx_out) {
     if (size % 8 != 0) {
         return EINVAL;
     }
@@ -76,7 +76,7 @@ int iokit_iosurface_allocator_allocate(iokit_iosurface_allocator_t allocator, in
     return 0;
 }
 
-int iokit_iosurface_allocator_release(iokit_iosurface_allocator_t allocator, size_t alloc_idx) {
+int xe_iosurface_allocator_release(xe_iosurface_allocator_t allocator, size_t alloc_idx) {
     char key_raw[NAME_MAX];
     snprintf(key_raw, sizeof(key_raw), "iosurface_alloc_%lu", alloc_idx);
     CFStringRef key = CFStringCreateWithCString(kCFAllocatorDefault, key_raw, kCFStringEncodingUTF8);
@@ -85,8 +85,8 @@ int iokit_iosurface_allocator_release(iokit_iosurface_allocator_t allocator, siz
     return 0;
 }
 
-int iokit_iosurface_allocator_destroy(iokit_iosurface_allocator_t* allocator_p) {
-    iokit_iosurface_allocator_t allocator = *allocator_p;
+int xe_iosurface_allocator_destroy(xe_iosurface_allocator_t* allocator_p) {
+    xe_iosurface_allocator_t allocator = *allocator_p;
     IOSurfaceRemoveAllValues(allocator->surface);
     IOSurfaceDecrementUseCount(allocator->surface);
     free(allocator);
