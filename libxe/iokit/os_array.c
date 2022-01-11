@@ -13,11 +13,11 @@
 
 
 uint xe_os_array_count(uintptr_t array) {
-    return xe_kmem_read_uint32(KMEM_OFFSET(array, TYPE_OS_ARRAY_MEM_COUNT_OFFSET));
+    return xe_kmem_read_uint32(array, TYPE_OS_ARRAY_MEM_COUNT_OFFSET);
 }
 
 uintptr_t xe_os_array_value_at_index(uintptr_t array, int index) {
-    uintptr_t values = xe_kmem_read_uint64(KMEM_OFFSET(array, TYPE_OS_ARRAY_MEM_ARRAY_OFFSET));
+    uintptr_t values = xe_kmem_read_uint64(array, TYPE_OS_ARRAY_MEM_ARRAY_OFFSET);
     values = xe_ptrauth_strip(values);
-    return xe_kmem_read_uint64(KMEM_OFFSET(values, index * sizeof(uintptr_t)));
+    return xe_kmem_read_uint64(values, index * sizeof(uintptr_t));
 }

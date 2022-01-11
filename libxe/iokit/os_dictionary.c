@@ -20,19 +20,19 @@
 
 
 uint xe_os_dictionary_count(uintptr_t dict) {
-    return xe_kmem_read_uint32(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET));
+    return xe_kmem_read_uint32(dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET);
 }
 
 uintptr_t xe_os_dictionary_key(uintptr_t dict_entry, int index) {
-    return xe_kmem_read_uint64(KMEM_OFFSET(dict_entry, index * sizeof(uintptr_t) * 2));
+    return xe_kmem_read_uint64(dict_entry, index * sizeof(uintptr_t) * 2);
 }
 
 uintptr_t xe_os_dictionary_value(uintptr_t dict_entry, int index) {
-    return xe_kmem_read_uint64(KMEM_OFFSET(dict_entry, (index * 2 + 1) * sizeof(uintptr_t)));
+    return xe_kmem_read_uint64(dict_entry, (index * 2 + 1) * sizeof(uintptr_t));
 }
 
 uintptr_t xe_os_dictionary_dict_entry(uintptr_t dict) {
-    return xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET)));
+    return xe_ptrauth_strip(xe_kmem_read_uint64(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET));
 }
 
 uintptr_t xe_os_dictionary_key_at_index(uintptr_t dict, int index) {
@@ -44,8 +44,8 @@ uintptr_t xe_os_dictionary_value_at_index(uintptr_t dict, int index) {
 }
 
 void xe_os_dictionary_set_value_at_idx(uintptr_t dict, int idx, uintptr_t value) {
-    uintptr_t dst = KMEM_OFFSET(xe_os_dictionary_dict_entry(dict), (idx * 2 + 1) * sizeof(uintptr_t));
-    xe_kmem_write_uint64(dst, value);
+    uintptr_t dst = xe_os_dictionary_dict_entry(dict) + (idx * 2 + 1) * sizeof(uintptr_t);
+    xe_kmem_write_uint64(dst, 0, value);
 }
 
 int xe_os_dictionary_set_value_of_key(uintptr_t dict, char* key, uintptr_t value) {
@@ -81,7 +81,7 @@ void xe_os_dictionary_print_keys(uintptr_t dict) {
     uint count = xe_os_dictionary_count(dict);
     uintptr_t dictEntry = xe_os_dictionary_dict_entry(dict);
     for (uint i=0; i<count; i++) {
-        uintptr_t key = xe_kmem_read_uint64(dictEntry + (i * 2 * sizeof(uintptr_t)));
+        uintptr_t key = xe_kmem_read_uint64(dictEntry, (i * 2 * sizeof(uintptr_t)));
         
         char key_str[PATH_MAX];
         size_t key_len = xe_os_string_read(key_str, key, sizeof(key_str));

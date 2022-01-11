@@ -38,7 +38,7 @@ void xe_kmem_tester_read(size_t size) {
     xe_assert_err(error);
     
     char read_buffer[size];
-    xe_kmem_read(read_buffer, slot_addr, sizeof(read_buffer));
+    xe_kmem_read(read_buffer, slot_addr, 0, sizeof(read_buffer));
     xe_assert(memcmp(read_buffer, write_buffer, sizeof(write_buffer)) == 0);
     gym_alloc_free(slot);
     
@@ -55,7 +55,7 @@ void xe_kmem_tester_write(size_t size) {
     
     char write_buffer[size];
     xe_kmem_random_fill_buffer(write_buffer, sizeof(write_buffer));
-    xe_kmem_write(slot_addr, write_buffer, sizeof(write_buffer));
+    xe_kmem_write(slot_addr, 0, write_buffer, sizeof(write_buffer));
     
     char read_buffer[size];
     error = gym_alloc_read(slot, read_buffer, sizeof(read_buffer), NULL);

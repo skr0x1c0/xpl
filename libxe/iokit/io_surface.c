@@ -26,7 +26,7 @@ uintptr_t xe_io_surface_root(void) {
     xe_assert_err(error);
 
     uintptr_t io_resources;
-    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_kernel_slide(KMEM_OFFSET(VAR_IO_RESOURCES_VTABLE, 0x10)), &io_resources);
+    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_kernel_slide(VAR_IO_RESOURCES_VTABLE+ 0x10), &io_resources);
     xe_assert_err(error);
 
     uintptr_t io_surface_root;
@@ -38,11 +38,11 @@ uintptr_t xe_io_surface_root(void) {
 
 
 int xe_io_surface_scan_user_client_for_prop(uintptr_t root_user_client, char* key, uintptr_t* out) {
-    uint clients = xe_kmem_read_uint32(KMEM_OFFSET(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_COUNT_OFFSET));
+    uint clients = xe_kmem_read_uint32(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_COUNT_OFFSET);
     
-    uintptr_t client_array_p = xe_kmem_read_uint64(KMEM_OFFSET(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_ARRAY_OFFSET));
+    uintptr_t client_array_p = xe_kmem_read_uint64(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_ARRAY_OFFSET);
     uintptr_t client_array[clients];
-    xe_kmem_read(client_array, client_array_p, sizeof(client_array));
+    xe_kmem_read(client_array, client_array_p, 0, sizeof(client_array));
     
     for (uint i=0; i<clients; i++) {
         uintptr_t user_client = client_array[i];
@@ -50,8 +50,8 @@ int xe_io_surface_scan_user_client_for_prop(uintptr_t root_user_client, char* ke
             continue;
         }
         
-        uintptr_t surface = xe_kmem_read_uint64(KMEM_OFFSET(user_client, TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET));
-        uintptr_t props_dict = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
+        uintptr_t surface = xe_kmem_read_uint64(user_client, TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET);
+        uintptr_t props_dict = xe_kmem_read_uint64(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET);
         
         if (!props_dict) {
             continue;

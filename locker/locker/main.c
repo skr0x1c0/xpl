@@ -74,8 +74,8 @@ int main(int argc, const char* argv[]) {
     printf("proc: %p\n", (void*)proc);
 
     uintptr_t kheap_default = xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR);
-    uintptr_t kh_large_map = xe_kmem_read_uint64(KMEM_OFFSET(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET));
-    uintptr_t lck_rw = KMEM_OFFSET(kh_large_map, TYPE_VM_MAP_MEM_LCK_RW_OFFSET);
+    uintptr_t kh_large_map = xe_kmem_read_uint64(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET);
+    uintptr_t lck_rw = kh_large_map + TYPE_VM_MAP_MEM_LCK_RW_OFFSET;
     printf("[INFO] locking %p\n", (void*)lck_rw);
     
     printf("[INFO] lock start\n");
@@ -92,18 +92,18 @@ int main(int argc, const char* argv[]) {
 
     sleep(3);
     
-    printf("pid: %d\n", xe_kmem_read_uint32(KMEM_OFFSET(proc, TYPE_PROC_MEM_P_PID_OFFSET)));
+    printf("pid: %d\n", xe_kmem_read_uint32(proc, TYPE_PROC_MEM_P_PID_OFFSET));
     
-    uintptr_t task = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
-    printf("num_threads: %d\n", xe_kmem_read_uint32(KMEM_OFFSET(task, TYPE_TASK_MEM_THREAD_COUNT_OFFSET)));
+    uintptr_t task = xe_ptrauth_strip(xe_kmem_read_uint64(proc, TYPE_PROC_MEM_TASK_OFFSET));
+    printf("num_threads: %d\n", xe_kmem_read_uint32(task, TYPE_TASK_MEM_THREAD_COUNT_OFFSET));
     
-    uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET));
-    while (cursor != 0 && cursor != KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET)) {
-        uintptr_t kernel_stack = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_THREAD_MEM_KERNEL_STACK_OFFSET));
-        int state = xe_kmem_read_int32(KMEM_OFFSET(cursor, TYPE_THREAD_MEM_STATE_OFFSET));
+    uintptr_t cursor = xe_kmem_read_uint64(task, TYPE_TASK_MEM_THREADS_OFFSET);
+    while (cursor != 0 && cursor != task + TYPE_TASK_MEM_THREADS_OFFSET) {
+        uintptr_t kernel_stack = xe_kmem_read_uint64(cursor, TYPE_THREAD_MEM_KERNEL_STACK_OFFSET);
+        int state = xe_kmem_read_int32(cursor, TYPE_THREAD_MEM_STATE_OFFSET);
 
         printf("thread: %p\t kernel stack: %p\t state: %d\n", (void*)cursor, (void*)kernel_stack, state);
-        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_THREAD_MEM_TASK_THREADS_OFFSET));
+        cursor = xe_kmem_read_uint64(cursor, TYPE_THREAD_MEM_TASK_THREADS_OFFSET);
     }
 
 //    getpass("press enter to continue...\n");

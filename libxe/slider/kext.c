@@ -35,14 +35,14 @@ struct xe_slider_kext {
 
 uintptr_t xe_slider_kext_find_kext_header(char* identifier, enum xe_kext_collection_type collection) {
     xe_assert(collection == XE_KC_BOOT || collection == XE_KC_AUX);
-    uintptr_t header_location = xe_kmem_read_uint64(xe_slider_kernel_slide(collection == XE_KC_BOOT ? VAR_SEG_LOWEST_KC : VAR_AUXKC_MH));
+    uintptr_t header_location = xe_kmem_read_uint64(xe_slider_kernel_slide(collection == XE_KC_BOOT ? VAR_SEG_LOWEST_KC : VAR_AUXKC_MH), 0);
     
     struct mach_header_64 header;
-    xe_kmem_read(&header, header_location, sizeof(header));
+    xe_kmem_read(&header, header_location, 0, sizeof(header));
     xe_assert(header.magic == MH_MAGIC_64);
     
     struct load_command* commands = malloc(header.sizeofcmds);
-    xe_kmem_read(commands, header_location + sizeof(header), header.sizeofcmds);
+    xe_kmem_read(commands, header_location, sizeof(header), header.sizeofcmds);
     
     struct load_command* cursor = commands;
     for (int i=0; i<header.ncmds; i++) {
@@ -71,11 +71,11 @@ xe_slider_kext_t xe_slider_kext_create(char* identifier, enum xe_kext_collection
     
     uintptr_t kext_header_location = xe_slider_kext_find_kext_header(identifier, collection);
     struct mach_header_64 header;
-    xe_kmem_read(&header, kext_header_location, sizeof(header));
+    xe_kmem_read(&header, kext_header_location, 0, sizeof(header));
     xe_assert(header.magic == MH_MAGIC_64);
     
     struct load_command* commands = malloc(header.sizeofcmds);
-    xe_kmem_read(commands, kext_header_location + sizeof(header), header.sizeofcmds);
+    xe_kmem_read(commands, kext_header_location, sizeof(header), header.sizeofcmds);
     
     struct load_command* cursor = commands;
     for (int i=0; i<header.ncmds; i++) {

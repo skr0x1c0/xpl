@@ -22,8 +22,8 @@ size_t xe_os_string_length(uintptr_t string) {
 
 size_t xe_os_string_read(char* dst, uintptr_t string, size_t dst_size) {
     size_t size = xe_os_string_length(string);
-    uintptr_t data = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(string, TYPE_OS_STRING_MEM_STRING_OFFSET)));
-    xe_kmem_read(dst, data, XE_MIN(size, dst_size - 1));
+    uintptr_t data = xe_ptrauth_strip(xe_kmem_read_uint64(string, TYPE_OS_STRING_MEM_STRING_OFFSET));
+    xe_kmem_read(dst, data, 0, XE_MIN(size, dst_size - 1));
     dst[dst_size - 1] = '\0';
     return size;
 }

