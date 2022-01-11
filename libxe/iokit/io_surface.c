@@ -11,8 +11,8 @@
 #include "slider.h"
 #include "io_surface.h"
 #include "io_registry_entry.h"
-#include "io_array.h"
-#include "io_dictionary.h"
+#include "os_array.h"
+#include "os_dictionary.h"
 #include "kmem.h"
 #include "platform_params.h"
 #include "util_assert.h"
@@ -58,7 +58,7 @@ int xe_io_surface_scan_user_client_for_prop(uintptr_t root_user_client, char* ke
         }
         
         uintptr_t temp;
-        int error = xe_io_os_dictionary_find_value(props_dict, key, &temp, NULL);
+        int error = xe_os_dictionary_find_value(props_dict, key, &temp, NULL);
         if (!error) {
             *out = surface;
             return 0;
@@ -73,12 +73,12 @@ int xe_io_surface_scan_all_clients_for_prop(char* key, uintptr_t* out) {
 
     uintptr_t registry = xe_io_registry_entry_registry_table(root);
     uintptr_t children;
-    int error = xe_io_os_dictionary_find_value(registry, "IOServiceChildLinks", &children, NULL);
+    int error = xe_os_dictionary_find_value(registry, "IOServiceChildLinks", &children, NULL);
     xe_assert_err(error);
 
-    for (int i=xe_io_os_array_count(children)-1; i>=0; i--) {
+    for (int i=xe_os_array_count(children)-1; i>=0; i--) {
         uintptr_t target_surface = 0;
-        error = xe_io_surface_scan_user_client_for_prop(xe_io_os_array_value_at_index(children, i), key, &target_surface);
+        error = xe_io_surface_scan_user_client_for_prop(xe_os_array_value_at_index(children, i), key, &target_surface);
         if (!error) {
             *out = target_surface;
             return 0;

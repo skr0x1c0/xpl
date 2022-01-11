@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		842A425D2780618500CB560F /* slider.c in Sources */ = {isa = PBXBuildFile; fileRef = 842A425C2780618500CB560F /* slider.c */; };
 		84374D6127817CE900E2E187 /* slider_kext.c in Sources */ = {isa = PBXBuildFile; fileRef = 84374D6027817B5200E2E187 /* slider_kext.c */; };
-		8466F398276DCA9B004F651E /* io_dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB46276DC6E500138492 /* io_dictionary.c */; };
-		8466F399276DCAC5004F651E /* io_array.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4A276DC6E500138492 /* io_array.c */; };
+		8466F398276DCA9B004F651E /* os_dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB46276DC6E500138492 /* os_dictionary.c */; };
+		8466F399276DCAC5004F651E /* os_array.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4A276DC6E500138492 /* os_array.c */; };
 		8466F39A276DCAC5004F651E /* io_surface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4E276DC6E500138492 /* io_surface.c */; };
-		8466F39B276DCAC5004F651E /* io_string.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB48276DC6E500138492 /* io_string.c */; };
+		8466F39B276DCAC5004F651E /* os_string.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB48276DC6E500138492 /* os_string.c */; };
 		8466F39C276DCAC5004F651E /* io_registry_entry.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4C276DC6E500138492 /* io_registry_entry.c */; };
 		8466F39D276DCAD3004F651E /* allocator_iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5B276DC6E500138492 /* allocator_iosurface.c */; };
 		8466F39E276DCAD3004F651E /* allocator_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB56276DC6E500138492 /* allocator_msdosfs.c */; };
@@ -47,12 +47,12 @@
 		8466F3BF276DCBB7004F651E /* libctf.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctf.dylib; path = ../../../../../usr/local/lib/libctf.dylib; sourceTree = "<group>"; };
 		8466F3C1276DCBBA004F651E /* libdwarf.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdwarf.dylib; path = ../../../../../usr/local/lib/libdwarf.dylib; sourceTree = "<group>"; };
 		84F7BB38276DC6C000138492 /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		84F7BB45276DC6E500138492 /* io_dictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_dictionary.h; sourceTree = "<group>"; };
-		84F7BB46276DC6E500138492 /* io_dictionary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_dictionary.c; sourceTree = "<group>"; };
-		84F7BB47276DC6E500138492 /* io_string.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_string.h; sourceTree = "<group>"; };
-		84F7BB48276DC6E500138492 /* io_string.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_string.c; sourceTree = "<group>"; };
-		84F7BB49276DC6E500138492 /* io_array.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_array.h; sourceTree = "<group>"; };
-		84F7BB4A276DC6E500138492 /* io_array.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_array.c; sourceTree = "<group>"; };
+		84F7BB45276DC6E500138492 /* os_dictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_dictionary.h; sourceTree = "<group>"; };
+		84F7BB46276DC6E500138492 /* os_dictionary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = os_dictionary.c; sourceTree = "<group>"; };
+		84F7BB47276DC6E500138492 /* os_string.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_string.h; sourceTree = "<group>"; };
+		84F7BB48276DC6E500138492 /* os_string.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = os_string.c; sourceTree = "<group>"; };
+		84F7BB49276DC6E500138492 /* os_array.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_array.h; sourceTree = "<group>"; };
+		84F7BB4A276DC6E500138492 /* os_array.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = os_array.c; sourceTree = "<group>"; };
 		84F7BB4B276DC6E500138492 /* io_registry_entry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_registry_entry.h; sourceTree = "<group>"; };
 		84F7BB4C276DC6E500138492 /* io_registry_entry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_registry_entry.c; sourceTree = "<group>"; };
 		84F7BB4D276DC6E500138492 /* io_surface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_surface.h; sourceTree = "<group>"; };
@@ -148,12 +148,12 @@
 		84F7BB4F276DC6E500138492 /* iokit */ = {
 			isa = PBXGroup;
 			children = (
-				84F7BB45276DC6E500138492 /* io_dictionary.h */,
-				84F7BB46276DC6E500138492 /* io_dictionary.c */,
-				84F7BB47276DC6E500138492 /* io_string.h */,
-				84F7BB48276DC6E500138492 /* io_string.c */,
-				84F7BB49276DC6E500138492 /* io_array.h */,
-				84F7BB4A276DC6E500138492 /* io_array.c */,
+				84F7BB45276DC6E500138492 /* os_dictionary.h */,
+				84F7BB46276DC6E500138492 /* os_dictionary.c */,
+				84F7BB47276DC6E500138492 /* os_string.h */,
+				84F7BB48276DC6E500138492 /* os_string.c */,
+				84F7BB49276DC6E500138492 /* os_array.h */,
+				84F7BB4A276DC6E500138492 /* os_array.c */,
 				84F7BB4B276DC6E500138492 /* io_registry_entry.h */,
 				84F7BB4C276DC6E500138492 /* io_registry_entry.c */,
 				84F7BB4D276DC6E500138492 /* io_surface.h */,
@@ -339,8 +339,8 @@
 			files = (
 				8466F3A4276DCAE2004F651E /* kmem.c in Sources */,
 				8466F3B0276DCAFE004F651E /* util_kfunc_basic.c in Sources */,
-				8466F398276DCA9B004F651E /* io_dictionary.c in Sources */,
-				8466F399276DCAC5004F651E /* io_array.c in Sources */,
+				8466F398276DCA9B004F651E /* os_dictionary.c in Sources */,
+				8466F399276DCAC5004F651E /* os_array.c in Sources */,
 				8466F39C276DCAC5004F651E /* io_registry_entry.c in Sources */,
 				8466F3AC276DCAFE004F651E /* util_pacda.c in Sources */,
 				8466F3A1276DCAE2004F651E /* kmem_remote.c in Sources */,
@@ -350,7 +350,7 @@
 				8466F3AB276DCAFE004F651E /* util_lck_rw.c in Sources */,
 				842A425D2780618500CB560F /* slider.c in Sources */,
 				8466F39E276DCAD3004F651E /* allocator_msdosfs.c in Sources */,
-				8466F39B276DCAC5004F651E /* io_string.c in Sources */,
+				8466F39B276DCAC5004F651E /* os_string.c in Sources */,
 				8466F3AF276DCAFE004F651E /* util_dispatch.c in Sources */,
 				8466F3A8276DCAED004F651E /* xnu_proc.c in Sources */,
 				8466F3AE276DCAFE004F651E /* util_pacia.c in Sources */,
