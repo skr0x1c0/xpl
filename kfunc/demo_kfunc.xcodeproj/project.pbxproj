@@ -24,7 +24,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8466F408276DCE33004F651E /* kfunc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kfunc; sourceTree = BUILT_PRODUCTS_DIR; };
+		8466F408276DCE33004F651E /* demo_kfunc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo_kfunc; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F40B276DCE33004F651E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8466F413276DCE52004F651E /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F415276DCE55004F651E /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
@@ -55,7 +55,7 @@
 		8466F409276DCE33004F651E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8466F408276DCE33004F651E /* kfunc */,
+				8466F408276DCE33004F651E /* demo_kfunc */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -81,9 +81,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8466F407276DCE33004F651E /* kfunc */ = {
+		8466F407276DCE33004F651E /* demo_kfunc */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8466F40F276DCE33004F651E /* Build configuration list for PBXNativeTarget "kfunc" */;
+			buildConfigurationList = 8466F40F276DCE33004F651E /* Build configuration list for PBXNativeTarget "demo_kfunc" */;
 			buildPhases = (
 				8466F404276DCE33004F651E /* Sources */,
 				8466F405276DCE33004F651E /* Frameworks */,
@@ -93,9 +93,9 @@
 			);
 			dependencies = (
 			);
-			name = kfunc;
+			name = demo_kfunc;
 			productName = kfunc;
-			productReference = 8466F408276DCE33004F651E /* kfunc */;
+			productReference = 8466F408276DCE33004F651E /* demo_kfunc */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -112,7 +112,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8466F403276DCE33004F651E /* Build configuration list for PBXProject "kfunc" */;
+			buildConfigurationList = 8466F403276DCE33004F651E /* Build configuration list for PBXProject "demo_kfunc" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -125,7 +125,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8466F407276DCE33004F651E /* kfunc */,
+				8466F407276DCE33004F651E /* demo_kfunc */,
 			);
 		};
 /* End PBXProject section */
@@ -282,7 +282,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8466F403276DCE33004F651E /* Build configuration list for PBXProject "kfunc" */ = {
+		8466F403276DCE33004F651E /* Build configuration list for PBXProject "demo_kfunc" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8466F40D276DCE33004F651E /* Debug */,
@@ -291,7 +291,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8466F40F276DCE33004F651E /* Build configuration list for PBXNativeTarget "kfunc" */ = {
+		8466F40F276DCE33004F651E /* Build configuration list for PBXNativeTarget "demo_kfunc" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8466F410276DCE33004F651E /* Debug */,

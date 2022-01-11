@@ -18,7 +18,7 @@
 /* Begin PBXFileReference section */
 		843402FF278DD1DA003AE43D /* slider_kas.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = slider_kas.h; sourceTree = "<group>"; };
 		84340300278DD1DA003AE43D /* slider_kas.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider_kas.c; sourceTree = "<group>"; };
-		84F5CCF32782CE9D00BF7B64 /* liblibxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblibxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		84F5CCF32782CE9D00BF7B64 /* libxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		84F5CCFB2782CEB900BF7B64 /* kmem_gym.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kmem_gym.c; sourceTree = "<group>"; };
 		84F5CCFC2782CEB900BF7B64 /* kmem_gym.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kmem_gym.h; sourceTree = "<group>"; };
 		84F5CD062782CF4000BF7B64 /* kmem_tester.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kmem_tester.c; sourceTree = "<group>"; };
@@ -57,7 +57,7 @@
 		84F5CCF42782CE9D00BF7B64 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				84F5CCF32782CE9D00BF7B64 /* liblibxe_dev.a */,
+				84F5CCF32782CE9D00BF7B64 /* libxe_dev.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -103,7 +103,7 @@
 			);
 			name = libxe_dev;
 			productName = libxe_dev;
-			productReference = 84F5CCF32782CE9D00BF7B64 /* liblibxe_dev.a */;
+			productReference = 84F5CCF32782CE9D00BF7B64 /* libxe_dev.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -273,7 +273,7 @@
 					/usr/local/include,
 					$SOURCE_ROOT/../macos,
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = xe_dev;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -288,7 +288,7 @@
 					/usr/local/include,
 					$SOURCE_ROOT/../macos,
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = xe_dev;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

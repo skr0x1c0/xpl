@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		84340304278DD311003AE43D /* liblibxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84340303278DD311003AE43D /* liblibxe_dev.a */; };
+		84340306278DDC52003AE43D /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84340305278DDC52003AE43D /* libxe_dev.a */; };
 		8466F3C3276DCCD0004F651E /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3B6276DCB69004F651E /* libxib.dylib */; };
 		8466F3C4276DCCD8004F651E /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3B2276DCB3C004F651E /* libgym_client.dylib */; };
 		84F7BB94276DC70E00138492 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB93276DC70E00138492 /* main.c */; };
@@ -28,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		84340303278DD311003AE43D /* liblibxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		84340305278DDC52003AE43D /* libxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F3B2276DCB3C004F651E /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
 		8466F3B6276DCB69004F651E /* libxib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxib.dylib; path = ../../../../../usr/local/lib/libxib.dylib; sourceTree = "<group>"; };
 		84F7BB90276DC70E00138492 /* kmem_msdosfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kmem_msdosfs; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -40,9 +41,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84340306278DDC52003AE43D /* libxe_dev.a in Frameworks */,
 				84F7BBA1276DC93300138492 /* libxe.a in Frameworks */,
 				8466F3C3276DCCD0004F651E /* libxib.dylib in Frameworks */,
-				84340304278DD311003AE43D /* liblibxe_dev.a in Frameworks */,
 				8466F3C4276DCCD8004F651E /* libgym_client.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -78,6 +79,7 @@
 		84F7BB9A276DC71B00138492 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84340305278DDC52003AE43D /* libxe_dev.a */,
 				84340303278DD311003AE43D /* liblibxe_dev.a */,
 				8466F3B6276DCB69004F651E /* libxib.dylib */,
 				8466F3B2276DCB3C004F651E /* libgym_client.dylib */,
