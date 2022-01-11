@@ -5,8 +5,8 @@
 //  Created by admin on 11/20/21.
 //
 
-#ifndef memory_kmem_h
-#define memory_kmem_h
+#ifndef xe_memory_kmem_h
+#define xe_memory_kmem_h
 
 #include <assert.h>
 #include <stdio.h>
@@ -59,4 +59,4 @@ void xe_kmem_copy(uintptr_t dst, uintptr_t src, size_t size);
     (*dst) = (((*(dst)) >> ((bit_offset) % NBBY)) & ((1 << (bit_size)) - 1));\
 }
 
-#endif /* memory_kmem_h */
+#endif /* xe_memory_kmem_h */

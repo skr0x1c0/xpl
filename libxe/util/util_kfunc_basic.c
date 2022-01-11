@@ -15,7 +15,7 @@
 #include "util/pacda.h"
 #include "util/assert.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 enum {

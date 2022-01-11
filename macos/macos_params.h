@@ -5,10 +5,10 @@
 //  Created by admin on 1/4/22.
 //
 
-#ifndef platform_params_h
-#define platform_params_h
+#ifndef macos_params_h
+#define macos_params_h
 
-#define MACOS_21C52
+#define MACOS_21A559
 
 #if defined(MACOS_21A559)
 #include "21A559/functions.h"
@@ -27,4 +27,4 @@
 #endif
 
 
-#endif /* platform_params_h */
+#endif /* macos_params_h */

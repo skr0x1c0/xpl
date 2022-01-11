@@ -17,7 +17,7 @@
 #include "util/assert.h"
 #include "util/log.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 struct xe_allocator_pipe {

@@ -20,7 +20,7 @@
 #include "util/dispatch.h"
 #include "util/assert.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 #define MAX_NECP_UUID_MAPPING_ID 128

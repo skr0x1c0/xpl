@@ -5,8 +5,8 @@
 //  Created by admin on 12/8/21.
 //
 
-#ifndef util_zalloc_h
-#define util_zalloc_h
+#ifndef xe_util_zalloc_h
+#define xe_util_zalloc_h
 
 #include <stdio.h>
 
@@ -18,4 +18,4 @@ uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util);
 uintptr_t xe_util_zalloc_alloc_at(xe_util_zalloc_t util, uintptr_t address);
 void xe_util_zalloc_free(xe_util_zalloc_t util, uintptr_t address);
 
-#endif /* util_zalloc_h */
+#endif /* xe_util_zalloc_h */

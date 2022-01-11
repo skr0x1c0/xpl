@@ -28,7 +28,7 @@
 #include <xe/util/ptrauth.h>
 #include <xe/util/assert.h>
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 

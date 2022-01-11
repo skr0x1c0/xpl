@@ -31,7 +31,7 @@
 #include "external/smbfs/smb_trantcp.h"
 #include "smb/params.h"
 #include "smb/client.h"
-#include "platform_params.h"
+#include "macos_params.h"
 
 #include "kmem_smbiod.h"
 #include "kmem/zkext_free.h"

@@ -17,7 +17,7 @@
 #include "zkext_reserve_va.h"
 #include "allocator_rw.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 void kmem_zkext_reserve_va_small(const struct sockaddr_in* smb_addr, uint num_pages, uint z_elem_size) {

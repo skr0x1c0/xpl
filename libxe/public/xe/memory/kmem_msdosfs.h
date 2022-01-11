@@ -5,12 +5,12 @@
 //  Created by admin on 11/26/21.
 //
 
-#ifndef kmem_msdosfs_h
-#define kmem_msdosfs_h
+#ifndef xe_kmem_msdosfs_h
+#define xe_kmem_msdosfs_h
 
 #include <limits.h>
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 struct kmem_msdosfs_init_args {
     char helper_mount_point[PATH_MAX];
@@ -35,4 +35,4 @@ struct kmem_msdosfs_init_args {
 struct xe_kmem_backend* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args);
 void xe_kmem_msdosfs_destroy(struct xe_kmem_backend* backend);
 
-#endif /* kmem_msdosfs_h */
+#endif /* xe_kmem_msdosfs_h */

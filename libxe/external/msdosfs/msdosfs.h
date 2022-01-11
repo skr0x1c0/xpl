@@ -71,8 +71,8 @@
  */
 
 
-#ifndef msdosfs_h
-#define msdosfs_h
+#ifndef external_msdosfs_msdosfs_h
+#define external_msdosfs_msdosfs_h
 
 #include <sys/types.h>
 
@@ -114,4 +114,4 @@ struct msdosfs_args {
 
 #define MSDOSFS_ARGSMAGIC        0xe4eff301
 
-#endif /* msdosfs_h */
+#endif /* external_msdosfs_msdosfs_h */

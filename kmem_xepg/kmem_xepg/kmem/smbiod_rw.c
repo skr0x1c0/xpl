@@ -20,7 +20,7 @@
 
 #include "smbiod_rw.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 #define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 650

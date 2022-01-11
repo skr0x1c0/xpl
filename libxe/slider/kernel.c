@@ -15,7 +15,7 @@
 #include "util/assert.h"
 #include "util/log.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 typedef struct xe_slider_segment_info {

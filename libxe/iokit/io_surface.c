@@ -15,7 +15,7 @@
 #include "iokit/os_dictionary.h"
 #include "util/assert.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 uintptr_t xe_io_surface_root(void) {

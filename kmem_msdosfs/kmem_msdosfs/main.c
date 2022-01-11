@@ -30,7 +30,7 @@
 #include <xe_dev/memory/gym.h>
 #include <xe_dev/slider/kas.h>
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* alloc1_out, uintptr_t* ptr2_out, xe_allocator_msdosfs_t* alloc2_out) {

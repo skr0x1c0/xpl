@@ -12,7 +12,7 @@
 #include "../smb/ssn_allocator.h"
 
 #include "allocator_rw.h"
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 #define MAX_BACKEND_COUNT 1023

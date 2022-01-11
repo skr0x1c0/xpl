@@ -24,7 +24,7 @@
 #include "allocator_nic_parallel.h"
 #include "zkext_neighbor_reader.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 #define NUM_SLOW_DOWN_NICS 150

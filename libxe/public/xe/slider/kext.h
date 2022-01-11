@@ -5,8 +5,8 @@
 //  Created by admin on 1/1/22.
 //
 
-#ifndef slider_kext_h
-#define slider_kext_h
+#ifndef xe_slider_kext_h
+#define xe_slider_kext_h
 
 #include <stdio.h>
 
@@ -32,4 +32,4 @@ uintptr_t xe_slider_kext_unslide(xe_slider_kext_t slider, enum xe_kext_segment s
 void xe_slider_kext_destroy(xe_slider_kext_t* slider_p);
 
 
-#endif /* slider_kext_h */
+#endif /* xe_slider_kext_h */

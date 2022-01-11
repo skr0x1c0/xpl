@@ -22,7 +22,7 @@
 
 #include "zkext_neighbor_reader.h"
 #include "kmem_neighbor_reader.h"
-#include "platform_params.h"
+#include "macos_params.h"
 
 #include "../xnu/saddr_allocator.h"
 #include "../smb/client.h"

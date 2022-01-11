@@ -5,8 +5,8 @@
 //  Created by admin on 12/9/21.
 //
 
-#ifndef util_kfunc_basic_h
-#define util_kfunc_basic_h
+#ifndef xe_util_kfunc_basic_h
+#define xe_util_kfunc_basic_h
 
 #include <stdio.h>
 
@@ -18,4 +18,4 @@ xe_util_kfunc_basic_t xe_util_kfunc_basic_create(uintptr_t proc, xe_util_zalloc_
 uintptr_t xe_util_kfunc_build_event_source(xe_util_kfunc_basic_t util, uintptr_t target_func, char arg0[8]);
 void xe_util_kfunc_reset(xe_util_kfunc_basic_t util);
 
-#endif /* util_kfunc_basic_h */
+#endif /* xe_util_kfunc_basic_h */

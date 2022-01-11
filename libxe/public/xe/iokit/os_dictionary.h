@@ -5,8 +5,8 @@
 //  Created by admin on 12/6/21.
 //
 
-#ifndef io_dictionary_h
-#define io_dictionary_h
+#ifndef xe_io_dictionary_h
+#define xe_io_dictionary_h
 
 #include <stdio.h>
 
@@ -20,4 +20,4 @@ void xe_os_dictionary_set_value_at_idx(uintptr_t dict, int idx, uintptr_t value)
 int xe_os_dictionary_find_value(uintptr_t dict, const char* value, uintptr_t* out, int* idx_out);
 void xe_os_dictionary_print_keys(uintptr_t dict);
 
-#endif /* io_dictionary_h */
+#endif /* xe_io_dictionary_h */

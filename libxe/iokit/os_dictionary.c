@@ -16,7 +16,7 @@
 #include "util/ptrauth.h"
 #include "util/assert.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 uint xe_os_dictionary_count(uintptr_t dict) {

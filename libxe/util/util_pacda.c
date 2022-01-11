@@ -13,7 +13,7 @@
 #include "util/ptrauth.h"
 #include "util/lck_rw.h"
 #include "util/dispatch.h"
-#include "platform_params.h"
+#include "macos_params.h"
 #include "memory/kmem.h"
 #include "slider/kernel.h"
 #include "util/assert.h"

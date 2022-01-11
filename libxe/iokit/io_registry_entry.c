@@ -17,7 +17,7 @@
 #include "slider/kernel.h"
 #include "util/ptrauth.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 uintptr_t xe_io_registry_entry_registry_table(uintptr_t entry) {

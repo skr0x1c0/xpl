@@ -17,7 +17,7 @@
 #include "util/misc.h"
 #include "util/assert.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 #define MAX_READ_SIZE 1024
 #define MAX_WRITE_SIZE 1024

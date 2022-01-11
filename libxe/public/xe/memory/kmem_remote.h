@@ -5,8 +5,8 @@
 //  Created by admin on 12/2/21.
 //
 
-#ifndef kmem_remote_h
-#define kmem_remote_h
+#ifndef xe_kmem_remote_h
+#define xe_kmem_remote_h
 
 #include <stdio.h>
 #include "kmem.h"
@@ -21,4 +21,4 @@ struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path);
 uintptr_t xe_kmem_remote_client_get_mh_execute_header(struct xe_kmem_backend* client);
 void xe_kmem_remote_client_destroy(struct xe_kmem_backend* backend);
 
-#endif /* kmem_remote_h */
+#endif /* xe_kmem_remote_h */

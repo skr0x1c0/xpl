@@ -25,7 +25,7 @@
 #include "allocator_rw.h"
 #include "allocator_prpw.h"
 
-#include "platform_params.h"
+#include "macos_params.h"
 
 
 #define NUM_PAD_ELEMENTS (XE_PAGE_SIZE / 32)

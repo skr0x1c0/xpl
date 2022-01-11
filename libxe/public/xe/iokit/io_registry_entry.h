@@ -5,8 +5,8 @@
 //  Created by admin on 12/6/21.
 //
 
-#ifndef io_registry_entry_h
-#define io_registry_entry_h
+#ifndef xe_io_registry_entry_h
+#define xe_io_registry_entry_h
 
 #include <stdio.h>
 
@@ -17,4 +17,4 @@ int xe_io_registry_entry_find_child_by_type(uintptr_t entry, uintptr_t type, uin
 int xe_io_registry_entry_find_child_by_name(uintptr_t entry, char* name, uintptr_t* out);
 uintptr_t xe_io_registry_entry_root(void);
 
-#endif /* io_registry_entry_h */
+#endif /* xe_io_registry_entry_h */
