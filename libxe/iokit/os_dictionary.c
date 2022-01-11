@@ -32,7 +32,7 @@ uintptr_t xe_os_dictionary_value(uintptr_t dict_entry, int index) {
 }
 
 uintptr_t xe_os_dictionary_dict_entry(uintptr_t dict) {
-    return XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET)));
+    return xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET)));
 }
 
 uintptr_t xe_os_dictionary_key_at_index(uintptr_t dict, int index) {

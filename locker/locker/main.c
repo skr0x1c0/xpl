@@ -94,7 +94,7 @@ int main(int argc, const char* argv[]) {
     
     printf("pid: %d\n", xe_kmem_read_uint32(KMEM_OFFSET(proc, TYPE_PROC_MEM_P_PID_OFFSET)));
     
-    uintptr_t task = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
+    uintptr_t task = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
     printf("num_threads: %d\n", xe_kmem_read_uint32(KMEM_OFFSET(task, TYPE_TASK_MEM_THREAD_COUNT_OFFSET)));
     
     uintptr_t cursor = xe_kmem_read_uint64(KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET));

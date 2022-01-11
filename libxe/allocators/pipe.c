@@ -50,7 +50,7 @@ int xe_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_out, 
     }
     free(temp);
     
-    uintptr_t buffer = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET)));
+    uintptr_t buffer = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET)));
     uint buffer_size = xe_kmem_read_uint32(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_SIZE_OFFSET));
     xe_assert(buffer_size >= size);
     xe_log_debug("pipe allocator allocated entry size: %d", buffer_size);

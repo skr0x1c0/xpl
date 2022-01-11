@@ -60,7 +60,7 @@ void xe_util_pacda_io_surface_destroy(IOSurfaceRef surface) {
 }
 
 int xe_util_pacda_find_thread_with_state(uintptr_t proc, int state, uintptr_t* ptr_out) {
-    uintptr_t task = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
+    uintptr_t task = xe_ptrauth_strip(xe_kmem_read_uint64(KMEM_OFFSET(proc, TYPE_PROC_MEM_TASK_OFFSET)));
     
     uintptr_t thread = xe_kmem_read_uint64(KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET));
     while (thread != 0 && thread != KMEM_OFFSET(task, TYPE_TASK_MEM_THREADS_OFFSET)) {
