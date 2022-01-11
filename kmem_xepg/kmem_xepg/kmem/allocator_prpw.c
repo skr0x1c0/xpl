@@ -223,7 +223,7 @@ int kmem_allocator_prpw_trim_backend_count(kmem_allocator_prpw_t allocator, size
     }
 
     atomic_fetch_sub(&allocator->alloc_cursor, num_released);
-    memcpy(&allocator->backends[offset], &allocator->backends[offset + count], sizeof(allocator->backends[0] * (allocator->backend_count - offset - count)));
+    memcpy(&allocator->backends[offset], &allocator->backends[offset + count], sizeof(allocator->backends[0]) * (allocator->backend_count - offset - count));
     allocator->backend_count -= count;
 
     return 0;
