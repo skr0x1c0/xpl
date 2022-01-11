@@ -24,5 +24,9 @@
 #define VAR_AUXKC_MH 0xfffffe00071d8148
 #define VAR_PIDHASHTBL 0xfffffe00071f2378
 #define VAR_PIDHASH 0xfffffe00071f2370
+#define VAR_MAC_POLICY_LIST 0xfffffe0007baaeb0
+
+#define VAR_IO_RESOURCES_VTABLE 0xfffffe000720b428
+#define VAR_IO_EVENT_SOURCE_VTABLE 0xfffffe00072118e0
 
 #endif /* macos_21a559_variables_h */

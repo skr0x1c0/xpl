@@ -28,4 +28,6 @@
 #define VAR_IO_RESOURCES_VTABLE 0xfffffe000720b850
 #define VAR_IO_EVENT_SOURCE_VTABLE 0xfffffe0007211d08
 
+#define VAR_MAC_POLICY_LIST 0xfffffe0007bc2eb0
+
 #endif /* macos_21axx_variables_h */
