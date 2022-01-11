@@ -80,10 +80,11 @@ void kmem_allocator_nic_parallel_alloc(kmem_allocator_nic_parallel_t allocator, 
 
 void kmem_allocator_nic_parallel_destroy(kmem_allocator_nic_parallel_t* allocator_p) {
     kmem_allocator_nic_parallel_t allocator = *allocator_p;
-    int error = xe_util_dispatch_apply(allocator->backends, sizeof(allocator->backends[0]), allocator->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
-        return smb_nic_allocator_destroy((smb_nic_allocator*)data);
+    xe_util_dispatch_apply(allocator->backends, sizeof(allocator->backends[0]), allocator->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
+        int error = smb_nic_allocator_destroy((smb_nic_allocator*)data);
+        xe_assert_err(error);
+        return 0;
     });
-    xe_assert_err(error);
     free(allocator->backends);
     free(allocator);
     *allocator_p = NULL;
