@@ -78,6 +78,8 @@ int xe_kmem_server_handle_cmd_write(const struct xe_kmem_remote_server_ctx* ctx,
         return xe_kmem_server_send_response(fd, E2BIG, NULL, 0);
     }
     
+    xe_log_info("writing data of size %lu to %p",cmd.size, (void*)cmd.dst);
+    
     char* buffer = malloc(cmd.size);
     size = recv(fd, buffer, cmd.size, MSG_WAITALL);
     if (size != cmd.size) {
@@ -105,6 +107,8 @@ int xe_kmem_server_handle_cmd_read(const struct xe_kmem_remote_server_ctx* ctx, 
     if (cmd.size > MAX_READ_SIZE) {
         return xe_kmem_server_send_response(fd, E2BIG, NULL, 0);
     }
+    
+    xe_log_info("reading data of size %lu from %p", cmd.size, (void*)cmd.src);
     
     char* buffer = malloc(cmd.size);
     xe_kmem_read(buffer, cmd.src, cmd.size);
