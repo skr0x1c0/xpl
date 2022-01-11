@@ -21,7 +21,7 @@
 #include "platform_params.h"
 
 
-#define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 512
+#define KMEM_SMBIOD_RW_CAPTURE_ALLOCATOR_COUNT 650
 
 
 struct kmem_smbiod_rw {
