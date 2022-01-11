@@ -2,25 +2,16 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:macos">
+      location = "group:demo_sb/demo_sb.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:libxe_dev/libxe_dev.xcodeproj">
+      location = "group:macos">
    </FileRef>
    <FileRef
       location = "group:libxe/libxe.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:kmem_msdosfs/kmem_msdosfs.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:locker/locker.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:kmem_remote/kmem_remote.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:kfunc/kfunc.xcodeproj">
+      location = "group:libxe_dev/libxe_dev.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:kmem_xepg/kmem_xepg.xcodeproj">
@@ -28,6 +19,41 @@
    <FileRef
       location = "group:xepg_smbserver/xepg_smbserver.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:locker/locker.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:kfunc/kfunc.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:kmem_remote/kmem_remote.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:kmem_msdosfs/kmem_msdosfs.xcodeproj">
+   </FileRef>
+   <Group
+      location = "group:/Volumes/Developer/Developer/xe/docs"
+      name = "docs">
+      <FileRef
+         location = "group:part2">
+      </FileRef>
+      <FileRef
+         location = "group:kmem.md">
+      </FileRef>
+      <FileRef
+         location = "group:smbfs_misc.md">
+      </FileRef>
+      <Group
+         location = "group:Resources"
+         name = "Resources">
+         <FileRef
+            location = "group:kmem slow.drawio">
+         </FileRef>
+         <FileRef
+            location = "group:kmem_fast.drawio">
+         </FileRef>
+      </Group>
+   </Group>
    <Group
       location = "group:external"
       name = "external">

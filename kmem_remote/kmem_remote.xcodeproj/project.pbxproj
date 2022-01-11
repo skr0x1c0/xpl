@@ -269,6 +269,7 @@
 					/usr/local/include,
 					"$SOURCE_ROOT/../libxe/**",
 					"$SOURCE_ROOT/../libxe_dev/**",
+					$SOURCE_ROOT/../macos,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -283,6 +284,7 @@
 					/usr/local/include,
 					"$SOURCE_ROOT/../libxe/**",
 					"$SOURCE_ROOT/../libxe_dev/**",
+					$SOURCE_ROOT/../macos,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
