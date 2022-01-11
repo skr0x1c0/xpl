@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		84340301278DD1DA003AE43D /* slider_kas.h in Headers */ = {isa = PBXBuildFile; fileRef = 843402FF278DD1DA003AE43D /* slider_kas.h */; };
+		84340302278DD1DA003AE43D /* slider_kas.c in Sources */ = {isa = PBXBuildFile; fileRef = 84340300278DD1DA003AE43D /* slider_kas.c */; };
 		84F5CCFD2782CEB900BF7B64 /* kmem_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F5CCFB2782CEB900BF7B64 /* kmem_gym.c */; };
 		84F5CCFE2782CEB900BF7B64 /* kmem_gym.h in Headers */ = {isa = PBXBuildFile; fileRef = 84F5CCFC2782CEB900BF7B64 /* kmem_gym.h */; };
 		84F5CD082782CF4000BF7B64 /* kmem_tester.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F5CD062782CF4000BF7B64 /* kmem_tester.c */; };
@@ -14,6 +16,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		843402FF278DD1DA003AE43D /* slider_kas.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = slider_kas.h; sourceTree = "<group>"; };
+		84340300278DD1DA003AE43D /* slider_kas.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = slider_kas.c; sourceTree = "<group>"; };
 		84F5CCF32782CE9D00BF7B64 /* liblibxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblibxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		84F5CCFB2782CEB900BF7B64 /* kmem_gym.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kmem_gym.c; sourceTree = "<group>"; };
 		84F5CCFC2782CEB900BF7B64 /* kmem_gym.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kmem_gym.h; sourceTree = "<group>"; };
@@ -32,9 +36,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		843402FE278DD1C7003AE43D /* slider */ = {
+			isa = PBXGroup;
+			children = (
+				843402FF278DD1DA003AE43D /* slider_kas.h */,
+				84340300278DD1DA003AE43D /* slider_kas.c */,
+			);
+			path = slider;
+			sourceTree = "<group>";
+		};
 		84F5CCEA2782CE9C00BF7B64 = {
 			isa = PBXGroup;
 			children = (
+				843402FE278DD1C7003AE43D /* slider */,
 				84F5CCFA2782CEAE00BF7B64 /* memory */,
 				84F5CCF42782CE9D00BF7B64 /* Products */,
 			);
@@ -67,6 +81,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				84F5CCFE2782CEB900BF7B64 /* kmem_gym.h in Headers */,
+				84340301278DD1DA003AE43D /* slider_kas.h in Headers */,
 				84F5CD092782CF4000BF7B64 /* kmem_tester.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -128,6 +143,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84340302278DD1DA003AE43D /* slider_kas.c in Sources */,
 				84F5CD082782CF4000BF7B64 /* kmem_tester.c in Sources */,
 				84F5CCFD2782CEB900BF7B64 /* kmem_gym.c in Sources */,
 			);
@@ -255,6 +271,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$SOURCE_ROOT/../libxe/**",
 					/usr/local/include,
+					$SOURCE_ROOT/../macos,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -269,6 +286,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$SOURCE_ROOT/../libxe/**",
 					/usr/local/include,
+					$SOURCE_ROOT/../macos,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
