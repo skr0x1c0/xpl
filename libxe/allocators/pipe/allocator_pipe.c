@@ -16,6 +16,7 @@
 #include "util_ptrauth.h"
 #include "kmem.h"
 #include "util_assert.h"
+#include "util_log.h"
 
 
 struct allocator_pipe {
@@ -23,7 +24,7 @@ struct allocator_pipe {
     int fd1;
 };
 
-int xe_kmem_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_out, uintptr_t* buffer_ptr_out) {
+int xe_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_out, uintptr_t* buffer_ptr_out) {
     if (size > 4 * 16384) {
         return E2BIG;
     }
@@ -51,6 +52,7 @@ int xe_kmem_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_
     uintptr_t buffer = XE_PTRAUTH_STRIP(xe_kmem_read_uint64(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET)));
     uint buffer_size = xe_kmem_read_uint32(KMEM_OFFSET(pipe, TYPE_PIPEBUF_MEM_SIZE_OFFSET));
     xe_assert(buffer_size >= size);
+    xe_log_debug("pipe allocator allocated entry size: %d", buffer_size);
     
     xe_allocator_pipe_t allocator = (xe_allocator_pipe_t)malloc(sizeof(struct allocator_pipe));
     allocator->fd0 = fds[0];
@@ -61,7 +63,7 @@ int xe_kmem_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_
     return 0;
 }
 
-int xe_kmem_allocator_pipe_destroy(xe_allocator_pipe_t* pipe) {
+int xe_allocator_pipe_destroy(xe_allocator_pipe_t* pipe) {
     if (pipe == NULL || *pipe == NULL) {
         return EINVAL;
     }

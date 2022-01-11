@@ -12,7 +12,7 @@
 
 typedef struct allocator_pipe* xe_allocator_pipe_t;
 
-int xe_kmem_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_out, uintptr_t* buffer_ptr_out);
-int xe_kmem_allocator_pipe_destroy(xe_allocator_pipe_t* pipe);
+int xe_allocator_pipe_allocate(size_t size, xe_allocator_pipe_t* allocator_out, uintptr_t* buffer_ptr_out);
+int xe_allocator_pipe_destroy(xe_allocator_pipe_t* pipe);
 
 #endif /* allocator_pipe_h */
