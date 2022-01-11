@@ -5,6 +5,9 @@
       location = "group:demo_sb/demo_sb.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:/Volumes/Developer/Developer/xe/kfunc/demo_kfunc.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:macos">
    </FileRef>
    <FileRef
@@ -21,9 +24,6 @@
    </FileRef>
    <FileRef
       location = "group:locker/locker.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:kfunc/kfunc.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:kmem_remote/kmem_remote.xcodeproj">

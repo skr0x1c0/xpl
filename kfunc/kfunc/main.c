@@ -22,8 +22,8 @@
 #include "xnu_proc.h"
 #include "util_pacda.h"
 #include "util_kalloc_heap.h"
-#include "io_dictionary.h"
-#include "io_array.h"
+#include "os_dictionary.h"
+#include "os_array.h"
 #include "io_registry_entry.h"
 #include "io_surface.h"
 #include "util_zalloc.h"
@@ -90,7 +90,7 @@ int main(int argc, const char* argv[]) {
     xe_assert_err(error);
     
     uintptr_t props = xe_kmem_read_uint64(KMEM_OFFSET(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET));
-    error = xe_io_os_dictionary_set_value_of_key(props, "iosurface_alloc_0", io_event_source);
+    error = xe_os_dictionary_set_value_of_key(props, "iosurface_alloc_0", io_event_source);
     xe_assert_err(error);
     iokit_iosurface_allocator_destroy(&allocator);
     xe_util_kfunc_reset(kfunc);
