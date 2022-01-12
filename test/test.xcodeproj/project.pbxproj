@@ -27,7 +27,6 @@
 		84857A10278F26A800180F48 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
 		84857A11278F26AB00180F48 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D12278E43BE00334806 /* libxe_dev.a */; };
 		84857A12278F26B000180F48 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D14278E43D800334806 /* libgym_client.dylib */; };
-		84857A13278F26B000180F48 /* libgym_client.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 84184D14278E43D800334806 /* libgym_client.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -66,17 +65,6 @@
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 1;
-		};
-		84857A14278F26B000180F48 /* Embed Libraries */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				84857A13278F26B000180F48 /* libgym_client.dylib in Embed Libraries */,
-			);
-			name = "Embed Libraries";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -266,7 +254,6 @@
 				84857A05278F26A100180F48 /* Sources */,
 				84857A06278F26A100180F48 /* Frameworks */,
 				84857A07278F26A100180F48 /* CopyFiles */,
-				84857A14278F26B000180F48 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
