@@ -12,7 +12,7 @@ var savedNetbiosSsnRequestStore: [UInt32: NetbiosSsnRequest] = [:]
 let dispatchQueueStore = DispatchQueue(label: "xepg_smbserver_dq_store")
 
 
-// MARK: - SMB request handling
+// MARK: - SMB & Netbios request routing
 class RequestHandler: ChannelInboundHandler {
     public typealias InboundIn = ByteBuffer
     public typealias OutboundOut = ByteBuffer
@@ -417,7 +417,7 @@ extension RequestHandler {
 }
 
 
-// MARK: - SMB length prefixed message buffering
+// MARK: - length prefixed message buffering
 final class MessageReader: ByteToMessageDecoder {
     public typealias InboundIn = ByteBuffer
     public typealias InboundOut = ByteBuffer
