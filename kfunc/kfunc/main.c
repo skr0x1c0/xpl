@@ -31,34 +31,6 @@
 #include "macos_params.h"
 
 
-
-int test_pacda(int argc, const char* argv[]) {
-    xe_assert_cond(argc, ==, 2);
-    
-    struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
-    xe_kmem_use_backend(backend);
-    xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
-    
-    uintptr_t proc = xe_xnu_proc_current_proc();
-    printf("[INFO] pid: %d\n", getpid());
-    printf("[INFO] proc: %p\n", (void*)proc);
-    
-    for (int i=0; i<10; i++) {
-        uintptr_t ptr = proc;
-        uintptr_t ctx = 0xabcdef;
-        uintptr_t signed_ptr;
-        
-        int error = xe_util_pacda_sign(proc, ptr, ctx, &signed_ptr);
-        if (error) {
-            printf("[ERROR] ptr sign failed, err: %d\n", error);
-            return 1;
-        }
-        
-        printf("[INFO] signed ptr: %p\n", (void*)signed_ptr);
-    }
-    return 0;
-}
-
 int main(int argc, const char* argv[]) {
     struct xe_kmem_backend* backend = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(backend);
