@@ -19,12 +19,19 @@
 #include "util/assert.h"
 #include "util/log.h"
 
-//#define LR_ENSURE_CAPACITY_KFREE 0xfffffe00078f3cbc
-//#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9ea8
+#include "macos_params.h"
 
-#define KALLOC_TO_KERNEL_MAP_SWITCH_LEN 64512
+#if defined(MACOS_21A559)
+#define LR_ENSURE_CAPACITY_KFREE 0xfffffe00078f3cbc
+#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9ea8
+#elif defined(MACOS_21C52)
 #define LR_ENSURE_CAPACITY_KFREE 0xfffffe00079114a4
 #define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9e54
+#else
+#error "unknown platform"
+#endif
+
+#define KALLOC_TO_KERNEL_MAP_SWITCH_LEN 64512
 #define STACK_SCAN_SIZE 8192
 
 
