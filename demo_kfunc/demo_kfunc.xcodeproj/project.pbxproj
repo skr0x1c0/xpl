@@ -46,7 +46,7 @@
 		8466F3FF276DCE33004F651E = {
 			isa = PBXGroup;
 			children = (
-				8466F40A276DCE33004F651E /* kfunc */,
+				8466F40A276DCE33004F651E /* demo_kfunc */,
 				8466F409276DCE33004F651E /* Products */,
 				8466F412276DCE52004F651E /* Frameworks */,
 			);
@@ -60,12 +60,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8466F40A276DCE33004F651E /* kfunc */ = {
+		8466F40A276DCE33004F651E /* demo_kfunc */ = {
 			isa = PBXGroup;
 			children = (
 				8466F40B276DCE33004F651E /* main.c */,
 			);
-			path = kfunc;
+			path = demo_kfunc;
 			sourceTree = "<group>";
 		};
 		8466F412276DCE52004F651E /* Frameworks */ = {

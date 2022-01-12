@@ -5,7 +5,7 @@
       location = "group:demo_sb/demo_sb.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:/Volumes/Developer/Developer/xe/kfunc/demo_kfunc.xcodeproj">
+      location = "group:demo_kfunc/demo_kfunc.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:macos">
@@ -26,7 +26,7 @@
       location = "group:test/test.xcodeproj">
    </FileRef>
    <Group
-      location = "group:/Volumes/Developer/Developer/xe/docs"
+      location = "group:docs"
       name = "docs">
       <FileRef
          location = "group:part2">
