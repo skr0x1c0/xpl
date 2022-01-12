@@ -61,7 +61,7 @@ int find_server_pid(void) {
         char name[NAME_MAX];
         proc_name(pids[i], name, sizeof(name));
         
-        if (strncmp(name, "xepg_smbserver", sizeof(name)) == 0) {
+        if (strncmp(name, "xe_smbx", sizeof(name)) == 0) {
             return pids[i];
         }
     }

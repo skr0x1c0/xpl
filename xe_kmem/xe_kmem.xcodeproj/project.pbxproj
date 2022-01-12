@@ -198,17 +198,17 @@
 		84EE193227835E2F00B6D700 /* public */ = {
 			isa = PBXGroup;
 			children = (
-				84EE193327835E6900B6D700 /* kmem_xepg */,
+				84EE193327835E6900B6D700 /* xe_kmem */,
 			);
 			path = public;
 			sourceTree = "<group>";
 		};
-		84EE193327835E6900B6D700 /* kmem_xepg */ = {
+		84EE193327835E6900B6D700 /* xe_kmem */ = {
 			isa = PBXGroup;
 			children = (
 				84EE193427835E7500B6D700 /* smb_custom.h */,
 			);
-			path = kmem_xepg;
+			path = xe_kmem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		84EE192127835C7C00B6D700 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84EE192027835C7C00B6D700 /* main.swift */; };
-		84EE192B27835D2A00B6D700 /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = 84EE192A27835D2A00B6D700 /* NIOCore */; };
-		84EE192D27835D2D00B6D700 /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = 84EE192C27835D2D00B6D700 /* NIOPosix */; };
+		84973FB2278F2ABC009ABD74 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84973FB1278F2ABC009ABD74 /* main.swift */; };
+		84973FC0278F2B7D009ABD74 /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = 84973FBF278F2B7D009ABD74 /* NIOCore */; };
+		84973FC2278F2B80009ABD74 /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = 84973FC1278F2B80009ABD74 /* NIOPosix */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		84EE191B27835C7C00B6D700 /* CopyFiles */ = {
+		84973FAC278F2ABC009ABD74 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -25,61 +25,61 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		84EE191D27835C7C00B6D700 /* xepg_smbserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xepg_smbserver; sourceTree = BUILT_PRODUCTS_DIR; };
-		84EE192027835C7C00B6D700 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		84EE192827835D1700B6D700 /* swift-nio */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-nio"; path = "../external/swift-nio"; sourceTree = "<group>"; };
-		84EE192E27835D6A00B6D700 /* xepg_smbserver-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "xepg_smbserver-Bridging-Header.h"; sourceTree = "<group>"; };
+		84973FAE278F2ABC009ABD74 /* xe_smbx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xe_smbx; sourceTree = BUILT_PRODUCTS_DIR; };
+		84973FB1278F2ABC009ABD74 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		84973FB8278F2ACF009ABD74 /* xe_smbx-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "xe_smbx-Bridging-Header.h"; sourceTree = "<group>"; };
+		84973FBD278F2B6F009ABD74 /* swift-nio */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-nio"; path = "../external/swift-nio"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		84EE191A27835C7C00B6D700 /* Frameworks */ = {
+		84973FAB278F2ABC009ABD74 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84EE192B27835D2A00B6D700 /* NIOCore in Frameworks */,
-				84EE192D27835D2D00B6D700 /* NIOPosix in Frameworks */,
+				84973FC0278F2B7D009ABD74 /* NIOCore in Frameworks */,
+				84973FC2278F2B80009ABD74 /* NIOPosix in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		84EE191427835C7C00B6D700 = {
+		84973FA5278F2ABC009ABD74 = {
 			isa = PBXGroup;
 			children = (
-				84EE192727835D1700B6D700 /* Packages */,
-				84EE191F27835C7C00B6D700 /* xepg_smbserver */,
-				84EE191E27835C7C00B6D700 /* Products */,
-				84EE192927835D2A00B6D700 /* Frameworks */,
+				84973FBC278F2B6F009ABD74 /* Packages */,
+				84973FB0278F2ABC009ABD74 /* xe_smbx */,
+				84973FAF278F2ABC009ABD74 /* Products */,
+				84973FBE278F2B7D009ABD74 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
-		84EE191E27835C7C00B6D700 /* Products */ = {
+		84973FAF278F2ABC009ABD74 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				84EE191D27835C7C00B6D700 /* xepg_smbserver */,
+				84973FAE278F2ABC009ABD74 /* xe_smbx */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		84EE191F27835C7C00B6D700 /* xepg_smbserver */ = {
+		84973FB0278F2ABC009ABD74 /* xe_smbx */ = {
 			isa = PBXGroup;
 			children = (
-				84EE192027835C7C00B6D700 /* main.swift */,
-				84EE192E27835D6A00B6D700 /* xepg_smbserver-Bridging-Header.h */,
+				84973FB1278F2ABC009ABD74 /* main.swift */,
+				84973FB8278F2ACF009ABD74 /* xe_smbx-Bridging-Header.h */,
 			);
-			path = xepg_smbserver;
+			path = xe_smbx;
 			sourceTree = "<group>";
 		};
-		84EE192727835D1700B6D700 /* Packages */ = {
+		84973FBC278F2B6F009ABD74 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				84EE192827835D1700B6D700 /* swift-nio */,
+				84973FBD278F2B6F009ABD74 /* swift-nio */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
 		};
-		84EE192927835D2A00B6D700 /* Frameworks */ = {
+		84973FBE278F2B7D009ABD74 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -89,44 +89,44 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		84EE191C27835C7C00B6D700 /* xepg_smbserver */ = {
+		84973FAD278F2ABC009ABD74 /* xe_smbx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 84EE192427835C7C00B6D700 /* Build configuration list for PBXNativeTarget "xepg_smbserver" */;
+			buildConfigurationList = 84973FB5278F2ABC009ABD74 /* Build configuration list for PBXNativeTarget "xe_smbx" */;
 			buildPhases = (
-				84EE191927835C7C00B6D700 /* Sources */,
-				84EE191A27835C7C00B6D700 /* Frameworks */,
-				84EE191B27835C7C00B6D700 /* CopyFiles */,
+				84973FAA278F2ABC009ABD74 /* Sources */,
+				84973FAB278F2ABC009ABD74 /* Frameworks */,
+				84973FAC278F2ABC009ABD74 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = xepg_smbserver;
+			name = xe_smbx;
 			packageProductDependencies = (
-				84EE192A27835D2A00B6D700 /* NIOCore */,
-				84EE192C27835D2D00B6D700 /* NIOPosix */,
+				84973FBF278F2B7D009ABD74 /* NIOCore */,
+				84973FC1278F2B80009ABD74 /* NIOPosix */,
 			);
-			productName = xepg_smbserver;
-			productReference = 84EE191D27835C7C00B6D700 /* xepg_smbserver */;
+			productName = xe_smbx;
+			productReference = 84973FAE278F2ABC009ABD74 /* xe_smbx */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		84EE191527835C7C00B6D700 /* Project object */ = {
+		84973FA6278F2ABC009ABD74 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1320;
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
-					84EE191C27835C7C00B6D700 = {
+					84973FAD278F2ABC009ABD74 = {
 						CreatedOnToolsVersion = 13.2.1;
 						LastSwiftMigration = 1320;
 					};
 				};
 			};
-			buildConfigurationList = 84EE191827835C7C00B6D700 /* Build configuration list for PBXProject "xepg_smbserver" */;
+			buildConfigurationList = 84973FA9278F2ABC009ABD74 /* Build configuration list for PBXProject "xe_smbx" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -134,29 +134,29 @@
 				en,
 				Base,
 			);
-			mainGroup = 84EE191427835C7C00B6D700;
-			productRefGroup = 84EE191E27835C7C00B6D700 /* Products */;
+			mainGroup = 84973FA5278F2ABC009ABD74;
+			productRefGroup = 84973FAF278F2ABC009ABD74 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				84EE191C27835C7C00B6D700 /* xepg_smbserver */,
+				84973FAD278F2ABC009ABD74 /* xe_smbx */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		84EE191927835C7C00B6D700 /* Sources */ = {
+		84973FAA278F2ABC009ABD74 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84EE192127835C7C00B6D700 /* main.swift in Sources */,
+				84973FB2278F2ABC009ABD74 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		84EE192227835C7C00B6D700 /* Debug */ = {
+		84973FB3278F2ABC009ABD74 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -217,7 +217,7 @@
 			};
 			name = Debug;
 		};
-		84EE192327835C7C00B6D700 /* Release */ = {
+		84973FB4278F2ABC009ABD74 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -271,14 +271,14 @@
 			};
 			name = Release;
 		};
-		84EE192527835C7C00B6D700 /* Debug */ = {
+		84973FB6278F2ABC009ABD74 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../kmem_xepg/kmem_xepg/external,
-					$SOURCE_ROOT/../kmem_xepg/kmem_xepg/public,
+					$SOURCE_ROOT/../xe_kmem/xe_kmem/public,
+					$SOURCE_ROOT/../xe_kmem/xe_kmem/external,
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -286,20 +286,20 @@
 					"@loader_path/../Frameworks",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "xepg_smbserver/xepg_smbserver-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "xe_smbx/xe_smbx-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		84EE192627835C7C00B6D700 /* Release */ = {
+		84973FB7278F2ABC009ABD74 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../kmem_xepg/kmem_xepg/external,
-					$SOURCE_ROOT/../kmem_xepg/kmem_xepg/public,
+					$SOURCE_ROOT/../xe_kmem/xe_kmem/public,
+					$SOURCE_ROOT/../xe_kmem/xe_kmem/external,
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -307,7 +307,7 @@
 					"@loader_path/../Frameworks",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "xepg_smbserver/xepg_smbserver-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "xe_smbx/xe_smbx-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -315,20 +315,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		84EE191827835C7C00B6D700 /* Build configuration list for PBXProject "xepg_smbserver" */ = {
+		84973FA9278F2ABC009ABD74 /* Build configuration list for PBXProject "xe_smbx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				84EE192227835C7C00B6D700 /* Debug */,
-				84EE192327835C7C00B6D700 /* Release */,
+				84973FB3278F2ABC009ABD74 /* Debug */,
+				84973FB4278F2ABC009ABD74 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		84EE192427835C7C00B6D700 /* Build configuration list for PBXNativeTarget "xepg_smbserver" */ = {
+		84973FB5278F2ABC009ABD74 /* Build configuration list for PBXNativeTarget "xe_smbx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				84EE192527835C7C00B6D700 /* Debug */,
-				84EE192627835C7C00B6D700 /* Release */,
+				84973FB6278F2ABC009ABD74 /* Debug */,
+				84973FB7278F2ABC009ABD74 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -336,15 +336,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		84EE192A27835D2A00B6D700 /* NIOCore */ = {
+		84973FBF278F2B7D009ABD74 /* NIOCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NIOCore;
 		};
-		84EE192C27835D2D00B6D700 /* NIOPosix */ = {
+		84973FC1278F2B80009ABD74 /* NIOPosix */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NIOPosix;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 84EE191527835C7C00B6D700 /* Project object */;
+	rootObject = 84973FA6278F2ABC009ABD74 /* Project object */;
 }

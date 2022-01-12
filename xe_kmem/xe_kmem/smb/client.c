@@ -15,7 +15,7 @@
 #include "../external/smbfs/netbios.h"
 #include "../external/smbfs/smb_dev_2.h"
 #include "../external/smbfs/smb2_mc.h"
-#include "../public/kmem_xepg/smb_custom.h"
+#include "../public/xe_kmem/smb_custom.h"
 
 #include "client.h"
 
