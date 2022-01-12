@@ -54,7 +54,7 @@
 		845913A1276F84DC00F15CBA /* client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client.c; sourceTree = "<group>"; };
 		845913A2276F84DC00F15CBA /* ssn_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ssn_allocator.c; sourceTree = "<group>"; };
 		845913A3276F84DC00F15CBA /* nic_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nic_allocator.h; sourceTree = "<group>"; };
-		8466F425276DCE9E004F651E /* kmem_xepg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kmem_xepg; sourceTree = BUILT_PRODUCTS_DIR; };
+		8466F425276DCE9E004F651E /* xe_kmem */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xe_kmem; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F428276DCE9E004F651E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8466F430276DCEAB004F651E /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8466F432276DCEB0004F651E /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
@@ -105,7 +105,7 @@
 		8466F41C276DCE9E004F651E = {
 			isa = PBXGroup;
 			children = (
-				8466F427276DCE9E004F651E /* kmem_xepg */,
+				8466F427276DCE9E004F651E /* xe_kmem */,
 				8466F426276DCE9E004F651E /* Products */,
 				8466F42F276DCEAB004F651E /* Frameworks */,
 			);
@@ -114,12 +114,12 @@
 		8466F426276DCE9E004F651E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8466F425276DCE9E004F651E /* kmem_xepg */,
+				8466F425276DCE9E004F651E /* xe_kmem */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8466F427276DCE9E004F651E /* kmem_xepg */ = {
+		8466F427276DCE9E004F651E /* xe_kmem */ = {
 			isa = PBXGroup;
 			children = (
 				84EE193227835E2F00B6D700 /* public */,
@@ -129,7 +129,7 @@
 				84E77E992771A26F0085EDC2 /* smb */,
 				8466F428276DCE9E004F651E /* main.c */,
 			);
-			path = kmem_xepg;
+			path = xe_kmem;
 			sourceTree = "<group>";
 		};
 		8466F42F276DCEAB004F651E /* Frameworks */ = {
@@ -214,9 +214,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8466F424276DCE9E004F651E /* kmem_xepg */ = {
+		8466F424276DCE9E004F651E /* xe_kmem */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8466F42C276DCE9E004F651E /* Build configuration list for PBXNativeTarget "kmem_xepg" */;
+			buildConfigurationList = 8466F42C276DCE9E004F651E /* Build configuration list for PBXNativeTarget "xe_kmem" */;
 			buildPhases = (
 				8466F421276DCE9E004F651E /* Sources */,
 				8466F422276DCE9E004F651E /* Frameworks */,
@@ -226,9 +226,9 @@
 			);
 			dependencies = (
 			);
-			name = kmem_xepg;
+			name = xe_kmem;
 			productName = kmem_xepg;
-			productReference = 8466F425276DCE9E004F651E /* kmem_xepg */;
+			productReference = 8466F425276DCE9E004F651E /* xe_kmem */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -245,7 +245,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8466F420276DCE9E004F651E /* Build configuration list for PBXProject "kmem_xepg" */;
+			buildConfigurationList = 8466F420276DCE9E004F651E /* Build configuration list for PBXProject "xe_kmem" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -258,7 +258,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8466F424276DCE9E004F651E /* kmem_xepg */,
+				8466F424276DCE9E004F651E /* xe_kmem */,
 			);
 		};
 /* End PBXProject section */
@@ -434,7 +434,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8466F420276DCE9E004F651E /* Build configuration list for PBXProject "kmem_xepg" */ = {
+		8466F420276DCE9E004F651E /* Build configuration list for PBXProject "xe_kmem" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8466F42A276DCE9E004F651E /* Debug */,
@@ -443,7 +443,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8466F42C276DCE9E004F651E /* Build configuration list for PBXNativeTarget "kmem_xepg" */ = {
+		8466F42C276DCE9E004F651E /* Build configuration list for PBXNativeTarget "xe_kmem" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8466F42D276DCE9E004F651E /* Debug */,

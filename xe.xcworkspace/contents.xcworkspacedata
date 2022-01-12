@@ -17,7 +17,7 @@
       location = "group:libxe_dev/libxe_dev.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:kmem_xepg/kmem_xepg.xcodeproj">
+      location = "group:xe_kmem/xe_kmem.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:xepg_smbserver/xepg_smbserver.xcodeproj">
