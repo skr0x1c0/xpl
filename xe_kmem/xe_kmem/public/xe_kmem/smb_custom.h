@@ -8,12 +8,12 @@
 #ifndef xe_kmem_smb_custom_h
 #define xe_kmem_smb_custom_h
 
-#define XE_KMEM_NB_PADDR_CMD_MAGIC 0xe770
+#define XE_KMEM_NB_LADDR_CMD_MAGIC 0xe770
 
-#define XE_KMEM_NB_PADDR_CMD_FLAG_FAIL (1 << 0)
-#define XE_KMEM_NB_PADDR_CMD_FLAG_SAVE (1 << 1)
+#define XE_KMEM_NB_LADDR_CMD_FLAG_FAIL (1 << 0)
+#define XE_KMEM_NB_LADDR_CMD_FLAG_SAVE (1 << 1)
 
-struct xe_kmem_nb_paddr_cmd {
+struct xe_kmem_nb_laddr_cmd {
     uint16_t magic;
     uint16_t flags;
     uint32_t key;

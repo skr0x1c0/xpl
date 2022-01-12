@@ -359,30 +359,31 @@ extension RequestHandler {
         let ssnRequest = NetbiosSsnRequest(paddr: paddr, laddr: laddr)
         lastNetbiosSsnRequest = ssnRequest
         
-        if laddr.count < MemoryLayout<xe_kmem_nb_paddr_cmd>.size + 1 {
+        // Check and process xe_kmem_nb_laddr_cmd if it is embedded in laddr
+        if laddr.count < MemoryLayout<xe_kmem_nb_laddr_cmd>.size + 1 {
             return UInt8(NB_SSN_POSRESP)
         }
         
-        var paddrCmd = xe_kmem_nb_paddr_cmd()
+        var laddrCmd = xe_kmem_nb_laddr_cmd()
         _ = laddr.withUnsafeBufferPointer {
-            memcpy(&paddrCmd, $0.baseAddress! + 1, MemoryLayout.size(ofValue: paddrCmd))
+            memcpy(&laddrCmd, $0.baseAddress! + 1 /* skip first byte containing length of segment */, MemoryLayout.size(ofValue: laddrCmd))
         }
         
-        if (paddrCmd.magic != XE_KMEM_NB_PADDR_CMD_MAGIC) {
+        if laddrCmd.magic != XE_KMEM_NB_LADDR_CMD_MAGIC {
             return UInt8(NB_SSN_POSRESP)
         }
         
-        if (paddrCmd.flags & UInt16(XE_KMEM_NB_PADDR_CMD_FLAG_SAVE) != 0) {
+        if laddrCmd.flags & UInt16(XE_KMEM_NB_LADDR_CMD_FLAG_SAVE) != 0 {
             dispatchQueueStore.sync {
-                savedNetbiosSsnRequestStore[UInt32(paddrCmd.key)] = ssnRequest
+                savedNetbiosSsnRequestStore[UInt32(laddrCmd.key)] = ssnRequest
             }
         }
         
-        if (paddrCmd.flags & UInt16(XE_KMEM_NB_PADDR_CMD_FLAG_FAIL) != 0) {
+        if laddrCmd.flags & UInt16(XE_KMEM_NB_LADDR_CMD_FLAG_FAIL) != 0 {
             return UInt8(NB_SSN_NEGRESP)
+        } else {
+            return UInt8(NB_SSN_POSRESP)
         }
-        
-        return UInt8(NB_SSN_POSRESP)
     }
     
     func handleNetbiosRequest(context: ChannelHandlerContext, request: inout ByteBuffer) {

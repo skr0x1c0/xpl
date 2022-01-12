@@ -219,7 +219,9 @@ int main(void) {
         struct sockaddr_in addr = smb_addr;
         addr.sin_port = htons(SMB_PORT_FOR_INDEX(&smb_addr, index, num_nbpcb_capture_allocations));
         int error = smb_client_ioc_negotiate(nbpcb_capture_allocators[index], &addr, sizeof(addr), FALSE);
-        xe_assert_err(error);
+        if (error) {
+            xe_log_warn("unexpected error %s during nbpcb capture allocations", strerror(error));
+        }
     });
     
     found_index = -1;
