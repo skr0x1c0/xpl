@@ -23,12 +23,6 @@
       location = "group:xepg_smbserver/xepg_smbserver.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:kmem_remote/kmem_remote.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:kmem_msdosfs/kmem_msdosfs.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:test/test.xcodeproj">
    </FileRef>
    <Group
