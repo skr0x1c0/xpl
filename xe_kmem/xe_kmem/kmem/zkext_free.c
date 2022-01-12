@@ -195,7 +195,7 @@ void kmem_zkext_free_session_execute(kmem_zkext_free_session_t session, const st
         }
         kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, INT32_MAX - i, NUM_SOCKETS_PER_SLOW_DOWN_NIC, sizeof(struct sockaddr_in));
     }
-    xe_log_info("[INFO] done");
+    xe_log_info("done perparing for free");
 
     kmem_zkext_free_kext_allocate_sockets(session->nic_allocator, (uint32_t)entry->nic_index, 512, 96);
     kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 512);

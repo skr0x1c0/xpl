@@ -9,7 +9,7 @@ struct NetbiosSsnRequest {
 }
 
 var savedNetbiosSsnRequestStore: [UInt32: NetbiosSsnRequest] = [:]
-let dispatchQueueStore = DispatchQueue(label: "xepg_smbserver_dq_store")
+let dispatchQueueStore = DispatchQueue(label: "dq_store")
 
 
 // MARK: - SMB & Netbios request routing
@@ -21,8 +21,12 @@ class RequestHandler: ChannelInboundHandler {
     
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         var request = unwrapInboundIn(data)
+        
+        if (request.readableBytes < 8) {
+            print("[WARN] ignoring request with too small length \(request.readableBytes)")
+            return
+        }
 
-        // FIXME: OOB read
         assert(SMB_SIGLEN == SMB2_SIGLEN)
         let signature = request.getBytes(at: 4, length: Int(SMB_SIGLEN))!
         let structSize = request.getInteger(at: 4 + Int(SMB_SIGLEN), endianness: .little, as: UInt16.self)!
@@ -77,9 +81,9 @@ extension RequestHandler {
             status = handleCmdTreeDisconnect(request: &request, response: &response)
         case SMB_COM_LOGOFF_ANDX:
             status = handleCmdLogoff(request: &request, response: &response)
-        case SMB_CUSTOM_CMD_GET_LAST_NB_SSN_REQUEST:
+        case XE_KMEM_SMB_CMD_GET_LAST_NB_SSN_REQUEST:
             status = handleCustomCmdReadLastNbSsnRequest(request: &request, response: &response)
-        case SMB_CUSTOM_CMD_GET_SAVED_NB_SSN_REQUEST:
+        case XE_KMEM_SMB_CMD_GET_SAVED_NB_SSN_REQUEST:
             status = handleCustomCmdReadSavedRequest(request: &request, response: &response)
         default:
             print("[WARN] unsupported command", cmd)
@@ -355,26 +359,26 @@ extension RequestHandler {
         let ssnRequest = NetbiosSsnRequest(paddr: paddr, laddr: laddr)
         lastNetbiosSsnRequest = ssnRequest
         
-        if laddr.count < MemoryLayout<kmem_xepg_cmd_paddr>.size + 1 {
+        if laddr.count < MemoryLayout<xe_kmem_nb_paddr_cmd>.size + 1 {
             return UInt8(NB_SSN_POSRESP)
         }
         
-        var paddrCmd = kmem_xepg_cmd_paddr()
+        var paddrCmd = xe_kmem_nb_paddr_cmd()
         _ = laddr.withUnsafeBufferPointer {
             memcpy(&paddrCmd, $0.baseAddress! + 1, MemoryLayout.size(ofValue: paddrCmd))
         }
         
-        if (paddrCmd.magic != KMEM_XEPG_CMD_PADDR_MAGIC) {
+        if (paddrCmd.magic != XE_KMEM_NB_PADDR_CMD_MAGIC) {
             return UInt8(NB_SSN_POSRESP)
         }
         
-        if (paddrCmd.flags & UInt16(KMEM_XEPG_CMD_PADDR_FLAG_SAVE) != 0) {
+        if (paddrCmd.flags & UInt16(XE_KMEM_NB_PADDR_CMD_FLAG_SAVE) != 0) {
             dispatchQueueStore.sync {
                 savedNetbiosSsnRequestStore[UInt32(paddrCmd.key)] = ssnRequest
             }
         }
         
-        if (paddrCmd.flags & UInt16(KMEM_XEPG_CMD_PADDR_FLAG_FAIL) != 0) {
+        if (paddrCmd.flags & UInt16(XE_KMEM_NB_PADDR_CMD_FLAG_FAIL) != 0) {
             return UInt8(NB_SSN_NEGRESP)
         }
         
@@ -427,7 +431,12 @@ final class MessageReader: ByteToMessageDecoder {
             return .needMoreData
         }
                 
-        // handling netbios request assuming smb request length will not be greater than 2^24 - 1
+        /*
+         Netbios requests have bits 24-31 containing command type and
+         bits 0-23 containing length of data. For simplicity, we use only
+         bits 0-23 for finding length of both SMB and netbios requests,
+         assuming that SMB requests will not have length greater than 2^24 - 1.
+         */
         length = length & 0xffffff
         
         guard let data = buffer.getSlice(at: 0, length: Int(length) + MemoryLayout<UInt32>.size) else {

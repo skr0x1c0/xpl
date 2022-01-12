@@ -207,7 +207,7 @@ int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* dst
     bzero(&req, sizeof(req));
     
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
-    req.ioc_cmd = SMB_CUSTOM_CMD_GET_SAVED_NB_SSN_REQUEST;
+    req.ioc_cmd = XE_KMEM_SMB_CMD_GET_SAVED_NB_SSN_REQUEST;
     req.ioc_twords = &key;
     req.ioc_twc = sizeof(key) / 2;
     req.ioc_rpbuf = dst;
@@ -225,7 +225,7 @@ int smb_client_ioc_read_last_nb_ssn_request(int fd_dev, char* dst, uint32_t dst_
     bzero(&req, sizeof(req));
     
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
-    req.ioc_cmd = SMB_CUSTOM_CMD_GET_LAST_NB_SSN_REQUEST;
+    req.ioc_cmd = XE_KMEM_SMB_CMD_GET_LAST_NB_SSN_REQUEST;
     req.ioc_rpbuf = dst;
     req.ioc_rpbufsz = dst_size;
     

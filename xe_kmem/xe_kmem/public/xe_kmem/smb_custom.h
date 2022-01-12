@@ -5,21 +5,21 @@
 //  Created by admin on 1/3/22.
 //
 
-#ifndef smb_custom_h
-#define smb_custom_h
+#ifndef xe_kmem_smb_custom_h
+#define xe_kmem_smb_custom_h
 
-#define KMEM_XEPG_CMD_PADDR_MAGIC 0xe770
+#define XE_KMEM_NB_PADDR_CMD_MAGIC 0xe770
 
-#define KMEM_XEPG_CMD_PADDR_FLAG_FAIL (1 << 0)
-#define KMEM_XEPG_CMD_PADDR_FLAG_SAVE (1 << 1)
+#define XE_KMEM_NB_PADDR_CMD_FLAG_FAIL (1 << 0)
+#define XE_KMEM_NB_PADDR_CMD_FLAG_SAVE (1 << 1)
 
-struct kmem_xepg_cmd_paddr {
+struct xe_kmem_nb_paddr_cmd {
     uint16_t magic;
     uint16_t flags;
     uint32_t key;
 };
 
-#define SMB_CUSTOM_CMD_GET_LAST_NB_SSN_REQUEST  255
-#define SMB_CUSTOM_CMD_GET_SAVED_NB_SSN_REQUEST 244
+#define XE_KMEM_SMB_CMD_GET_LAST_NB_SSN_REQUEST  255
+#define XE_KMEM_SMB_CMD_GET_SAVED_NB_SSN_REQUEST 244
 
-#endif /* smb_custom_h */
+#endif /* xe_kmem_smb_custom_h */
