@@ -204,7 +204,8 @@ void xe_kmem_msdosfs_read(void* ctx, void* dst, uintptr_t src, size_t size) {
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)ctx;
     xe_kmem_msdosfs_prepare_worker_for_read(kmem_msdosfs, src, size);
     xe_kmem_msdosfs_flush_worker_cache(kmem_msdosfs);
-    size_t off = lseek(kmem_msdosfs->args.worker_bridge_fd, 0, SEEK_SET);
+    off_t off = lseek(kmem_msdosfs->args.worker_bridge_fd, 0, SEEK_SET);
+    xe_assert_errno(off == -1);
     xe_assert_cond(off, ==, 0);
     size_t len = read(kmem_msdosfs->args.worker_bridge_fd, dst, size);
     xe_assert_cond(len, ==, size);
@@ -213,7 +214,8 @@ void xe_kmem_msdosfs_read(void* ctx, void* dst, uintptr_t src, size_t size) {
 void xe_kmem_msdosfs_write(void* ctx, uintptr_t dst, void* src, size_t size) {
     xe_assert_cond(size, <=, MAX_WRITE_SIZE);
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)ctx;
-    size_t off = lseek(kmem_msdosfs->args.worker_bridge_fd, 0, SEEK_SET);
+    off_t off = lseek(kmem_msdosfs->args.worker_bridge_fd, 0, SEEK_SET);
+    xe_assert_errno(off == -1);
     xe_assert_cond(off, ==, 0);
     size_t len = write(kmem_msdosfs->args.worker_bridge_fd, src, size);
     xe_assert_cond(len, ==, size);
