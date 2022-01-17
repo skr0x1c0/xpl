@@ -8,4 +8,4 @@
 #include <smbfs/smb_packets_2.h>
 #include <smbfs/netbios.h>
 
-#include <xe_kmem/smb_custom.h>
+#include <xe_kmem/smbx_conf.h>

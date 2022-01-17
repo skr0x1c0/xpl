@@ -452,9 +452,9 @@ final class MessageReader: ByteToMessageDecoder {
 
 // MARK: - Server setup
 let arguments = CommandLine.arguments
-let host = arguments.dropFirst().first ?? "127.0.0.1"
-let port = arguments.dropFirst(2).first.flatMap(Int.init) ?? 8090
-let portCount = arguments.dropLast(3).first.flatMap(Int.init) ?? 64;
+let host = XE_SMBX_HOST
+let port = Int(XE_SMBX_PORT_START)
+let portCount = Int(XE_SMBX_PORT_COUNT);
 
 var limit = rlimit(rlim_cur: 0, rlim_max: 0)
 getrlimit(RLIMIT_NOFILE, &limit)

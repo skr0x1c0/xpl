@@ -22,4 +22,8 @@ struct xe_kmem_nb_laddr_cmd {
 #define XE_KMEM_SMB_CMD_GET_LAST_NB_SSN_REQUEST  255
 #define XE_KMEM_SMB_CMD_GET_SAVED_NB_SSN_REQUEST 244
 
+#define XE_SMBX_HOST       "127.0.0.1"
+#define XE_SMBX_PORT_START 8090
+#define XE_SMBX_PORT_COUNT 64
+
 #endif /* xe_kmem_smb_custom_h */

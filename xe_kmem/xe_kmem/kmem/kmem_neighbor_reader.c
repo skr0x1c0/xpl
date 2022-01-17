@@ -14,7 +14,7 @@
 #include <xe/util/assert.h>
 
 #include "../smb/client.h"
-#include "../public/xe_kmem/smb_custom.h"
+#include "../public/xe_kmem/smbx_conf.h"
 
 #include "kmem_neighbor_reader.h"
 
