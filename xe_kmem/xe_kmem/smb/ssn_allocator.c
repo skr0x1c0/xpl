@@ -62,31 +62,6 @@ int smb_ssn_allocator_allocate(smb_ssn_allocator id, const char* data1, uint32_t
     return smb_client_ioc(id, SMBIOC_SSNSETUP, &req);
 }
 
-int smb_ssn_allocator_allocate_adv(smb_ssn_allocator id, const char* data1, uint32_t data1_size, const char* data2, uint32_t data2_size, char* username, char* password, char* domain) {
-    struct smbioc_setup req;
-    bzero(&req, sizeof(req));
-    req.ioc_version = SMB_IOC_STRUCT_VERSION;
-    
-    if (strlcpy(req.ioc_user, username, sizeof(req.ioc_user)) >= sizeof(req.ioc_user)) {
-        return EINVAL;
-    }
-    
-    if (strlcpy(req.ioc_password, password, sizeof(req.ioc_password)) >= sizeof(req.ioc_password)) {
-        return EINVAL;
-    }
-    
-    if (strlcpy(req.ioc_domain, domain, sizeof(req.ioc_domain)) >= sizeof(req.ioc_domain)) {
-        return EINVAL;
-    }
-    
-    req.ioc_gss_client_size = data1_size;
-    req.ioc_gss_client_name = (user_addr_t)data1;
-    req.ioc_gss_target_size = data2_size;
-    req.ioc_gss_target_name = (user_addr_t)data2;
-    
-    return smb_client_ioc(id, SMBIOC_SSNSETUP, &req);
-}
-
 int smb_ssn_allocator_read(smb_ssn_allocator id, char* data1_out, uint32_t data1_size, char* data2_out, uint32_t data2_size) {
     struct smbioc_auth_info req;
     bzero(&req, sizeof(req));
