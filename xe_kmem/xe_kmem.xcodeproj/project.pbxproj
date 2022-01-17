@@ -76,7 +76,7 @@
 		84EDAAC52779B8BC005A0ED7 /* zkext_prime_util.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zkext_prime_util.c; sourceTree = "<group>"; };
 		84EE1911278350B600B6D700 /* kmem_neighbor_reader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_neighbor_reader.h; sourceTree = "<group>"; };
 		84EE1912278350B600B6D700 /* kmem_neighbor_reader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_neighbor_reader.c; sourceTree = "<group>"; };
-		84EE193427835E7500B6D700 /* smb_custom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_custom.h; sourceTree = "<group>"; };
+		84EE193427835E7500B6D700 /* smbx_conf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smbx_conf.h; sourceTree = "<group>"; };
 		84F269BF2771C2AD008C285E /* allocator_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_rw.h; sourceTree = "<group>"; };
 		84F269C02771C2AD008C285E /* allocator_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_rw.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -206,7 +206,7 @@
 		84EE193327835E6900B6D700 /* xe_kmem */ = {
 			isa = PBXGroup;
 			children = (
-				84EE193427835E7500B6D700 /* smb_custom.h */,
+				84EE193427835E7500B6D700 /* smbx_conf.h */,
 			);
 			path = xe_kmem;
 			sourceTree = "<group>";
