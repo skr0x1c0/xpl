@@ -175,6 +175,7 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     uintptr_t dict = xe_kmem_read_uint64(x19, 0);
     xe_kmem_write_uint64(x20, 0, ptr);
     xe_kmem_write_uint64(x23, 0, ctx);
+    /// set the new capacity of dict as 0 so that the newly signed pointer will not be used
     xe_kmem_write_uint64(x21, 0, 0);
     
     xe_util_lck_rw_lock_done(&util_lck_rw);
