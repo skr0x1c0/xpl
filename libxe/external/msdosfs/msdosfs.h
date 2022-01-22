@@ -99,19 +99,19 @@ struct msdosfs_args {
 /*#define MSDOSFSMNT_U2WTABLE     0x10    Local->Unicode and local<->DOS tables loaded */
 /*#define MSDOSFSMNT_ULTABLE      0x20    Local upper<->lower table loaded */
 #define MSDOSFSMNT_SECONDSWEST    0x40    /* Use secondsWest for GMT<->local time conversion */
-#define MSDOSFSMNT_LABEL        0x80    /* UTF-8 volume label in label[]; deprecated */
+#define MSDOSFSMNT_LABEL          0x80    /* UTF-8 volume label in label[]; deprecated */
 
 /* All flags above: */
-#define MSDOSFSMNT_MNTOPT        (MSDOSFSMNT_SECONDSWEST | MSDOSFSMNT_LABEL)
+#define MSDOSFSMNT_MNTOPT       (MSDOSFSMNT_SECONDSWEST | MSDOSFSMNT_LABEL)
 
 /* Flags from the pm_flags field: */
-#define    MSDOSFSMNT_RONLY        0x80000000    /* mounted read-only    */
-#define    MSDOSFSMNT_WAITONFAT    0x40000000    /* mounted synchronous    */
-#define    MSDOSFS_FATMIRROR        0x20000000    /* FAT is mirrored */
-#define MSDOSFS_CORRUPT            0x10000000    /* Runtime corruption detected. */
-#define MSDOSFS_HAS_EXT_BOOT        0x08000000    /* Boot sector has "extended boot" fields. */
-#define MSDOSFS_HAS_VOL_UUID            0x04000000      /* Volume has a valid UUID in pm_uuid */
+#define MSDOSFSMNT_RONLY        0x80000000    /* mounted read-only    */
+#define MSDOSFSMNT_WAITONFAT    0x40000000    /* mounted synchronous    */
+#define MSDOSFS_FATMIRROR       0x20000000    /* FAT is mirrored */
+#define MSDOSFS_CORRUPT         0x10000000    /* Runtime corruption detected. */
+#define MSDOSFS_HAS_EXT_BOOT    0x08000000    /* Boot sector has "extended boot" fields. */
+#define MSDOSFS_HAS_VOL_UUID    0x04000000      /* Volume has a valid UUID in pm_uuid */
 
-#define MSDOSFS_ARGSMAGIC        0xe4eff301
+#define MSDOSFS_ARGSMAGIC       0xe4eff301
 
 #endif /* external_msdosfs_msdosfs_h */
