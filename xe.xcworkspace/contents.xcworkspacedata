@@ -28,8 +28,33 @@
    <Group
       location = "group:docs"
       name = "docs">
+      <Group
+         location = "group:images"
+         name = "images">
+         <FileRef
+            location = "group:kext_neighbor_read_upto_128.drawio.png">
+         </FileRef>
+         <FileRef
+            location = "group:nb_put_name.drawio.png">
+         </FileRef>
+         <FileRef
+            location = "group:kmem_neighbor_read_upto_32.drawio.png">
+         </FileRef>
+         <FileRef
+            location = "group:double_free.png">
+         </FileRef>
+         <FileRef
+            location = "group:kmem_fast_read.drawio.png">
+         </FileRef>
+         <FileRef
+            location = "group:kmem_fast_write.drawio.png">
+         </FileRef>
+      </Group>
       <FileRef
-         location = "group:part2">
+         location = "group:lck_rw_t.md">
+      </FileRef>
+      <FileRef
+         location = "group:pacda.md">
       </FileRef>
       <FileRef
          location = "group:kmem.md">
@@ -37,16 +62,6 @@
       <FileRef
          location = "group:smbfs_misc.md">
       </FileRef>
-      <Group
-         location = "group:Resources"
-         name = "Resources">
-         <FileRef
-            location = "group:kmem slow.drawio">
-         </FileRef>
-         <FileRef
-            location = "group:kmem_fast.drawio">
-         </FileRef>
-      </Group>
    </Group>
    <Group
       location = "group:external"
