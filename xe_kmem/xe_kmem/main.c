@@ -34,10 +34,10 @@
 #include "macos_params.h"
 
 #include "kmem_smbiod.h"
-#include "kmem/zkext_free.h"
-#include "kmem/zkext_alloc_small.h"
-#include "kmem/allocator_rw.h"
-#include "kmem/zkext_prime_util.h"
+#include "memory/zkext_free.h"
+#include "memory/zkext_alloc_small.h"
+#include "memory/allocator_rw.h"
+#include "memory/zkext_prime_util.h"
 
 #include "public/xe_kmem/smbx_conf.h"
 

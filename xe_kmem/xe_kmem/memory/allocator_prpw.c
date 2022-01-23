@@ -18,6 +18,18 @@
 #define MAX_IPS_PER_NIC 8
 #define MAX_ALLOCS_PER_BACKEND (MAX_NICS_PER_BACKEND * MAX_IPS_PER_NIC)
 
+/*
+ * Allocator with partial read write capability
+ * -- Data allocated as a socket address
+ * -- Maximum length of data is UINT8_MAX
+ * -- Only socket address family can be read (2nd byte of allocated memory)
+ * -- For IPv4 socket addresses, memory after field `sin_addr` can be freely written
+ * -- For IPv6 socket addresses, memory after field `sin6_addr` can be freely written
+ * -- For other socket address family, memory after field `sa_data` can be freely written
+ * -- Writing to memory can only be done initially during allocation
+ * -- Memory allocated from `KHEAP_KEXT`
+ */
+
 struct kmem_allocator_prpw {
     smb_nic_allocator* backends;
     size_t backend_count;

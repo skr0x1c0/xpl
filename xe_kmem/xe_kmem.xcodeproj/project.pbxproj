@@ -124,7 +124,7 @@
 			children = (
 				84EE193227835E2F00B6D700 /* public */,
 				84591398276F847300F15CBA /* external */,
-				84E77E9B2771A4390085EDC2 /* kmem */,
+				84E77E9B2771A4390085EDC2 /* memory */,
 				84E77E9A2771A2EB0085EDC2 /* xnu */,
 				84E77E992771A26F0085EDC2 /* smb */,
 				8466F428276DCE9E004F651E /* main.c */,
@@ -166,7 +166,7 @@
 			path = xnu;
 			sourceTree = "<group>";
 		};
-		84E77E9B2771A4390085EDC2 /* kmem */ = {
+		84E77E9B2771A4390085EDC2 /* memory */ = {
 			isa = PBXGroup;
 			children = (
 				84F269BF2771C2AD008C285E /* allocator_rw.h */,
@@ -192,7 +192,7 @@
 				84EE1911278350B600B6D700 /* kmem_neighbor_reader.h */,
 				84EE1912278350B600B6D700 /* kmem_neighbor_reader.c */,
 			);
-			path = kmem;
+			path = memory;
 			sourceTree = "<group>";
 		};
 		84EE193227835E2F00B6D700 /* public */ = {

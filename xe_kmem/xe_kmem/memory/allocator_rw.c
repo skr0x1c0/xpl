@@ -22,6 +22,14 @@
 #define DEFAULT_SSN_ALLOCATOR_DOMAIN_SIZE 16
 
 
+/*
+ * Allocator with read write capability
+ * -- Reading of allocated memory can be done anytime
+ * -- Writing to memory can only be done initially during allocation
+ * -- Memory allocated from `KHEAP_KEXT`
+ */
+
+
 struct kmem_allocator_rw {
     struct sockaddr_in addr;
     smb_ssn_allocator* backends;
