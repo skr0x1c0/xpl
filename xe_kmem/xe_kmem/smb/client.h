@@ -17,7 +17,7 @@ int smb_client_ioc_update_client_interface(int fd_dev, struct network_nic_info* 
 int smb_client_ioc_notifier_update_interfaces(int fd_dev, struct network_nic_info* info, size_t info_count);
 int smb_client_ioc_multichannel_properties(int fd_dev, struct smbioc_multichannel_properties* out);
 int smb_client_ioc_tcon(int fd_dev, char* share_name);
-int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* dst, uint32_t dst_size);
+int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
 int smb_client_ioc_read_last_nb_ssn_request(int fd_dev, char* dst, uint32_t dst_size);
 
 #endif /* smb_client_h */

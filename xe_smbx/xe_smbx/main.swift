@@ -4,8 +4,8 @@ import Dispatch
 
 
 struct NetbiosSsnRequest {
-    let paddr: [UInt8]
-    let laddr: [UInt8]
+    let serverNbName: [UInt8]
+    let localNbName: [UInt8]
 }
 
 var savedNetbiosSsnRequestStore: [UInt32: NetbiosSsnRequest] = [:]
@@ -164,10 +164,10 @@ extension RequestHandler {
             return Int32(NTSTATUS_NOT_FOUND)
         }
         
-        response.writeInteger(UInt32(lastRequest.laddr.count), endianness: .little, as: UInt32.self)
-        response.writeBytes(lastRequest.laddr)
-        response.writeInteger(UInt32(lastRequest.paddr.count), endianness: .little, as: UInt32.self)
-        response.writeBytes(lastRequest.paddr)
+        response.writeInteger(UInt32(lastRequest.serverNbName.count), endianness: .little, as: UInt32.self)
+        response.writeInteger(UInt32(lastRequest.localNbName.count), endianness: .little, as: UInt32.self)
+        response.writeBytes(lastRequest.serverNbName)
+        response.writeBytes(lastRequest.localNbName)
         
         return NTSTATUS_SUCCESS
     }
@@ -196,10 +196,10 @@ extension RequestHandler {
             return Int32(bitPattern: NTSTATUS_NOT_FOUND)
         }
 
-        response.writeInteger(UInt32(savedRequest.laddr.count), endianness: .little, as: UInt32.self)
-        response.writeBytes(savedRequest.laddr)
-        response.writeInteger(UInt32(savedRequest.paddr.count), endianness: .little, as: UInt32.self)
-        response.writeBytes(savedRequest.paddr)
+        response.writeInteger(UInt32(savedRequest.serverNbName.count), endianness: .little, as: UInt32.self)
+        response.writeInteger(UInt32(savedRequest.localNbName.count), endianness: .little, as: UInt32.self)
+        response.writeBytes(savedRequest.serverNbName)
+        response.writeBytes(savedRequest.localNbName)
         
         return NTSTATUS_SUCCESS
     }
@@ -346,26 +346,26 @@ extension RequestHandler {
     }
     
     func handleNetbiosSsnRequest(request: inout ByteBuffer, response: inout ByteBuffer) -> UInt8 {
-        guard let paddr = try? parseNetbiosName(&request) else {
+        guard let serverNbName = try? parseNetbiosName(&request) else {
             print("[WARN] got netbios ssn request with invalid paddr")
             return UInt8(NB_SSN_NEGRESP)
         }
         
-        guard let laddr = try? parseNetbiosName(&request) else {
+        guard let localNbName = try? parseNetbiosName(&request) else {
             print("[WARN] got netbios ssn request with invalid laddr")
             return UInt8(NB_SSN_NEGRESP)
         }
         
-        let ssnRequest = NetbiosSsnRequest(paddr: paddr, laddr: laddr)
+        let ssnRequest = NetbiosSsnRequest(serverNbName: serverNbName, localNbName: localNbName)
         lastNetbiosSsnRequest = ssnRequest
         
         // Check and process xe_kmem_nb_laddr_cmd if it is embedded in laddr
-        if laddr.count < MemoryLayout<xe_kmem_nb_laddr_cmd>.size + 1 {
+        if localNbName.count < MemoryLayout<xe_kmem_nb_laddr_cmd>.size + 1 {
             return UInt8(NB_SSN_POSRESP)
         }
         
         var laddrCmd = xe_kmem_nb_laddr_cmd()
-        _ = laddr.withUnsafeBufferPointer {
+        _ = localNbName.withUnsafeBufferPointer {
             memcpy(&laddrCmd, $0.baseAddress! + 1 /* skip first byte containing length of segment */, MemoryLayout.size(ofValue: laddrCmd))
         }
         

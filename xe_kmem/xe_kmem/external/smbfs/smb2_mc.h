@@ -27,6 +27,12 @@
 #include <net/if.h>
 #include <netinet/in.h>
 
+struct sock_addr_entry {
+    struct sockaddr* addr;
+    TAILQ_ENTRY(sock_addr_entry) next;
+};
+TAILQ_HEAD(sock_addr_list, sock_addr_entry);
+
 /*
  * The raw NIC's info coming from the client and the server
  * Contains only one IP address
@@ -72,10 +78,7 @@ struct complete_nic_info_entry {
     uint32_t nic_flags;       /* Black-listed, etc */
     _SMB2_MC_NIC_STATE nic_state;
 
-    struct {
-        void* tqh_first;
-        void** tqh_last;
-    } addr_list;
+    struct sock_addr_list addr_list;
     
     struct {
         struct complete_nic_info_entry* next;
