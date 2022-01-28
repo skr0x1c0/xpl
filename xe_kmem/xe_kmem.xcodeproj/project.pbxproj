@@ -20,7 +20,6 @@
 		84E8BC4F27722B70004E9C29 /* allocator_nic_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E8BC4E27722B70004E9C29 /* allocator_nic_parallel.c */; };
 		84E8ED212780D49D001DCB32 /* kmem_smbiod.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E8ED202780D49D001DCB32 /* kmem_smbiod.c */; };
 		84EB7CED277AEFE10083D06C /* zkext_alloc_small.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EB7CEC277AEFE10083D06C /* zkext_alloc_small.c */; };
-		84EDAAC62779B8BC005A0ED7 /* zkext_prime_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EDAAC52779B8BC005A0ED7 /* zkext_prime_util.c */; };
 		84EE1913278350B600B6D700 /* kmem_neighbor_reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EE1912278350B600B6D700 /* kmem_neighbor_reader.c */; };
 		84F269C12771C2AD008C285E /* allocator_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F269C02771C2AD008C285E /* allocator_rw.c */; };
 /* End PBXBuildFile section */
@@ -66,8 +65,6 @@
 		84E8ED202780D49D001DCB32 /* kmem_smbiod.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_smbiod.c; sourceTree = "<group>"; };
 		84EB7CEB277AEFE10083D06C /* zkext_alloc_small.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = zkext_alloc_small.h; sourceTree = "<group>"; };
 		84EB7CEC277AEFE10083D06C /* zkext_alloc_small.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zkext_alloc_small.c; sourceTree = "<group>"; };
-		84EDAAC42779B8BC005A0ED7 /* zkext_prime_util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = zkext_prime_util.h; sourceTree = "<group>"; };
-		84EDAAC52779B8BC005A0ED7 /* zkext_prime_util.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zkext_prime_util.c; sourceTree = "<group>"; };
 		84EE1911278350B600B6D700 /* kmem_neighbor_reader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_neighbor_reader.h; sourceTree = "<group>"; };
 		84EE1912278350B600B6D700 /* kmem_neighbor_reader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_neighbor_reader.c; sourceTree = "<group>"; };
 		84EE193427835E7500B6D700 /* smbx_conf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smbx_conf.h; sourceTree = "<group>"; };
@@ -173,8 +170,6 @@
 				84E77EA02771B1630085EDC2 /* zkext_free.c */,
 				84E77E9C2771A4790085EDC2 /* zkext_neighbor_reader.h */,
 				84E77E9D2771A4790085EDC2 /* zkext_neighbor_reader.c */,
-				84EDAAC42779B8BC005A0ED7 /* zkext_prime_util.h */,
-				84EDAAC52779B8BC005A0ED7 /* zkext_prime_util.c */,
 				84EB7CEB277AEFE10083D06C /* zkext_alloc_small.h */,
 				84EB7CEC277AEFE10083D06C /* zkext_alloc_small.c */,
 				84E8ED1F2780D49D001DCB32 /* kmem_smbiod.h */,
@@ -260,7 +255,6 @@
 			files = (
 				84E8ED212780D49D001DCB32 /* kmem_smbiod.c in Sources */,
 				84F269C12771C2AD008C285E /* allocator_rw.c in Sources */,
-				84EDAAC62779B8BC005A0ED7 /* zkext_prime_util.c in Sources */,
 				845913A7276F859F00F15CBA /* nic_allocator.c in Sources */,
 				8466F429276DCE9E004F651E /* main.c in Sources */,
 				84EB7CED277AEFE10083D06C /* zkext_alloc_small.c in Sources */,
