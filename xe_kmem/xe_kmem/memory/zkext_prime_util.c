@@ -32,7 +32,7 @@ kmem_zkext_prime_util_t kmem_zkext_prime_util_create(const struct sockaddr_in* s
 
 void kmem_zkext_prime_util_prime(kmem_zkext_prime_util_t util, uint num_elements, uint z_elem_size) {
     xe_assert(z_elem_size <= 256);
-    uint8_t alloc_size = XE_MIN(z_elem_size, UINT8_MAX);
+    uint8_t alloc_size = xe_min(z_elem_size, UINT8_MAX);
     uint num_allocs = num_elements;
     if (alloc_size > 16 && alloc_size <= 32) {
         num_allocs /= 2;

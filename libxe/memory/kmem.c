@@ -28,7 +28,7 @@ void xe_kmem_read(void* dst, uintptr_t base, uintptr_t off, size_t size) {
     size_t max_read_size = kmem_backend->ops->max_read_size;
     size_t done = 0;
     while (done < size) {
-        size_t batch_size = XE_MIN(size - done, max_read_size);
+        size_t batch_size = xe_min(size - done, max_read_size);
         (*kmem_backend->ops->read)(kmem_backend->ctx, dst + done, base + off + done, batch_size);
         done += batch_size;
     }
@@ -41,7 +41,7 @@ void xe_kmem_write(uintptr_t base, uintptr_t off, void* src, size_t size) {
     size_t max_write_size = kmem_backend->ops->max_write_size;
     size_t done = 0;
     while (done < size) {
-        size_t batch_size = XE_MIN(size - done, max_write_size);
+        size_t batch_size = xe_min(size - done, max_write_size);
         (*kmem_backend->ops->write)(kmem_backend->ctx, base + off + done, src + done, batch_size);
         done += batch_size;
     }

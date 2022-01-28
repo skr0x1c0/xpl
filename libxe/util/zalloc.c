@@ -170,7 +170,7 @@ void xe_util_init_bitmap_inline(uintptr_t meta_base, uint32_t elem_size) {
     uint elements = (zm_chunk_len * XE_PAGE_SIZE) / elem_size;
     for (int i=0; i<zm_chunk_len; i++) {
         uintptr_t meta = meta_base + i * TYPE_ZONE_PAGE_METADATA_SIZE;
-        uint batch_size = XE_MIN(elements, 32);
+        uint batch_size = xe_min(elements, 32);
         uint32_t bitmap = ~0;
         if (batch_size < 32) {
             bitmap &= ((1 << batch_size) - 1);
@@ -191,7 +191,7 @@ void xe_util_init_bitmap_ref(uintptr_t meta_base, uint32_t elem_size) {
     
     uint elements = (zm_chunk_len * XE_PAGE_SIZE) / elem_size;
     for (int i=0; i<bitmap_count; i++) {
-        uint batch_size = XE_MIN(elements, 64);
+        uint batch_size = xe_min(elements, 64);
         uintptr_t bitmap = bitmap_base + i * 8;
         uint64_t value = ~0ULL;
         if (batch_size < 64) {
@@ -218,7 +218,7 @@ void xe_util_zalloc_change_pageq_owner(uintptr_t meta_head, uint16_t zone_index)
     xe_assert(zone_index < VAR_ZONE_ARRAY_LEN);
     while (cursor) {
         uint16_t bitfields = xe_kmem_read_uint16(cursor, 0);
-        uint16_t zm_index_mask = XE_BITFIELD_MASK(TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
+        uint16_t zm_index_mask = xe_bitfield_mask(TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_SIZE);
         bitfields = (bitfields & ~zm_index_mask) | ((zone_index << TYPE_ZONE_PAGE_METADATA_MEM_ZM_INDEX_BIT_OFFSET) & zm_index_mask);
         xe_kmem_write_uint16(cursor, 0, bitfields);
         uint32_t next_pageq = xe_kmem_read_uint32(cursor, TYPE_ZONE_PAGE_METADATA_MEM_ZM_PAGE_NEXT_OFFSET);
@@ -304,7 +304,7 @@ xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, uint num_pages) {
     
     uint16_t z_elem_size = xe_kmem_read_uint16(zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET);
     xe_util_zalloc_t util = malloc(sizeof(struct xe_util_zalloc));
-    util->pageq_len = xe_util_zalloc_steal_pages(zone, num_pages, z_elem_size, util->pageq, XE_ARRAY_SIZE(util->pageq));
+    util->pageq_len = xe_util_zalloc_steal_pages(zone, num_pages, z_elem_size, util->pageq, xe_array_size(util->pageq));
     util->zone = zone;
     
     return util;

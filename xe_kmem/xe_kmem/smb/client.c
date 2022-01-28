@@ -237,14 +237,14 @@ int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* ser
     
     if (server_nb_name_size) {
         if (server_nb_name) {
-            memcpy(server_nb_name, (char*)rpbuf + sizeof(struct response_header), XE_MIN(rpbuf->server_nb_name_size, *server_nb_name_size));
+            memcpy(server_nb_name, (char*)rpbuf + sizeof(struct response_header), xe_min(rpbuf->server_nb_name_size, *server_nb_name_size));
         }
         *server_nb_name_size = rpbuf->server_nb_name_size;
     }
     
     if (local_nb_name_size) {
         if (local_nb_name) {
-            memcpy(local_nb_name, (char*)rpbuf + sizeof(struct response_header) + rpbuf->server_nb_name_size, XE_MIN(rpbuf->local_nb_name_size, *local_nb_name_size));
+            memcpy(local_nb_name, (char*)rpbuf + sizeof(struct response_header) + rpbuf->server_nb_name_size, xe_min(rpbuf->local_nb_name_size, *local_nb_name_size));
         }
         *local_nb_name_size = rpbuf->local_nb_name_size;
     }

@@ -62,7 +62,7 @@ void xe_kmem_msdosfs_init_helper_bridge(struct kmem_msdosfs* kmem) {
 }
 
 void xe_kmem_msdosfs_populate_helper_cache(struct kmem_msdosfs* kmem) {
-    for (int i=0; i<XE_ARRAY_SIZE(kmem->helper_cctl_fds); i++) {
+    for (int i=0; i<xe_array_size(kmem->helper_cctl_fds); i++) {
         struct log2phys args;
         bzero(&args, sizeof(args));
         args.l2p_contigbytes = 16384;
@@ -178,7 +178,7 @@ void xe_kmem_msdosfs_init_helper(struct kmem_msdosfs* kmem) {
 }
 
 void xe_kmem_msdosfs_destroy_helper(struct kmem_msdosfs* kmem) {
-    for (int i=0; i<XE_ARRAY_SIZE(kmem->helper_cctl_fds); i++) {
+    for (int i=0; i<xe_array_size(kmem->helper_cctl_fds); i++) {
         close(kmem->helper_cctl_fds[i]);
     }
 }

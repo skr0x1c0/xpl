@@ -56,7 +56,7 @@ int xe_kmem_server_send_response(int fd, int status, void* data, size_t data_siz
     struct msghdr msg;
     bzero(&msg, sizeof(msg));
     msg.msg_iov = iov;
-    msg.msg_iovlen = XE_ARRAY_SIZE(iov);
+    msg.msg_iovlen = xe_array_size(iov);
     
     ssize_t tf_len = sendmsg(fd, &msg, MSG_WAITALL);
     if (tf_len != sizeof(status) + data_size) {
@@ -277,7 +277,7 @@ void xe_kmem_remote_client_read(void* ctx, void* dst, uintptr_t src, size_t size
     struct msghdr msg;
     bzero(&msg, sizeof(msg));
     msg.msg_iov = iov;
-    msg.msg_iovlen = XE_ARRAY_SIZE(iov);
+    msg.msg_iovlen = xe_array_size(iov);
     
     ssize_t tf_size = sendmsg(fd, &msg, MSG_WAITALL);
     xe_assert(tf_size == sizeof(cmd) + sizeof(req));
@@ -313,7 +313,7 @@ void xe_kmem_remote_client_write(void* ctx, uintptr_t dst, void* src, size_t siz
     struct msghdr msg;
     bzero(&msg, sizeof(msg));
     msg.msg_iov = iov;
-    msg.msg_iovlen = XE_ARRAY_SIZE(iov);
+    msg.msg_iovlen = xe_array_size(iov);
     
     ssize_t tf_size = sendmsg(fd, &msg, MSG_WAITALL);
     xe_assert(tf_size == sizeof(cmd) + sizeof(req) + size);
@@ -365,7 +365,7 @@ uintptr_t xe_kmem_remote_client_get_mh_execute_header(struct xe_kmem_backend* ba
     struct msghdr msg_req;
     bzero(&msg_req, sizeof(msg_req));
     msg_req.msg_iov = iov_req;
-    msg_req.msg_iovlen = XE_ARRAY_SIZE(iov_req);
+    msg_req.msg_iovlen = xe_array_size(iov_req);
     
     ssize_t tf_size = sendmsg(fd, &msg_req, MSG_WAITALL);
     xe_assert(tf_size == sizeof(cmd));

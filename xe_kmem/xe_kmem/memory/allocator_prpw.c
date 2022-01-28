@@ -18,18 +18,6 @@
 #define MAX_IPS_PER_NIC 8
 #define MAX_ALLOCS_PER_BACKEND (MAX_NICS_PER_BACKEND * MAX_IPS_PER_NIC)
 
-/*
- * Allocator with partial read write capability
- * -- Data allocated as a socket address
- * -- Maximum length of data is UINT8_MAX
- * -- Only socket address family can be read (2nd byte of allocated memory)
- * -- For IPv4 socket addresses, memory after field `sin_addr` can be freely written
- * -- For IPv6 socket addresses, memory after field `sin6_addr` can be freely written
- * -- For other socket address family, memory after field `sa_data` can be freely written
- * -- Writing to memory can only be done initially during allocation
- * -- Memory allocated from `KHEAP_KEXT`
- */
-
 struct kmem_allocator_prpw {
     smb_nic_allocator* backends;
     size_t backend_count;
@@ -88,8 +76,8 @@ int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, size_t count, 
         size_t backend_idx = backend_start_idx + index;
         size_t backend_alloc_start_idx = backend_idx * MAX_ALLOCS_PER_BACKEND;
         size_t backend_alloc_end_idx = ((backend_idx + 1) * MAX_ALLOCS_PER_BACKEND) - 1;
-        size_t alloc_start_idx = XE_MAX(backend_alloc_start_idx, start_idx);
-        size_t alloc_end_idx = XE_MIN(backend_alloc_end_idx, end_idx);
+        size_t alloc_start_idx = xe_max(backend_alloc_start_idx, start_idx);
+        size_t alloc_end_idx = xe_min(backend_alloc_end_idx, end_idx);
         size_t alloc_count = alloc_end_idx - alloc_start_idx + 1;
 
         char buffer[sizeof(struct network_nic_info) * alloc_count + UINT8_MAX];
@@ -152,7 +140,7 @@ int kmem_allocator_prpw_filter(kmem_allocator_prpw_t allocator, size_t offset, s
 
     int error = xe_util_dispatch_apply(&allocator->backends[backend_start_idx], sizeof(smb_nic_allocator), backend_count, &found_idx, ^(void* ctx, void* data, size_t index) {
         size_t backend_alloc_start_idx = (backend_start_idx + index) * MAX_ALLOCS_PER_BACKEND;
-        size_t backend_alloc_end_idx = XE_MIN(backend_alloc_start_idx + MAX_ALLOCS_PER_BACKEND, alloc_cursor) - 1;
+        size_t backend_alloc_end_idx = xe_min(backend_alloc_start_idx + MAX_ALLOCS_PER_BACKEND, alloc_cursor) - 1;
         size_t backend_num_allocs = backend_alloc_end_idx - backend_alloc_start_idx + 1;
         size_t backend_num_nics = (backend_num_allocs + MAX_IPS_PER_NIC - 1) / MAX_IPS_PER_NIC;
         smb_nic_allocator* backend = (smb_nic_allocator*)data;
@@ -167,7 +155,7 @@ int kmem_allocator_prpw_filter(kmem_allocator_prpw_t allocator, size_t offset, s
             uint32_t nic_idx = props.if_index & UINT32_MAX;
             xe_assert(nic_idx == MAX_NICS_PER_BACKEND - i - 1);
             size_t nic_alloc_start_idx = backend_alloc_start_idx +  (nic_idx * MAX_IPS_PER_NIC);
-            size_t nic_alloc_end_idx = XE_MIN(nic_alloc_start_idx + MAX_IPS_PER_NIC, alloc_cursor) - 1;
+            size_t nic_alloc_end_idx = xe_min(nic_alloc_start_idx + MAX_IPS_PER_NIC, alloc_cursor) - 1;
             size_t nic_num_allocs = nic_alloc_end_idx - nic_alloc_start_idx + 1;
             for (size_t j=0; j<nic_num_allocs; j++) {
                 size_t local_idx = nic_num_allocs - j - 1;
@@ -193,7 +181,7 @@ int kmem_allocator_prpw_read(kmem_allocator_prpw_t allocator, size_t alloc_index
     }
     size_t backend_idx = alloc_index / MAX_ALLOCS_PER_BACKEND;
     size_t nic_idx = (alloc_index % MAX_ALLOCS_PER_BACKEND) / MAX_IPS_PER_NIC;
-    size_t nic_alloc_count = XE_MIN(MAX_IPS_PER_NIC, alloc_cursor - ((backend_idx * MAX_ALLOCS_PER_BACKEND) + (nic_idx * MAX_IPS_PER_NIC)));
+    size_t nic_alloc_count = xe_min(MAX_IPS_PER_NIC, alloc_cursor - ((backend_idx * MAX_ALLOCS_PER_BACKEND) + (nic_idx * MAX_IPS_PER_NIC)));
     size_t local_idx = nic_alloc_count - (alloc_index % MAX_IPS_PER_NIC) - 1;
 
     struct smbioc_nic_info info;
@@ -223,7 +211,7 @@ int kmem_allocator_prpw_trim_backend_count(kmem_allocator_prpw_t allocator, size
 
     int error = xe_util_dispatch_apply(&allocator->backends[offset], sizeof(allocator->backends[0]), count, &num_released, ^(void* ctx, void* data, size_t index) {
         size_t backend_idx = offset + index;
-        size_t num_allocated = XE_MIN(XE_MAX(0, allocator->alloc_cursor - (backend_idx * MAX_ALLOCS_PER_BACKEND)), MAX_ALLOCS_PER_BACKEND);
+        size_t num_allocated = xe_min(xe_max(0, allocator->alloc_cursor - (backend_idx * MAX_ALLOCS_PER_BACKEND)), MAX_ALLOCS_PER_BACKEND);
         int error = smb_nic_allocator_destroy((smb_nic_allocator*)data);
         if (error) {
             return error;

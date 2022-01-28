@@ -37,11 +37,11 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
     size_t count = 2;
     
     slot_id_t slots[count];
-    int error = gym_multi_alloc_mem(TYPE_MSDOSFSMOUNT_SIZE, slots, XE_ARRAY_SIZE(slots));
+    int error = gym_multi_alloc_mem(TYPE_MSDOSFSMOUNT_SIZE, slots, xe_array_size(slots));
     xe_assert_err(error);
     
     uintptr_t addrs[count];
-    error = xe_util_dispatch_apply(addrs, sizeof(addrs[0]), XE_ARRAY_SIZE(addrs), slots, ^(void* ctx, void* data, size_t idx) {
+    error = xe_util_dispatch_apply(addrs, sizeof(addrs[0]), xe_array_size(addrs), slots, ^(void* ctx, void* data, size_t idx) {
         slot_id_t* slots = (slot_id_t*)ctx;
         uintptr_t* addr = (uintptr_t*)data;
         int error = gym_read_slot_address(slots[idx], addr);
@@ -54,9 +54,9 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
     xe_assert_err(error);
     
     xe_allocator_msdosfs_t msdosfs_allocators[128];
-    bzero(msdosfs_allocators, XE_ARRAY_SIZE(msdosfs_allocators));
+    bzero(msdosfs_allocators, xe_array_size(msdosfs_allocators));
     
-    error = xe_util_dispatch_apply(msdosfs_allocators, sizeof(msdosfs_allocators[0]), XE_ARRAY_SIZE(msdosfs_allocators), NULL, ^(void* ctx, void* data, size_t idx) {
+    error = xe_util_dispatch_apply(msdosfs_allocators, sizeof(msdosfs_allocators[0]), xe_array_size(msdosfs_allocators), NULL, ^(void* ctx, void* data, size_t idx) {
         char label[64];
         snprintf(label, sizeof(label), "xe_%ld", idx);
         return xe_allocator_msdosfs_create(label, (xe_allocator_msdosfs_t*)data);
@@ -64,7 +64,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
     xe_assert_err(error);
     
     int capture_idxs[count];
-    error = xe_util_dispatch_apply(capture_idxs, sizeof(capture_idxs[0]), XE_ARRAY_SIZE(capture_idxs), slots, ^(void* ctx, void* data, size_t idx) {
+    error = xe_util_dispatch_apply(capture_idxs, sizeof(capture_idxs[0]), xe_array_size(capture_idxs), slots, ^(void* ctx, void* data, size_t idx) {
         slot_id_t* slots = (slot_id_t*)ctx;
         char slot_data[TYPE_MSDOSFSMOUNT_SIZE];
         int error = gym_alloc_read(slots[idx], slot_data, sizeof(slot_data), NULL);
@@ -103,7 +103,7 @@ void capture_msdosfs_mount_pair(uintptr_t* ptr1_out, xe_allocator_msdosfs_t* all
         captured[i] = msdosfs_allocators[capture_idxs[i]];
     }
     
-    error = xe_util_dispatch_apply(msdosfs_allocators, sizeof(msdosfs_allocators[0]), XE_ARRAY_SIZE(msdosfs_allocators), capture_idxs, ^(void* ctx, void* data, size_t idx) {
+    error = xe_util_dispatch_apply(msdosfs_allocators, sizeof(msdosfs_allocators[0]), xe_array_size(msdosfs_allocators), capture_idxs, ^(void* ctx, void* data, size_t idx) {
         int* captured_idxs = (int*)ctx;
         for (int i=0; i<count; i++) {
             if (captured_idxs[i] == idx) {

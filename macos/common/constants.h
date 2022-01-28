@@ -19,6 +19,6 @@
 #define XE_VM_MIN_KERNEL_ADDRESS   (0ULL - XE_TiB(2))
 #define XE_VM_MAX_KERNEL_ADDRESS   (XE_VM_MIN_KERNEL_ADDRESS + XE_GiB(64) + XE_GiB(512) - 1)
 
-#define XE_VM_KERNEL_ADDRESS_VALID(addr) (addr >= XE_VM_MIN_KERNEL_ADDRESS && addr <= XE_VM_MAX_KERNEL_ADDRESS)
+#define xe_vm_kernel_address_valid(addr) (addr >= XE_VM_MIN_KERNEL_ADDRESS && addr <= XE_VM_MAX_KERNEL_ADDRESS)
 
 #endif /* macos_constants_h */

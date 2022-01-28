@@ -4,6 +4,13 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 
+/*
+ * Allocator with read write capability
+ * -- Reading of allocated memory can be done anytime
+ * -- Writing to memory can only be done initially during allocation
+ * -- Memory allocated from `KHEAP_KEXT`
+ */
+
 typedef struct kmem_allocator_rw* kmem_allocator_rw_t;
 
 typedef void(^kmem_allocator_rw_data_reader)(void* ctx, char** data1_out, uint32_t* data1_size_out, char** data2_out, uint32_t* data2_size_out, size_t index);
