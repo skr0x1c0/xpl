@@ -1,0 +1,36 @@
+//
+//  variables.h
+//  
+//
+//  Created by admin on 1/4/22.
+//
+
+#ifndef macos_21E5212f_variables_h
+#define macos_21E5212f_variables_h
+
+#define VAR_MH_EXECUTE_HEADER_ADDR 0xfffffe0007004000
+#define VAR_KERNPROC_ADDR 0xfffffe000722f908
+#define VAR_KHEAP_DEFAULT_ADDR 0xfffffe000721fbf0
+#define VAR_KHEAP_DATA_BUFFERS_ADDR 0xfffffe000722f328
+#define VAR_NSTAT_CONTROLS_ADDR 0xfffffe0007c13cf8
+#define VAR_NECP_UUID_SERVICE_ID_LIST_ADDR 0xfffffe0007c14470
+#define VAR_ZONE_INFO_ADDR 0xfffffe00071454c0
+#define VAR_ZONE_ARRAY_ADDR 0xfffffe0007b91020
+#define VAR_ZONE_ARRAY_LEN 650
+#define VAR_G_IO_REGISTRY_PLANES 0xfffffe0007c240f8
+#define VAR_G_REGISTRY_ROOT 0xfffffe0007c240e8
+#define VAR_ZONE_IO_EVENT_SOURCE 0xfffffe0007240148
+#define VAR_ZONE_IO_EVENT_SOURCE_RESERVED 0xfffffe00072401c8
+#define VAR_ZONE_IO_EVENT_SOURCE_COUNTER 0xfffffe0007241708
+#define VAR_SEG_LOWEST_KC 0xfffffe000714b700
+#define VAR_AUXKC_MH 0xfffffe000714b710
+#define VAR_PIDHASHTBL 0xfffffe00071ec0e0
+#define VAR_PIDHASH 0xfffffe00071ec0e8
+#define VAR_G_IO_STATISTICS_LOCK 0xfffffe0007bf0d98
+
+#define VAR_IO_RESOURCES_VTABLE 0xfffffe0007207958
+#define VAR_IO_EVENT_SOURCE_VTABLE 0xfffffe0007224668
+
+#define VAR_MAC_POLICY_LIST 0xfffffe0007bf1bc0
+
+#endif /* macos_21E5212f_variables_h */
