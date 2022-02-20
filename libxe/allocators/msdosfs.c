@@ -169,7 +169,7 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
     args.fspec = dev_path;
     args.flags = MSDOSFSMNT_LABEL | MNT_UNKNOWNPERMISSIONS;
 
-    if (fmount("msdos", fd_mount, MNT_WAIT | MNT_SYNCHRONOUS | MNT_LOCAL, &args)) {
+    if (fmount("msdos", fd_mount, MNT_WAIT | MNT_SYNCHRONOUS | MNT_DONTBROWSE, &args)) {
         error = errno;
         goto exit_error;
     }
