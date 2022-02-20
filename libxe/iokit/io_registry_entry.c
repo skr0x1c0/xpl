@@ -98,5 +98,5 @@ int xe_io_registry_entry_find_child_by_name(uintptr_t entry, char* name, uintptr
 }
 
 uintptr_t xe_io_registry_entry_root(void) {
-    return xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_REGISTRY_ROOT), 0);
+    return xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_REGISTRY_ROOT), 0);
 }

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8403C45B27BCDC65003FAFE8 /* large_mem.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403C45927BCDC65003FAFE8 /* large_mem.h */; };
+		8403C45C27BCDC65003FAFE8 /* large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45A27BCDC65003FAFE8 /* large_mem.c */; };
+		8403CCBD27BD875400A62155 /* kfunc.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403CCBB27BD875400A62155 /* kfunc.h */; };
+		8403CCBE27BD875400A62155 /* kfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403CCBC27BD875400A62155 /* kfunc.c */; };
 		842A425D2780618500CB560F /* kernel.c in Sources */ = {isa = PBXBuildFile; fileRef = 842A425C2780618500CB560F /* kernel.c */; };
 		84374D6127817CE900E2E187 /* kext.c in Sources */ = {isa = PBXBuildFile; fileRef = 84374D6027817B5200E2E187 /* kext.c */; };
 		8466F398276DCA9B004F651E /* os_dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB46276DC6E500138492 /* os_dictionary.c */; };
@@ -27,7 +31,6 @@
 		8466F3AC276DCAFE004F651E /* pacda.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB6B276DC6E500138492 /* pacda.c */; };
 		8466F3AD276DCAFE004F651E /* kalloc_heap.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB6F276DC6E500138492 /* kalloc_heap.c */; };
 		8466F3AF276DCAFE004F651E /* dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB67276DC6E500138492 /* dispatch.c */; };
-		8466F3B0276DCAFE004F651E /* kfunc_basic.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB73276DC6E500138492 /* kfunc_basic.c */; };
 		8466F3B1276DCAFE004F651E /* zalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB71276DC6E500138492 /* zalloc.c */; };
 		8466F3BC276DCBAF004F651E /* libxib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3BB276DCBAF004F651E /* libxib.dylib */; };
 		8466F3BE276DCBB4004F651E /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3BD276DCBB4004F651E /* libgym_client.dylib */; };
@@ -36,6 +39,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8403C45927BCDC65003FAFE8 /* large_mem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = large_mem.h; sourceTree = "<group>"; };
+		8403C45A27BCDC65003FAFE8 /* large_mem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = large_mem.c; sourceTree = "<group>"; };
+		8403CCBB27BD875400A62155 /* kfunc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kfunc.h; sourceTree = "<group>"; };
+		8403CCBC27BD875400A62155 /* kfunc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kfunc.c; sourceTree = "<group>"; };
 		840F13482781CBB300827BAE /* assert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = assert.h; sourceTree = "<group>"; };
 		842A425C2780618500CB560F /* kernel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kernel.c; sourceTree = "<group>"; };
 		84374D5F27817B5200E2E187 /* kext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kext.h; sourceTree = "<group>"; };
@@ -81,8 +88,6 @@
 		84F7BB6F276DC6E500138492 /* kalloc_heap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kalloc_heap.c; sourceTree = "<group>"; };
 		84F7BB70276DC6E500138492 /* zalloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = zalloc.h; sourceTree = "<group>"; };
 		84F7BB71276DC6E500138492 /* zalloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zalloc.c; sourceTree = "<group>"; };
-		84F7BB72276DC6E500138492 /* kfunc_basic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kfunc_basic.h; sourceTree = "<group>"; };
-		84F7BB73276DC6E500138492 /* kfunc_basic.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kfunc_basic.c; sourceTree = "<group>"; };
 		84F7BB75276DC6E500138492 /* hdiutil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hdiutil.h; sourceTree = "<group>"; };
 		84F7BB76276DC6E500138492 /* hdiutil.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hdiutil.c; sourceTree = "<group>"; };
 		84F7BB78276DC6E500138492 /* kmem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem.h; sourceTree = "<group>"; };
@@ -148,6 +153,7 @@
 				84F7BB57276DC6E500138492 /* msdosfs.h */,
 				84F7BB5C276DC6E500138492 /* iosurface.h */,
 				84F7BB5E276DC6E500138492 /* pipe.h */,
+				8403C45927BCDC65003FAFE8 /* large_mem.h */,
 			);
 			path = allocator;
 			sourceTree = "<group>";
@@ -198,7 +204,7 @@
 				84F7BB6A276DC6E500138492 /* pacda.h */,
 				84F7BB6E276DC6E500138492 /* kalloc_heap.h */,
 				84F7BB70276DC6E500138492 /* zalloc.h */,
-				84F7BB72276DC6E500138492 /* kfunc_basic.h */,
+				8403CCBB27BD875400A62155 /* kfunc.h */,
 				8443C05C277B474700FBC453 /* log.h */,
 				840F13482781CBB300827BAE /* assert.h */,
 			);
@@ -293,6 +299,7 @@
 				84F7BB58276DC6E500138492 /* exp_msdosfs_base.dmg */,
 				84F7BB5B276DC6E500138492 /* iosurface.c */,
 				84F7BB5F276DC6E500138492 /* pipe.c */,
+				8403C45A27BCDC65003FAFE8 /* large_mem.c */,
 			);
 			path = allocators;
 			sourceTree = "<group>";
@@ -306,7 +313,7 @@
 				84F7BB6B276DC6E500138492 /* pacda.c */,
 				84F7BB6F276DC6E500138492 /* kalloc_heap.c */,
 				84F7BB71276DC6E500138492 /* zalloc.c */,
-				84F7BB73276DC6E500138492 /* kfunc_basic.c */,
+				8403CCBC27BD875400A62155 /* kfunc.c */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -336,6 +343,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8403CCBD27BD875400A62155 /* kfunc.h in Headers */,
+				8403C45B27BCDC65003FAFE8 /* large_mem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,8 +405,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8403C45C27BCDC65003FAFE8 /* large_mem.c in Sources */,
 				8466F3A4276DCAE2004F651E /* kmem.c in Sources */,
-				8466F3B0276DCAFE004F651E /* kfunc_basic.c in Sources */,
 				8466F398276DCA9B004F651E /* os_dictionary.c in Sources */,
 				8466F399276DCAC5004F651E /* os_array.c in Sources */,
 				8466F39C276DCAC5004F651E /* io_registry_entry.c in Sources */,
@@ -410,6 +419,7 @@
 				842A425D2780618500CB560F /* kernel.c in Sources */,
 				8466F39E276DCAD3004F651E /* msdosfs.c in Sources */,
 				8466F39B276DCAC5004F651E /* os_string.c in Sources */,
+				8403CCBE27BD875400A62155 /* kfunc.c in Sources */,
 				8466F3AF276DCAFE004F651E /* dispatch.c in Sources */,
 				8466F3A8276DCAED004F651E /* proc.c in Sources */,
 				84374D6127817CE900E2E187 /* kext.c in Sources */,

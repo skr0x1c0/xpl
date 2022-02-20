@@ -340,7 +340,7 @@ struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path) {
     addr.sun_len = sizeof(addr);
     strlcpy(addr.sun_path, socket_path, sizeof(addr.sun_path));
     int res = connect(fd, (struct sockaddr*)&addr, sizeof(addr));
-    xe_assert(res == 0);
+    xe_assert_errno(res);
     
     struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)malloc(sizeof(struct xe_kmem_remote_client));
     client->sock = fd;

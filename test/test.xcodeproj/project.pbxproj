@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E10937E27C2516D00D96A73 /* test_kfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E10937D27C2516D00D96A73 /* test_kfunc.c */; };
+		5E10937F27C2516D00D96A73 /* test_kfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E10937D27C2516D00D96A73 /* test_kfunc.c */; };
+		8403C45F27BCE5F8003FAFE8 /* test_large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */; };
+		8403C46027BCE5F8003FAFE8 /* test_large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */; };
+		8415898927B1E62100729788 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8415898827B1E62100729788 /* main.c */; };
+		8415898D27B1E62A00729788 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
+		8415898F27B1E62E00729788 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8415898E27B1E62E00729788 /* libxe_dev.a */; };
+		8415899027B1E74300729788 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D14278E43D800334806 /* libgym_client.dylib */; };
 		84184D09278E439F00334806 /* main_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D08278E439F00334806 /* main_gym.c */; };
 		84184D11278E43BA00334806 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
 		84184D13278E43BE00334806 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D12278E43BE00334806 /* libxe_dev.a */; };
@@ -19,6 +27,8 @@
 		84184D2D278E4A8000334806 /* main_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D2C278E4A8000334806 /* main_remote.c */; };
 		84184D30278E4CBE00334806 /* test_pacda.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D2F278E4CBE00334806 /* test_pacda.c */; };
 		84184D31278E4CC800334806 /* test_pacda.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D2F278E4CBE00334806 /* test_pacda.c */; };
+		84263D2027BE474500BFC4EA /* test_zalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84263D1F27BE474500BFC4EA /* test_zalloc.c */; };
+		84263D2127BE474500BFC4EA /* test_zalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84263D1F27BE474500BFC4EA /* test_zalloc.c */; };
 		848579FC278F25D000180F48 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 848579FB278F25D000180F48 /* main.c */; };
 		84857A00278F263B00180F48 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
 		84857A01278F263F00180F48 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D12278E43BE00334806 /* libxe_dev.a */; };
@@ -30,6 +40,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		8415898427B1E62100729788 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		84184D03278E439F00334806 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -69,6 +88,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E10937C27C2516D00D96A73 /* test_kfunc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_kfunc.h; sourceTree = "<group>"; };
+		5E10937D27C2516D00D96A73 /* test_kfunc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_kfunc.c; sourceTree = "<group>"; };
+		8403C45D27BCE5F8003FAFE8 /* test_large_mem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_large_mem.h; sourceTree = "<group>"; };
+		8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_large_mem.c; sourceTree = "<group>"; };
+		8415898627B1E62100729788 /* test_kmem_gym */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_gym; sourceTree = BUILT_PRODUCTS_DIR; };
+		8415898827B1E62100729788 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		8415898E27B1E62E00729788 /* libxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		84184D05278E439F00334806 /* test_general_gym */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_general_gym; sourceTree = BUILT_PRODUCTS_DIR; };
 		84184D08278E439F00334806 /* main_gym.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main_gym.c; sourceTree = "<group>"; };
 		84184D10278E43BA00334806 /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,6 +108,8 @@
 		84184D2C278E4A8000334806 /* main_remote.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main_remote.c; sourceTree = "<group>"; };
 		84184D2E278E4CBE00334806 /* test_pacda.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_pacda.h; sourceTree = "<group>"; };
 		84184D2F278E4CBE00334806 /* test_pacda.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_pacda.c; sourceTree = "<group>"; };
+		84263D1E27BE474500BFC4EA /* test_zalloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_zalloc.h; sourceTree = "<group>"; };
+		84263D1F27BE474500BFC4EA /* test_zalloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_zalloc.c; sourceTree = "<group>"; };
 		848579F9278F25D000180F48 /* test_kmem_msdosfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_msdosfs; sourceTree = BUILT_PRODUCTS_DIR; };
 		848579FB278F25D000180F48 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		84857A09278F26A100180F48 /* test_kmem_remote */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_remote; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -89,6 +117,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		8415898327B1E62100729788 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8415898F27B1E62E00729788 /* libxe_dev.a in Frameworks */,
+				8415898D27B1E62A00729788 /* libxe.a in Frameworks */,
+				8415899027B1E74300729788 /* libgym_client.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		84184D02278E439F00334806 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -130,12 +168,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8415898727B1E62100729788 /* test_kmem_gym */ = {
+			isa = PBXGroup;
+			children = (
+				8415898827B1E62100729788 /* main.c */,
+			);
+			path = test_kmem_gym;
+			sourceTree = "<group>";
+		};
 		84184CFC278E439F00334806 = {
 			isa = PBXGroup;
 			children = (
 				84184D07278E439F00334806 /* test_general */,
 				848579FA278F25D000180F48 /* test_kmem_msdosfs */,
 				84857A0A278F26A100180F48 /* test_kmem_remote */,
+				8415898727B1E62100729788 /* test_kmem_gym */,
 				84184D06278E439F00334806 /* Products */,
 				84184D0F278E43BA00334806 /* Frameworks */,
 			);
@@ -148,6 +195,7 @@
 				84184D22278E4A2300334806 /* test_general_remote */,
 				848579F9278F25D000180F48 /* test_kmem_msdosfs */,
 				84857A09278F26A100180F48 /* test_kmem_remote */,
+				8415898627B1E62100729788 /* test_kmem_gym */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -161,6 +209,12 @@
 				84184D19278E489500334806 /* test_lck_rw.c */,
 				84184D2E278E4CBE00334806 /* test_pacda.h */,
 				84184D2F278E4CBE00334806 /* test_pacda.c */,
+				5E10937C27C2516D00D96A73 /* test_kfunc.h */,
+				5E10937D27C2516D00D96A73 /* test_kfunc.c */,
+				8403C45D27BCE5F8003FAFE8 /* test_large_mem.h */,
+				8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */,
+				84263D1E27BE474500BFC4EA /* test_zalloc.h */,
+				84263D1F27BE474500BFC4EA /* test_zalloc.c */,
 				84184D1B278E49C300334806 /* registry.h */,
 				84184D1C278E49C300334806 /* registry.c */,
 			);
@@ -170,6 +224,7 @@
 		84184D0F278E43BA00334806 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8415898E27B1E62E00729788 /* libxe_dev.a */,
 				84184D14278E43D800334806 /* libgym_client.dylib */,
 				84184D12278E43BE00334806 /* libxe_dev.a */,
 				84184D10278E43BA00334806 /* libxe.a */,
@@ -196,6 +251,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		8415898527B1E62100729788 /* test_kmem_gym */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8415898C27B1E62100729788 /* Build configuration list for PBXNativeTarget "test_kmem_gym" */;
+			buildPhases = (
+				8415898227B1E62100729788 /* Sources */,
+				8415898327B1E62100729788 /* Frameworks */,
+				8415898427B1E62100729788 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = test_kmem_gym;
+			productName = test_kmem_gym;
+			productReference = 8415898627B1E62100729788 /* test_kmem_gym */;
+			productType = "com.apple.product-type.tool";
+		};
 		84184D04278E439F00334806 /* test_general_gym */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 84184D0C278E439F00334806 /* Build configuration list for PBXNativeTarget "test_general_gym" */;
@@ -273,6 +345,9 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
+					8415898527B1E62100729788 = {
+						CreatedOnToolsVersion = 13.2.1;
+					};
 					84184D04278E439F00334806 = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
@@ -304,11 +379,20 @@
 				84184D21278E4A2300334806 /* test_general_remote */,
 				848579F8278F25D000180F48 /* test_kmem_msdosfs */,
 				84857A08278F26A100180F48 /* test_kmem_remote */,
+				8415898527B1E62100729788 /* test_kmem_gym */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		8415898227B1E62100729788 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8415898927B1E62100729788 /* main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		84184D01278E439F00334806 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -317,6 +401,9 @@
 				84184D31278E4CC800334806 /* test_pacda.c in Sources */,
 				84184D09278E439F00334806 /* main_gym.c in Sources */,
 				84184D1A278E489500334806 /* test_lck_rw.c in Sources */,
+				5E10937E27C2516D00D96A73 /* test_kfunc.c in Sources */,
+				84263D2027BE474500BFC4EA /* test_zalloc.c in Sources */,
+				8403C45F27BCE5F8003FAFE8 /* test_large_mem.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,6 +415,9 @@
 				84184D30278E4CBE00334806 /* test_pacda.c in Sources */,
 				84184D2D278E4A8000334806 /* main_remote.c in Sources */,
 				84184D2B278E4A6E00334806 /* registry.c in Sources */,
+				5E10937F27C2516D00D96A73 /* test_kfunc.c in Sources */,
+				84263D2127BE474500BFC4EA /* test_zalloc.c in Sources */,
+				8403C46027BCE5F8003FAFE8 /* test_large_mem.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,6 +440,36 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		8415898A27B1E62100729788 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					$SOURCE_ROOT/../libxe_dev/public,
+					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../macos,
+				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		8415898B27B1E62100729788 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					$SOURCE_ROOT/../libxe_dev/public,
+					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../macos,
+				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		84184D0A278E439F00334806 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -578,6 +698,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8415898C27B1E62100729788 /* Build configuration list for PBXNativeTarget "test_kmem_gym" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8415898A27B1E62100729788 /* Debug */,
+				8415898B27B1E62100729788 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		84184D00278E439F00334806 /* Build configuration list for PBXProject "test" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

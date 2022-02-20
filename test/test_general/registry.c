@@ -15,6 +15,9 @@
 
 #include "test_lck_rw.h"
 #include "test_pacda.h"
+#include "test_large_mem.h"
+#include "test_zalloc.h"
+#include "test_kfunc.h"
 
 
 struct test_case {
@@ -25,7 +28,10 @@ struct test_case {
 
 const struct test_case test_cases[] = {
     { test_lck_rw, "lck_rw" },
+    { test_large_mem, "large_mem" },
+    { test_zalloc, "zalloc" },
     { test_pacda, "pacda" },
+    { test_kfunc, "kfunc" },
 };
 
 

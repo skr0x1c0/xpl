@@ -142,7 +142,7 @@ void xe_util_lck_restore_necp_ids(xe_util_lck_rw_t util) {
 void xe_util_lck_read_necp_uuid_id_mapping_state(xe_util_lck_rw_t util) {
     xe_assert(util->necp_uuid_id_mapping_head == 0);
     xe_assert(util->necp_uuid_id_mapping_tail == 0);
-    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NECP_UUID_ID_MAPPING_HEAD_ADDR), 0);
+    uintptr_t head = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_NECP_UUID_SERVICE_ID_LIST_ADDR), 0);
     uintptr_t tail = head;
     while (TRUE) {
         uintptr_t next = xe_kmem_read_uint64(tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET);

