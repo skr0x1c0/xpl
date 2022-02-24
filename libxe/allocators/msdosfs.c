@@ -11,6 +11,8 @@
 
 #include "allocator/msdosfs.h"
 #include "util/assert.h"
+#include "util/cp.h"
+#include "cmd/hdiutil.h"
 
 #define BASE_IMAGE_NAME "exp_msdosfs_base.dmg"
 
@@ -27,89 +29,10 @@ int xe_allocator_msdosfs_loadkext(void) {
 }
 
 
-int msdosfs_hdiutil_attach_internal(const char* image, char* dev_out, size_t dev_size) {
-    dev_out[0] = 0;
-    
-    char buffer[1024];
-    if (snprintf(buffer, sizeof(buffer), "hdiutil attach -nomount \"%s\"", image) >= sizeof(buffer)) {
-        return E2BIG;
-    }
-    
-    FILE* stream = popen(buffer, "r");
-    if (!stream) {
-        return errno;
-    }
-
-    int error = 0;
-    const char* expected_suffix = "Microsoft Basic Data";
-    const int expected_suffix_len = (int)strlen(expected_suffix);
-
-    while (TRUE) {
-        size_t char_count;
-        
-        if (feof(stream)) {
-            break;
-        }
-        
-        if (ferror(stream)) {
-            error = errno;
-            goto done;
-        }
-        
-        char* line = fgetln(stream, &char_count);
-
-        if (!char_count) {
-            continue;
-        }
-
-        while (line[char_count - 1] == '\n' || line[char_count - 1] == '\r' || line[char_count - 1] == ' ' || line[char_count - 1] == '\t') {
-            char_count--;
-        }
-
-        if (char_count <= expected_suffix_len) {
-            continue;
-        }
-
-        if (memcmp(&line[char_count - expected_suffix_len], expected_suffix, expected_suffix_len)) {
-            continue;
-        }
-
-        for (int i=0; i<(char_count - sizeof(expected_suffix) + 1); i++) {
-            if (i >= dev_size) {
-                error = ENOBUFS;
-                goto done;
-            }
-
-            if (line[i] == ' ') {
-                dev_out[i] = '\0';
-                error = 0;
-                goto done;
-            } else {
-                dev_out[i] = line[i];
-            }
-        }
-    }
-    
-    error = ENOTRECOVERABLE;
-    
-done:
-    pclose(stream);
-    return error;
-}
-
-int msdosfs_hdiutil_attach(const char* image, char* dev_out, size_t dev_size) {
-    int error;
-    do {
-        error = msdosfs_hdiutil_attach_internal(image, dev_out, dev_size);
-    } while (error == EINTR);
-    return error;
-}
-
-
 int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount_out) {
     char* base_img_path = "allocators/"BASE_IMAGE_NAME;
+    
     char temp_dir[PATH_MAX] = "/tmp/exp_msdos.XXXXXXXX";
-
     if (!mkdtemp(temp_dir)) {
         return errno;
     }
@@ -128,25 +51,22 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
     }
 
     int error = 0;
-    char cmd[PATH_MAX];
-    if (snprintf(cmd, sizeof(cmd), "cp \"%s\" \"%s\"", base_img_path, temp_dir) >= sizeof(cmd)) {
-        error = E2BIG;
-        goto exit_error;
-    }
-
-    if (system(cmd)) {
-        error = errno;
-        goto exit_error;
-    }
-
     char image_path[PATH_MAX];
-    if (snprintf(image_path, sizeof(image_path), "%s/"BASE_IMAGE_NAME, temp_dir) >= sizeof(image_path)) {
+    if (snprintf(image_path, sizeof(image_path), "%s/%s", temp_dir, BASE_IMAGE_NAME) >= sizeof(image_path)) {
         error = E2BIG;
         goto exit_error;
     }
-
+    
+    error = xe_util_cp(base_img_path, image_path);
+    if (error) {
+        goto exit_error;
+    }
+    
+    const char* opts[] = {
+        "-nomount",
+    };
     char dev_path[PATH_MAX];
-    error = msdosfs_hdiutil_attach(image_path, dev_path, sizeof(dev_path));
+    error = xe_cmd_hdiutil_attach(image_path, opts, 1, dev_path, sizeof(dev_path));
     if (error) {
         goto exit_error;
     }
@@ -173,9 +93,6 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
         error = errno;
         goto exit_error;
     }
-    
-    int res = fcntl(fd_mount, F_FULLFSYNC);
-    assert(res == 0);
 
     xe_allocator_msdosfs_t mount = (xe_allocator_msdosfs_t)malloc(sizeof(struct xe_allocator_msdosfs));
     strncpy(mount->directory, temp_dir, sizeof(mount->directory));
@@ -207,12 +124,12 @@ int xe_allocator_msdsofs_get_mount_fd(xe_allocator_msdosfs_t allocator) {
 int xe_allocator_msdosfs_destroy(xe_allocator_msdosfs_t* mount_p) {
     xe_allocator_msdosfs_t mount = *mount_p;
 
-    char buffer[PATH_MAX];
-    snprintf(buffer, sizeof(buffer), "hdiutil detach -force \"%s\"", mount->dev);
-    if (system(buffer)) {
-        return errno;
+    int error = xe_cmd_hdiutil_detach(mount->dev);
+    if (error) {
+        return error;
     }
-
+    
+    char buffer[PATH_MAX];
     snprintf(buffer, sizeof(buffer), "%s/mount", mount->directory);
     rmdir(buffer);
 
@@ -222,6 +139,7 @@ int xe_allocator_msdosfs_destroy(xe_allocator_msdosfs_t* mount_p) {
     rmdir(mount->directory);
 
     free(mount);
+    *mount_p = NULL;
     return 0;
 }
 
