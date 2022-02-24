@@ -11,21 +11,9 @@
 #include <assert.h>
 #include <stdio.h>
 
+typedef struct xe_kmem_backend* xe_kmem_backend_t;
 
-struct xe_kmem_ops {
-    void(*read)(void* ctx, void* dst, uintptr_t src, size_t size);
-    void(*write)(void* ctx, uintptr_t dst, void* src, size_t size);
-    
-    size_t max_read_size;
-    size_t max_write_size;
-};
-
-struct xe_kmem_backend {
-    struct xe_kmem_ops* ops;
-    void* ctx;
-};
-
-void xe_kmem_use_backend(struct xe_kmem_backend* backend);
+xe_kmem_backend_t xe_kmem_use_backend(xe_kmem_backend_t backend);
 void xe_kmem_read(void* dst, uintptr_t base, uintptr_t off, size_t size);
 void xe_kmem_write(uintptr_t base, uintptr_t off, void* src, size_t size);
 

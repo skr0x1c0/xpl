@@ -18,6 +18,7 @@
 
 #include "memory/kmem_remote.h"
 #include "memory/kmem.h"
+#include "memory/kmem_internal.h"
 #include "util/misc.h"
 #include "util/assert.h"
 #include "util/log.h"
@@ -331,7 +332,7 @@ static struct xe_kmem_ops xe_kmem_remote_client_ops = {
     .max_write_size = MAX_WRITE_SIZE,
 };
 
-struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path) {
+xe_kmem_backend_t xe_kmem_remote_client_create(const char* socket_path) {
     int fd = socket(PF_UNIX, SOCK_STREAM, 0);
     
     struct sockaddr_un addr;
@@ -345,15 +346,11 @@ struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path) {
     struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)malloc(sizeof(struct xe_kmem_remote_client));
     client->sock = fd;
     
-    struct xe_kmem_backend* backend = (struct xe_kmem_backend*)malloc(sizeof(struct xe_kmem_backend));
-    backend->ctx = client;
-    backend->ops = &xe_kmem_remote_client_ops;
-    
-    return backend;
+    return xe_kmem_backend_create(&xe_kmem_remote_client_ops, client);
 }
 
-uintptr_t xe_kmem_remote_client_get_mh_execute_header(struct xe_kmem_backend* backend) {
-    struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)backend->ctx;
+uintptr_t xe_kmem_remote_client_get_mh_execute_header(xe_kmem_backend_t backend) {
+    struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)xe_kmem_backend_get_ctx(backend);
     int fd = client->sock;
     
     uint8_t cmd = XE_KMEM_REMOTE_GET_MH_EXECUTE_HEADER;
@@ -381,9 +378,9 @@ uintptr_t xe_kmem_remote_client_get_mh_execute_header(struct xe_kmem_backend* ba
     return value;
 }
 
-void xe_kmem_remote_client_destroy(struct xe_kmem_backend* backend) {
-    struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)backend->ctx;
+void xe_kmem_remote_client_destroy(xe_kmem_backend_t* backend_p) {
+    struct xe_kmem_remote_client* client = (struct xe_kmem_remote_client*)xe_kmem_backend_get_ctx(*backend_p);
     close(client->sock);
     free(client);
-    free(backend);
+    xe_kmem_backend_destroy(backend_p);
 }

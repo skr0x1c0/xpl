@@ -17,8 +17,8 @@ struct xe_kmem_remote_server_ctx {
 
 void xe_kmem_remote_server_start(const struct xe_kmem_remote_server_ctx* ctx);
 
-struct xe_kmem_backend* xe_kmem_remote_client_create(const char* socket_path);
-uintptr_t xe_kmem_remote_client_get_mh_execute_header(struct xe_kmem_backend* client);
-void xe_kmem_remote_client_destroy(struct xe_kmem_backend* backend);
+xe_kmem_backend_t xe_kmem_remote_client_create(const char* socket_path);
+uintptr_t xe_kmem_remote_client_get_mh_execute_header(xe_kmem_backend_t client);
+void xe_kmem_remote_client_destroy(xe_kmem_backend_t* backend_p);
 
 #endif /* xe_kmem_remote_h */

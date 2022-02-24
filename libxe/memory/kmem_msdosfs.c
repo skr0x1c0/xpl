@@ -11,6 +11,7 @@
 #include <IOKit/kext/KextManager.h>
 
 #include "memory/kmem.h"
+#include "memory/kmem_internal.h"
 #include "memory/kmem_msdosfs.h"
 #include "msdosfs.h"
 #include "cmd/hdiutil.h"
@@ -199,6 +200,10 @@ void xe_kmem_msdosfs_destroy_worker(struct kmem_msdosfs* kmem) {
     close(kmem->worker_cctl_fd);
 }
 
+void xe_kmem_msdosfs_disable_fsops(struct kmem_msdosfs* kmem) {
+    
+}
+
 void xe_kmem_msdosfs_read(void* ctx, void* dst, uintptr_t src, size_t size) {
     xe_assert_cond(size, <=, MAX_READ_SIZE);
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)ctx;
@@ -223,7 +228,7 @@ void xe_kmem_msdosfs_write(void* ctx, uintptr_t dst, void* src, size_t size) {
     xe_kmem_msdosfs_populate_worker_cache(kmem_msdosfs);
 }
 
-static struct xe_kmem_ops xe_kmem_msdosfs_ops = {
+static const struct xe_kmem_ops xe_kmem_msdosfs_ops = {
     .read = xe_kmem_msdosfs_read,
     .write = xe_kmem_msdosfs_write,
     
@@ -231,24 +236,21 @@ static struct xe_kmem_ops xe_kmem_msdosfs_ops = {
     .max_write_size = MAX_WRITE_SIZE,
 };
 
-struct xe_kmem_backend* xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args) {
+xe_kmem_backend_t xe_kmem_msdosfs_create(struct kmem_msdosfs_init_args* args) {
     struct kmem_msdosfs* kmem_msdosfs = (struct kmem_msdosfs*)malloc(sizeof(struct kmem_msdosfs));
     kmem_msdosfs->args = *args;
     
     xe_kmem_msdosfs_init_helper(kmem_msdosfs);
     xe_kmem_msdosfs_init_worker(kmem_msdosfs);
     
-    struct xe_kmem_backend* backend = malloc(sizeof(struct xe_kmem_backend));
-    backend->ops = &xe_kmem_msdosfs_ops;
-    backend->ctx = kmem_msdosfs;
-    
-    return backend;
+    return xe_kmem_backend_create(&xe_kmem_msdosfs_ops, kmem_msdosfs);
 }
 
-void xe_kmem_msdosfs_destroy(struct xe_kmem_backend* backend) {
-    struct kmem_msdosfs* kmem = (struct kmem_msdosfs*)backend->ctx;
+void xe_kmem_msdosfs_destroy(xe_kmem_backend_t* backend_p) {
+    void* ctx = xe_kmem_backend_get_ctx(*backend_p);
+    struct kmem_msdosfs* kmem = (struct kmem_msdosfs*)ctx;
     xe_kmem_msdosfs_destroy_helper(kmem);
     xe_kmem_msdosfs_destroy_worker(kmem);
     free(kmem);
-    free(backend);
+    xe_kmem_backend_destroy(backend_p);
 }

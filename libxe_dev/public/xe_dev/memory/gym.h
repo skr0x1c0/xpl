@@ -10,7 +10,7 @@
 
 #include <xe/memory/kmem.h>
 
-struct xe_kmem_backend* xe_kmem_gym_create(void);
-void xe_kmem_gym_destroy(struct xe_kmem_backend* backend);
+xe_kmem_backend_t xe_kmem_gym_create(void);
+void xe_kmem_gym_destroy(xe_kmem_backend_t* backend_p);
 
 #endif /* xe_dev_kmem_gym_h */

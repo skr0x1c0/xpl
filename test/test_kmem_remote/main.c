@@ -21,7 +21,7 @@ int main(int argc, const char * argv[]) {
     xe_assert(argc == 2);
     const char* socket_path = argv[1];
     
-    struct xe_kmem_backend* remote_backend = xe_kmem_remote_client_create(socket_path);
+    xe_kmem_backend_t remote_backend = xe_kmem_remote_client_create(socket_path);
     xe_kmem_use_backend(remote_backend);
     gym_init();
     

@@ -23,7 +23,7 @@ int main(int argc, const char * argv[]) {
     const char* path = argv[1];
     const char* filter = argc > 2 ? argv[2] : "";
     
-    struct xe_kmem_backend* backend = xe_kmem_remote_client_create(path);
+    xe_kmem_backend_t backend = xe_kmem_remote_client_create(path);
     xe_kmem_use_backend(backend);
     xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     

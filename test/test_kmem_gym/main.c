@@ -16,7 +16,7 @@
 
 
 int main(int argc, const char * argv[]) {
-    struct xe_kmem_backend* gym_backend = xe_kmem_gym_create();
+    xe_kmem_backend_t gym_backend = xe_kmem_gym_create();
     xe_kmem_use_backend(gym_backend);
     
     struct xe_kmem_remote_server_ctx ctx;

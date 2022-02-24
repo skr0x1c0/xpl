@@ -175,7 +175,7 @@ int main(int argc, const char* argv[]) {
     };
     args.helper_mutator_ctx = NULL;
     
-    struct xe_kmem_backend* msdosfs_backend = xe_kmem_msdosfs_create(&args);
+    xe_kmem_backend_t msdosfs_backend = xe_kmem_msdosfs_create(&args);
     xe_kmem_use_backend(msdosfs_backend);
     
     struct xe_kmem_remote_server_ctx ctx;

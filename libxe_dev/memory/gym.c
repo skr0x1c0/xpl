@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include <xe/memory/kmem.h>
+#include <xe/memory/kmem_internal.h>
 #include <xe/util/log.h>
 
 #include "gym_client.h"
@@ -38,16 +39,11 @@ static struct xe_kmem_ops xe_kmem_gym_ops = {
     .max_write_size = 16 * 1024,
 };
 
-struct xe_kmem_backend* xe_kmem_gym_create(void) {
+xe_kmem_backend_t xe_kmem_gym_create(void) {
     if (getuid() != 0) {
         xe_log_error("root privileges are required for gym kmem read / write");
         abort();
     }
     gym_init();
-    
-    struct xe_kmem_backend* backend = malloc(sizeof(struct xe_kmem_backend));
-    backend->ops = &xe_kmem_gym_ops;
-    backend->ctx = NULL;
-    
-    return backend;
+    return xe_kmem_backend_create(&xe_kmem_gym_ops, NULL);
 }

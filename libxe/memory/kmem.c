@@ -10,15 +10,41 @@
 #include <stdlib.h>
 
 #include "memory/kmem.h"
+#include "memory/kmem_internal.h"
 #include "util/misc.h"
 #include "util/assert.h"
+
+
+struct xe_kmem_backend {
+    const struct xe_kmem_ops* ops;
+    void* ctx;
+};
+
 
 static struct xe_kmem_backend* kmem_backend;
 
 
-void xe_kmem_use_backend(struct xe_kmem_backend* backend) {
+xe_kmem_backend_t xe_kmem_use_backend(xe_kmem_backend_t backend) {
     xe_assert(backend != NULL);
+    xe_kmem_backend_t current = kmem_backend;
     kmem_backend = backend;
+    return current;
+}
+
+xe_kmem_backend_t xe_kmem_backend_create(const struct xe_kmem_ops* ops, void* ctx) {
+    xe_kmem_backend_t backend = malloc(sizeof(struct xe_kmem_backend));
+    backend->ctx = ctx;
+    backend->ops = ops;
+    return backend;
+}
+
+void* xe_kmem_backend_get_ctx(xe_kmem_backend_t backend) {
+    return backend->ctx;
+}
+
+void xe_kmem_backend_destroy(xe_kmem_backend_t* backend_p) {
+    free(*backend_p);
+    *backend_p = NULL;
 }
 
 void xe_kmem_read(void* dst, uintptr_t base, uintptr_t off, size_t size) {
