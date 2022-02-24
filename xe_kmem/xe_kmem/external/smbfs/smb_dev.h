@@ -42,6 +42,15 @@
 
 #include "smb.h"
 #include "smb_conn.h"
+#include "kern_types.h"
+
+struct smb_dev {
+    lck_rw_t    sd_rwlock;        /* lock used to protect access to session and share */
+    struct smb_session *sd_session;        /* reference to session */
+    struct smb_share *sd_share;    /* reference to share if any */
+    uint32_t    sd_flags;
+    void        *sd_devfs;
+};
 
 /*
  * Used to verify the userland and kernel are using the
@@ -231,8 +240,10 @@ struct smbioc_rq {
 #define    SMBIOC_NEGOTIATE        _IOWR('n', 109, struct smbioc_negotiate)
 #define    SMBIOC_SSNSETUP         _IOW('n', 110, struct smbioc_setup)
 #define    SMBIOC_AUTH_INFO        _IOWR('n', 101, struct smbioc_auth_info)
+#define    SMBIOC_FIND_SESSION     _IOWR('n', 105, struct smbioc_negotiate)
+#define    SMBIOC_TCON             _IOWR('n', 111, struct smbioc_share)
+#define    SMBIOC_CANCEL_SESSION   _IOR('n', 115, uint16_t)
 #define    SMBIOC_MULTICHANNEL_PROPERTIES    _IOWR('n', 131, struct smbioc_multichannel_properties)
 #define    SMBIOC_NIC_INFO         _IOWR('n', 132, struct smbioc_nic_info)
-#define    SMBIOC_TCON             _IOWR('n', 111, struct smbioc_share)
 
 #endif /* _NETSMB_DEV_H_ */

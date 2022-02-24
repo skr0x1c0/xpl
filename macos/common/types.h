@@ -8,6 +8,12 @@
 #ifndef macos_common_types_h
 #define macos_common_types_h
 
+// STRUCT devdirent
+#define TYPE_DEVDIRENT_MEM_DE_DNP_OFFSET (256 / 8)
+
+// STRUCT devnode
+#define TYPE_DEVNODE_MEM_DN_OPS_OFFSET (576 / 8)
+
 // STRUCT proc
 #define TYPE_PROC_MEM_P_LIST_OFFSET 0
 #define TYPE_PROC_MEM_TASK_OFFSET 16

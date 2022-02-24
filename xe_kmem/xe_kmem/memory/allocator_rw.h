@@ -24,6 +24,7 @@ int kmem_allocator_rw_read(kmem_allocator_rw_t allocator, int index, char* data1
 int kmem_allocator_rw_disown_backend(kmem_allocator_rw_t allocator, int index);
 int kmem_allocator_rw_release_backends(kmem_allocator_rw_t allocator, int offset, int count);
 int kmem_allocator_rw_grow_backend_count(kmem_allocator_rw_t allocator, int count);
+int kmem_allocator_rw_get_backend_count(kmem_allocator_rw_t allocator);
 int kmem_allocator_rw_destroy(kmem_allocator_rw_t* allocator);
 
 #endif /* allocator_rw_h */

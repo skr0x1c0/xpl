@@ -11,5 +11,6 @@
 #define FUNC_KFREE_EXT_ADDR 0xfffffe00072a7b6c
 #define FUNC_TCP_INPUT_ADDR 0xfffffe00076a65cc
 #define FUNC_OS_REPORT_WITH_BACKTRACE 0xfffffe00079021e8
+#define FUNC_VN_DEFAULT_ERROR 0xfffffe00074f7ec8
 
 #endif /* macos_21d49_functions_h */

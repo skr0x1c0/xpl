@@ -58,6 +58,19 @@
 #define SMB_MAXUSERNAMELEN          128
 
 /*
+ * XP will only allow 80 characters in a share name, the SMB 2/3
+ * Spec confirms this in the tree connect section. Since UTF8
+ * can have 3 * 80(characters) bytes then lets make SMB_MAXSHARENAMELEN
+ * 240 bytes.
+ */
+#define    SMB_MAXSHARENAMELEN        240
+#define    SMB_MAXPKTLEN            0x0001FFFF
+#define    SMB_LARGE_MAXPKTLEN        0x00FFFFFF    /* Non NetBIOS connections */
+#define    SMB_MAXCHALLENGELEN        8
+#define    SMB_MAXFNAMELEN            255    /* Max pathname component length in characters [MS-FSCC 2.1.5] */
+#define    SMB_MAXPATHLEN            32760 /* Max pathname length in characters [MS-FSCC 2.1.5] */
+
+/*
  * SMB commands
  */
 #define    SMB_COM_CREATE_DIRECTORY        0x00

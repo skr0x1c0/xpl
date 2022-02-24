@@ -111,10 +111,9 @@ int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, size_t count, 
                 memcpy((char*)&infos[i].addr_16 + offsetof(struct sockaddr_in6, sin6_addr) + sizeof(struct in6_addr), data, data_len);
             } else {
                 infos[i].addr.sa_len = len;
-                memcpy(infos[i].addr.sa_data, &alloc_idx, sizeof(alloc_idx));
                 infos[i].addr.sa_family = family;
-                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr, sa_data) - sizeof(infos[i].addr.sa_data));
-                memcpy((char*)&infos[i].addr + offsetof(struct sockaddr, sa_data) + sizeof(infos[i].addr.sa_data), data, data_len);
+                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr, sa_data));
+                memcpy((char*)&infos[i].addr.sa_data[0], data, data_len);
             }
         }
 

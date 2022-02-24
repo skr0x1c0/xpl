@@ -8,6 +8,7 @@
 #include <xe/util/dispatch.h>
 #include <xe/util/misc.h>
 #include <xe/util/assert.h>
+#include <xe/util/log.h>
 
 #include "../smb/ssn_allocator.h"
 
@@ -17,8 +18,8 @@
 
 #define MAX_BACKEND_COUNT 1023
 #define DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN 128
-#define DEFAULT_SSN_ALLOCATOR_USER_SIZE 48
-#define DEFAULT_SSN_ALLOCATOR_PASSWORD_SIZE 48
+#define DEFAULT_SSN_ALLOCATOR_USER_SIZE 16
+#define DEFAULT_SSN_ALLOCATOR_PASSWORD_SIZE 16
 #define DEFAULT_SSN_ALLOCATOR_DOMAIN_SIZE 16
 
 
@@ -68,7 +69,13 @@ int kmem_allocator_rw_allocate(kmem_allocator_rw_t allocator, int count, kmem_al
         uint32_t data2_size = 0;
         data_reader(reader_ctx, &data1, &data1_size, &data2, &data2_size, index);
 
-        return smb_ssn_allocator_allocate(*id, data1, data1_size, data2, data2_size, DEFAULT_SSN_ALLOCATOR_USER_SIZE, DEFAULT_SSN_ALLOCATOR_PASSWORD_SIZE, DEFAULT_SSN_ALLOCATOR_DOMAIN_SIZE);
+        int error = smb_ssn_allocator_allocate(*id, data1, data1_size, data2, data2_size, DEFAULT_SSN_ALLOCATOR_USER_SIZE, DEFAULT_SSN_ALLOCATOR_PASSWORD_SIZE, DEFAULT_SSN_ALLOCATOR_DOMAIN_SIZE);
+        
+        if (error) {
+            xe_log_warn("rw allocate failed for fd: %d, err: %d", *id, errno);
+        }
+        
+        return error;
     });
 
     return error;
@@ -171,6 +178,10 @@ int kmem_allocator_rw_grow_backend_count(kmem_allocator_rw_t allocator, int coun
     allocator->backends = backends;
     allocator->backend_count += count;
     return 0;
+}
+
+int kmem_allocator_rw_get_backend_count(kmem_allocator_rw_t allocator) {
+    return allocator->backend_count;
 }
 
 int kmem_allocator_rw_destroy(kmem_allocator_rw_t* allocator) {

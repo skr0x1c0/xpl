@@ -269,3 +269,12 @@ int smb_client_ioc_read_last_nb_ssn_request(int fd_dev, char* dst, uint32_t dst_
     return req.ioc_errno;
 }
 
+
+int smb_client_ioc_cancel_session(int fd_dev) {
+    uint16_t req = 1;
+    if (ioctl(fd_dev, SMBIOC_CANCEL_SESSION, &req)) {
+        return errno;
+    }
+    return 0;
+}
+

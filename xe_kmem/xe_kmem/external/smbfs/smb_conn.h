@@ -39,8 +39,20 @@
 #include <sys/queue.h>
 
 #include "kern_types.h"
+#include "smb2_mc.h"
+
+TAILQ_HEAD(smb_rqhead, smb_rq);
 
 #define kClientIfBlacklistMaxLen 32 /* max len of client interface blacklist */
+
+/*
+ * Device flags
+ */
+
+#define NSMBFL_OPEN        0x0001
+#define NSMBFL_CANCEL    0x0002
+#define NSMBFL_SHARE_SESSION    0x0004
+
 
 /*
  * network IO daemon states
@@ -55,11 +67,6 @@ enum smbiod_state {
     SMBIOD_ST_DEAD,           /* connection broken, transport is down */
     SMBIOD_ST_RECONNECT_AGAIN,/* We need to attempt to reconnect again */
     SMBIOD_ST_RECONNECT       /* Currently in reconnect */
-};
-
-struct smb_rqhead {
-    void* next;
-    void** prev;
 };
 
 typedef enum gssd_nametype {
@@ -97,6 +104,31 @@ struct smb_gss {
     uint32_t      gss_major;       /* GSS major error code */
     uint32_t      gss_minor;       /* GSS minor (mech) error code */
     uint32_t      gss_smb_error;   /* Last error returned by smb SetUpAndX */
+};
+
+struct session_network_interface_info {
+    lck_mtx_t interface_table_lck;
+    uint32_t pause_trials;
+    uint32_t client_nic_count;
+    struct interface_info_list client_nic_info_list; /* list of the client's available NICs */
+    uint32_t server_nic_count;
+    struct interface_info_list server_nic_info_list; /* list of the server's available NICs */
+
+    uint32_t max_channels;
+    uint32_t max_rss_channels;
+    uint32_t *client_if_blacklist;
+    uint32_t client_if_blacklist_len;
+    uint32_t prefer_wired;
+
+    /*
+     * Table of all possible connections represent the state of every
+     * couple of NICs.
+     * The size of the table is (client_nic_count * server_nic_count).
+     * In case of a successful connection will note the functionality of the connection.
+     */
+    struct connection_info_list session_con_list;    /* list of all possible connection - use next */
+    uint32_t active_on_trial_connections;            /* record for the amount of open trial connections */
+    struct connection_info_list successful_con_list; /* list of all successful connection - use success_next */
 };
 
 struct conn_params {
@@ -167,5 +199,20 @@ struct smbiod {
     uint8_t             *iod_sess_setup_reply;  /* Used for pre auth and alt channels */
     size_t              iod_sess_setup_reply_len;
 };
+
+#define SMBIOD_SHUTDOWN             0x0001
+#define SMBIOD_RUNNING              0x0002
+#define SMBIOD_RECONNECT            0x0004
+#define SMBIOD_START_RECONNECT      0x0008
+#define SMBIOD_SESSION_NOTRESP      0x0010
+#define SMBIOD_READ_THREAD_RUNNING  0x0020
+#define SMBIOD_READ_THREAD_STOP     0x0040
+#define SMBIOD_READ_THREAD_ERROR    0x0080  // The read-thread can not read from socket. Reconnect is required.
+#define SMBIOD_ALTERNATE_CHANNEL    0x0100
+#define SMBIOD_USE_CHANNEL_KEYS     0x0200  // Alternate channel messages are signed with the main-channel
+                                            // until a successful session-setup is obtained, the the alt-ch
+                                            // keys there after.
+#define SMBIOD_INACTIVE_CHANNEL     0x0800 // The channel is connected but does not pass data.
+#define SMBIOD_ABORT_CONNECT        0x1000 // Stop iod from trying to establish connection
 
 #endif /* _SMB_CONN_H_ */

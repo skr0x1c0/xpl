@@ -132,7 +132,7 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
 int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, char* data, size_t data_size) {
     xe_assert_cond(data_size, <=, zone_size);
     xe_assert_cond(reader->state, ==, STATE_CREATED);
-    xe_assert_cond(zone_size, >=, 64);
+//    xe_assert_cond(zone_size, >=, 64);
     xe_assert_cond(zone_size, <, 128);
     
     reader->state = STATE_USED;
@@ -143,7 +143,7 @@ int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t
     
     for (int i=0; i<MAX_TRIES; i++) {
         double probability = kmem_zkext_neighbor_reader_check(reader, zone_size, zone_size * 2);
-        if (probability < 0.9) {
+        if (probability < 0.95) {
             xe_log_debug("skipping read due to low success probability of %.2f", probability);
             continue;
         }

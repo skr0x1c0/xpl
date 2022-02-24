@@ -34,6 +34,55 @@ struct sock_addr_entry {
 TAILQ_HEAD(sock_addr_list, sock_addr_entry);
 
 /*
+ * NIC's IP types
+ */
+enum {
+    SMB2_MC_IPV4   = 0x01,
+    SMB2_MC_IPV6   = 0x02,
+};
+
+typedef enum _SMB2_MC_CON_STATE {
+    SMB2_MC_STATE_POTENTIAL          = 0x00,
+    SMB2_MC_STATE_NO_POTENTIAL       = 0x01, /* NICs doesn't have potential for connection (mainly ip mismatch). */
+    SMB2_MC_STATE_IN_TRIAL           = 0x02, /* this connection sent to connect flow */
+    SMB2_MC_STATE_FAILED_TO_CONNECT  = 0x03, /* this connection failed in connect flow */
+    SMB2_MC_STATE_CONNECTED          = 0x04, /* this connection is being used */
+    SMB2_MC_STATE_SURPLUS            = 0x05, /* this connection can't be used since one of it's NICs
+                                              * is being used in another connection. */
+    SMB2_MC_STATE_IN_REMOVAL         = 0x06, /* this connection sent to removal flow because it was no longer
+                                              * needed (redundant, too slow, etc). It will switch to potential
+                                              * once the iod is destroyed */
+}_SMB2_MC_CON_STATE;
+
+typedef enum _SMB2_MC_CON_ACTIVE_STATE {
+    SMB2_MC_FUNC_ACTIVE              = 0x00, /* the connection is active */
+    SMB2_MC_FUNC_INACTIVE            = 0x01, /* the connection is inactive */
+    SMB2_MC_FUNC_INACTIVE_REDUNDANT  = 0x02, /* the connection is inactive and redundant */
+
+}_SMB2_MC_CON_ACTIVE_STATE;
+
+/*
+ * The complete connection info.
+ */
+struct session_con_entry {
+    _SMB2_MC_CON_STATE        state;        /* the state of the connection couple */
+    _SMB2_MC_CON_ACTIVE_STATE active_state; /* the active state of a connected connection couple */
+    uint64_t                  con_speed;    /* the min between the 2 nics */
+
+    struct smbiod * iod;      /* pointer to the iod that is responsible
+                                 for this connection*/
+    
+    struct complete_nic_info_entry* con_client_nic;
+    struct complete_nic_info_entry* con_server_nic;
+    
+    TAILQ_ENTRY(session_con_entry) next;         /* link list of all connection entries */
+    TAILQ_ENTRY(session_con_entry) client_next;  /* for quick access from client nic */
+    TAILQ_ENTRY(session_con_entry) success_next; /* for quick access when
+                                                    looking for successful connections */
+};
+TAILQ_HEAD(connection_info_list, session_con_entry);
+
+/*
  * The raw NIC's info coming from the client and the server
  * Contains only one IP address
  * will be used to construct the complete_nic_info_entry
@@ -90,5 +139,7 @@ struct complete_nic_info_entry {
         void** tqh_last;
     } possible_connections;
 };
+
+TAILQ_HEAD(interface_info_list, complete_nic_info_entry);
 
 #endif /* smb2_mc_h */
