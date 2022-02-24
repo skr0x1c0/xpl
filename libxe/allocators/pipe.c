@@ -72,5 +72,6 @@ int xe_allocator_pipe_destroy(xe_allocator_pipe_t* pipe) {
     close((*pipe)->fd0);
     close((*pipe)->fd1);
     free(*pipe);
+    *pipe = NULL;
     return 0;
 }
