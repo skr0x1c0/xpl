@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5E13849827C8066A001164F1 /* cp.h in Headers */ = {isa = PBXBuildFile; fileRef = 5E13849627C80669001164F1 /* cp.h */; };
 		5E13849927C8066A001164F1 /* cp.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E13849727C8066A001164F1 /* cp.c */; };
+		5E2DA73F27C8E8E800C8D041 /* kmem_msdosfs_img.dmg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 84F7BB58276DC6E500138492 /* kmem_msdosfs_img.dmg */; };
 		8403C45B27BCDC65003FAFE8 /* large_mem.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403C45927BCDC65003FAFE8 /* large_mem.h */; };
 		8403C45C27BCDC65003FAFE8 /* large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45A27BCDC65003FAFE8 /* large_mem.c */; };
 		8403CCBD27BD875400A62155 /* kfunc.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403CCBB27BD875400A62155 /* kfunc.h */; };
@@ -39,6 +40,19 @@
 		8466F3C0276DCBB7004F651E /* libctf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3BF276DCBB7004F651E /* libctf.dylib */; };
 		8466F3C2276DCBBA004F651E /* libdwarf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8466F3C1276DCBBA004F651E /* libdwarf.dylib */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5E2DA73E27C8E89600C8D041 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Resources/libxe/memory;
+			dstSubfolderSpec = 16;
+			files = (
+				5E2DA73F27C8E8E800C8D041 /* kmem_msdosfs_img.dmg in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		5E13849627C80669001164F1 /* cp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cp.h; sourceTree = "<group>"; };
@@ -73,7 +87,7 @@
 		84F7BB53276DC6E500138492 /* kernel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kernel.h; sourceTree = "<group>"; };
 		84F7BB56276DC6E500138492 /* msdosfs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = msdosfs.c; sourceTree = "<group>"; };
 		84F7BB57276DC6E500138492 /* msdosfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = msdosfs.h; sourceTree = "<group>"; };
-		84F7BB58276DC6E500138492 /* exp_msdosfs_base.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = exp_msdosfs_base.dmg; sourceTree = "<group>"; };
+		84F7BB58276DC6E500138492 /* kmem_msdosfs_img.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = kmem_msdosfs_img.dmg; sourceTree = "<group>"; };
 		84F7BB59276DC6E500138492 /* msdosfs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = msdosfs.h; sourceTree = "<group>"; };
 		84F7BB5B276DC6E500138492 /* iosurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = iosurface.c; sourceTree = "<group>"; };
 		84F7BB5C276DC6E500138492 /* iosurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iosurface.h; sourceTree = "<group>"; };
@@ -155,7 +169,6 @@
 		8405D061278E023B0032FD1F /* allocator */ = {
 			isa = PBXGroup;
 			children = (
-				84F7BB57276DC6E500138492 /* msdosfs.h */,
 				84F7BB5C276DC6E500138492 /* iosurface.h */,
 				84F7BB5E276DC6E500138492 /* pipe.h */,
 				8403C45927BCDC65003FAFE8 /* large_mem.h */,
@@ -214,6 +227,7 @@
 				8443C05C277B474700FBC453 /* log.h */,
 				840F13482781CBB300827BAE /* assert.h */,
 				5E13849627C80669001164F1 /* cp.h */,
+				84F7BB57276DC6E500138492 /* msdosfs.h */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -302,8 +316,6 @@
 		84F7BB61276DC6E500138492 /* allocators */ = {
 			isa = PBXGroup;
 			children = (
-				84F7BB56276DC6E500138492 /* msdosfs.c */,
-				84F7BB58276DC6E500138492 /* exp_msdosfs_base.dmg */,
 				84F7BB5B276DC6E500138492 /* iosurface.c */,
 				84F7BB5F276DC6E500138492 /* pipe.c */,
 				8403C45A27BCDC65003FAFE8 /* large_mem.c */,
@@ -322,6 +334,7 @@
 				84F7BB71276DC6E500138492 /* zalloc.c */,
 				8403CCBC27BD875400A62155 /* kfunc.c */,
 				5E13849727C8066A001164F1 /* cp.c */,
+				84F7BB56276DC6E500138492 /* msdosfs.c */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -339,6 +352,7 @@
 			children = (
 				84F7BB79276DC6E500138492 /* kmem.c */,
 				84F7BB7C276DC6E500138492 /* kmem_msdosfs.c */,
+				84F7BB58276DC6E500138492 /* kmem_msdosfs_img.dmg */,
 				84F7BB80276DC6E500138492 /* kmem_remote.c */,
 			);
 			path = memory;
@@ -367,6 +381,7 @@
 				84F7BB34276DC6C000138492 /* Headers */,
 				84F7BB35276DC6C000138492 /* Sources */,
 				84F7BB36276DC6C000138492 /* Frameworks */,
+				5E2DA73E27C8E89600C8D041 /* CopyFiles */,
 			);
 			buildRules = (
 			);

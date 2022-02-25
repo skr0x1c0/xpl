@@ -9,7 +9,7 @@
 
 #include "../external/msdosfs/msdosfs.h"
 
-#include "allocator/msdosfs.h"
+#include "util/msdosfs.h"
 #include "util/assert.h"
 #include "util/cp.h"
 #include "cmd/hdiutil.h"
@@ -17,21 +17,19 @@
 #define BASE_IMAGE_NAME "exp_msdosfs_base.dmg"
 
 
-struct xe_allocator_msdosfs {
+struct xe_util_msdosfs {
     char directory[PATH_MAX];
     char dev[PATH_MAX];
     int fd_mount;
 };
 
 
-int xe_allocator_msdosfs_loadkext(void) {
+int xe_util_msdosfs_loadkext(void) {
     return KextManagerLoadKextWithIdentifier(CFSTR("com.apple.filesystems.msdosfs"), NULL);
 }
 
 
-int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount_out) {
-    char* base_img_path = "allocators/"BASE_IMAGE_NAME;
-    
+int xe_util_msdosfs_mount(const char* base_img_path, const char* label, xe_util_msdosfs_t* mount_out) {
     char temp_dir[PATH_MAX] = "/tmp/exp_msdos.XXXXXXXX";
     if (!mkdtemp(temp_dir)) {
         return errno;
@@ -94,7 +92,7 @@ int xe_allocator_msdosfs_create(const char* label, xe_allocator_msdosfs_t* mount
         goto exit_error;
     }
 
-    xe_allocator_msdosfs_t mount = (xe_allocator_msdosfs_t)malloc(sizeof(struct xe_allocator_msdosfs));
+    xe_util_msdosfs_t mount = (xe_util_msdosfs_t)malloc(sizeof(struct xe_util_msdosfs));
     strncpy(mount->directory, temp_dir, sizeof(mount->directory));
     strncpy(mount->dev, dev_path, sizeof(mount->dev));
     mount->fd_mount = fd_mount;
@@ -113,16 +111,16 @@ exit_error:
     return error;
 }
 
-size_t xe_allocator_msdosfs_get_mountpoint(xe_allocator_msdosfs_t mount, char* dst, size_t dst_size) {
+size_t xe_util_msdosfs_get_mountpoint(xe_util_msdosfs_t mount, char* dst, size_t dst_size) {
     return snprintf(dst, dst_size, "%s/mount", mount->directory);
 }
 
-int xe_allocator_msdsofs_get_mount_fd(xe_allocator_msdosfs_t allocator) {
+int xe_util_msdosfs_get_mount_fd(xe_util_msdosfs_t allocator) {
     return allocator->fd_mount;
 }
 
-int xe_allocator_msdosfs_destroy(xe_allocator_msdosfs_t* mount_p) {
-    xe_allocator_msdosfs_t mount = *mount_p;
+int xe_util_msdosfs_unmount(xe_util_msdosfs_t* mount_p) {
+    xe_util_msdosfs_t mount = *mount_p;
 
     int error = xe_cmd_hdiutil_detach(mount->dev);
     if (error) {

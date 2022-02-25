@@ -30,7 +30,7 @@
 
 int main(int argc, const char* argv[]) {
     smb_client_load_kext();
-    xe_allocator_msdosfs_loadkext();
+    xe_util_msdosfs_loadkext();
     
     // Increase open file limit
     struct rlimit nofile_limit;
