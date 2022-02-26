@@ -223,8 +223,11 @@ void xe_kmem_server_listen(const struct xe_kmem_remote_server_ctx* ctx, int sock
     _Bool stop = 0;
     while (!stop) {
         int num_fds_ready = poll(fds, num_poll_fds, -1);
-        xe_assert(num_fds_ready >= 0);
-        xe_kmem_server_spin_once(ctx, fds, &num_poll_fds, &stop);
+        if (num_fds_ready) {
+            xe_kmem_server_spin_once(ctx, fds, &num_poll_fds, &stop);
+        } else {
+            xe_log_warn("poll returned error: %s", strerror(errno));
+        }
     }
 }
 
