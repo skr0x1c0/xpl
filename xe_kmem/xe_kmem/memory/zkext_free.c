@@ -27,7 +27,7 @@
 #include "macos_params.h"
 
 
-#define NUM_SLOW_DOWN_NICS 5
+#define NUM_SLOW_DOWN_NICS 25
 #define NUM_SOCKETS_PER_SLOW_DOWN_NIC 12500
 
 
