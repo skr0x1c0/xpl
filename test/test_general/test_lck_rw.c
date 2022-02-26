@@ -14,7 +14,6 @@
 #include <xe/memory/kmem.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
-#include <xe/allocator/msdosfs.h>
 #include <xe/xnu/proc.h>
 #include <xe/util/lck_rw.h>
 #include <xe/util/dispatch.h>
