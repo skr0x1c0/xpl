@@ -1,17 +1,17 @@
 //
-//  fake_session.h
+//  kmem_read_session.h
 //  xe_kmem
 //
 //  Created by admin on 2/22/22.
 //
 
-#ifndef fake_session_h
-#define fake_session_h
+#ifndef kmem_read_session_h
+#define kmem_read_session_h
 
 #include <stdio.h>
 
 
-static const struct sockaddr_in FAKE_SESSION_NIC_SADDR = {
+static const struct sockaddr_in FAKE_SESSION_NIC_ADDR = {
     .sin_len = sizeof(struct sockaddr_in),
     .sin_family = AF_INET,
     .sin_port = 1234,
@@ -20,10 +20,10 @@ static const struct sockaddr_in FAKE_SESSION_NIC_SADDR = {
 
 #define FAKE_SESSION_NIC_INDEX   4321
 
-typedef struct fake_session* fake_session_t;
+typedef struct kmem_read_session* kmem_read_session_t;
 
-fake_session_t fake_session_create(const struct sockaddr_in* smb_addr);
-uintptr_t fake_session_get_addr(fake_session_t session);
-void fake_session_destroy(fake_session_t* session_p);
+kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr);
+uintptr_t kmem_read_session_get_addr(kmem_read_session_t session);
+void kmem_read_session_destroy(kmem_read_session_t* session_p);
 
-#endif /* fake_session_h */
+#endif /* kmem_read_session_h */

