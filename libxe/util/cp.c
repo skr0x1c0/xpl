@@ -10,6 +10,7 @@
 #include <sys/fcntl.h>
 #include <sys/errno.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include "cp.h"
 
@@ -20,7 +21,7 @@ int xe_util_cp(const char* src, const char* dst) {
         return errno;
     }
     
-    int fd_dst = open(dst, O_CREAT | O_EXCL | O_RDWR);
+    int fd_dst = open(dst, O_CREAT | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
     if (fd_dst < 0) {
         close(fd_src);
         return errno;
