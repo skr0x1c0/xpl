@@ -278,3 +278,18 @@ int smb_client_ioc_cancel_session(int fd_dev) {
     return 0;
 }
 
+
+int smb_client_ioc_set_ntwrk_identity(int fd_dev, const ntsid_t* ntsid) {
+    struct smbioc_ntwrk_identity req;
+    bzero(&req, sizeof(req));
+    req.ioc_version = SMB_IOC_STRUCT_VERSION;
+    req.ioc_ntsid = *ntsid;
+    req.ioc_ntsid_len = sizeof(*ntsid);
+        
+    if (ioctl(fd_dev, SMBIOC_NTWRK_IDENTITY, &req)) {
+        return errno;
+    }
+    
+    return 0;
+}
+

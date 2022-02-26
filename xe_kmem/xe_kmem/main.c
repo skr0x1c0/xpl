@@ -15,8 +15,9 @@
 
 #include <xe/util/binary.h>
 #include <xe/util/assert.h>
-#include <xe/allocator/msdosfs.h>
+#include <xe/util/msdosfs.h>
 #include <xe/memory/kmem.h>
+#include <xe/memory/kmem_inline.h>
 #include <xe/memory/kmem_msdosfs.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
@@ -25,7 +26,7 @@
 #include "smb/client.h"
 #include "smb/params.h"
 
-#include "kmem_ro.h"
+#include "kmem_bootstrap.h"
 
 
 int main(int argc, const char* argv[]) {
@@ -48,14 +49,13 @@ int main(int argc, const char* argv[]) {
     smb_addr.sin_port = htons(XE_SMBX_PORT_START);
     inet_aton(XE_SMBX_HOST, &smb_addr.sin_addr);
     
-    xe_kmem_backend_t backend = kmem_ro_create(&smb_addr);
-    xe_kmem_use_backend(backend);
-
-    uintptr_t meh = kmem_ro_get_mach_execute_header(backend);
+    xe_kmem_backend_t kmem_slow = kmem_boostrap_create(&smb_addr);
+    xe_kmem_use_backend(kmem_slow);
+    uintptr_t meh = kmem_boostrap_get_mach_execute_header(kmem_slow);
     xe_slider_kernel_init(meh);
     
-    struct kmem_msdosfs_init_args args;
-    bzero(&args, sizeof(args));
+    xe_kmem_backend_t kmem_fast = xe_kmem_msdosfs_create(KMEM_MSDOSFS_DEFAULT_BASE_IMAGE);
+    xe_kmem_use_backend(kmem_fast);
     
     struct xe_kmem_remote_server_ctx ctx;
     ctx.mh_execute_header = meh;

@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/kauth.h>
 
 #include "smb.h"
 #include "smb_conn.h"
@@ -232,11 +233,25 @@ struct smbioc_rq {
     uint64_t    ioc_reserved __attribute((aligned(8))); /* Force correct size always */
 };
 
+/*
+ * Currently the network account and network domain are ignore, they are present
+ * only for future considerations.
+ */
+struct smbioc_ntwrk_identity {
+    uint32_t    ioc_version;
+    uint32_t    ioc_reserved;
+    char        ioc_ntwrk_account[SMB_MAXUSERNAMELEN + 1] __attribute((aligned(8)));
+    char        ioc_ntwrk_domain[SMB_MAX_DNS_SRVNAMELEN + 1] __attribute((aligned(8)));
+    uint64_t    ioc_ntsid_len;
+    ntsid_t     ioc_ntsid;
+};
+
 
 /*
  * Device IOCTLs
  */
 #define    SMBIOC_REQUEST          _IOWR('n', 102, struct smbioc_rq)
+#define    SMBIOC_NTWRK_IDENTITY   _IOW('n', 106, struct smbioc_ntwrk_identity)
 #define    SMBIOC_NEGOTIATE        _IOWR('n', 109, struct smbioc_negotiate)
 #define    SMBIOC_SSNSETUP         _IOW('n', 110, struct smbioc_setup)
 #define    SMBIOC_AUTH_INFO        _IOWR('n', 101, struct smbioc_auth_info)

