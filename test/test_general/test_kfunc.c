@@ -31,7 +31,10 @@ void test_kfunc(void) {
     uint64_t args[8];
     bzero(args, sizeof(args));
     args[0] = address;
-    xe_util_kfunc_exec(util, xe_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE), args);
+    
+    for (int i=0; i<5; i++) {
+        xe_util_kfunc_exec(util, xe_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE), args);
+    }
     
     xe_util_kfunc_destroy(&util);
 }

