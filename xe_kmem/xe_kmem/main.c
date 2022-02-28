@@ -17,7 +17,6 @@
 #include <xe/util/assert.h>
 #include <xe/util/msdosfs.h>
 #include <xe/memory/kmem.h>
-#include <xe/memory/kmem_inline.h>
 #include <xe/memory/kmem_msdosfs.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
