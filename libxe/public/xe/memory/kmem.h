@@ -35,6 +35,17 @@ void xe_kmem_write_int16(uintptr_t base, uintptr_t off, int16_t value);
 void xe_kmem_write_int32(uintptr_t base, uintptr_t off, int32_t value);
 void xe_kmem_write_int64(uintptr_t base, uintptr_t off, int64_t value);
 
+uint8_t xe_kmem_read_bitfield_uint8(uintptr_t base, uintptr_t off, int bit_offset, int bit_size);
+uint16_t xe_kmem_read_bitfield_uint16(uintptr_t base, uintptr_t off, int bit_offset, int bit_size);
+uint32_t xe_kmem_read_bitfield_uint32(uintptr_t base, uintptr_t off, int bit_offset, int bit_size);
+uint64_t xe_kmem_read_bitfield_uint64(uintptr_t base, uintptr_t off, int bit_offset, int bit_size);
+
+void xe_kmem_write_bitfield_uint8(uintptr_t dst, uintptr_t off, uint8_t value, int bit_offset, int bit_size);
+void xe_kmem_write_bitfield_uint16(uintptr_t dst, uintptr_t off, uint16_t value, int bit_offset, int bit_size);
+void xe_kmem_write_bitfield_uint32(uintptr_t dst, uintptr_t off, uint32_t value, int bit_offset, int bit_size);
+void xe_kmem_write_bitfield_uint64(uintptr_t dst, uintptr_t off, uint64_t value, int bit_offset, int bit_size);
+
+
 void xe_kmem_copy(uintptr_t dst, uintptr_t src, size_t size);
 
 

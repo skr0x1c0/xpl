@@ -439,8 +439,9 @@ int xe_util_zalloc_meta_clear_bitmap_ref(uintptr_t meta_base, int eidx) {
     return 0;
 }
 
+
 int xe_util_zalloc_meta_clear_bit(uintptr_t meta, int eidx) {
-    uint16_t zm_inline_bitmap = xe_kmem_read_uint16(meta, 0) & (1 << TYPE_ZONE_PAGE_METADATA_MEM_ZM_INLINE_BITMAP_BIT_OFFSET);
+    uint16_t zm_inline_bitmap = xe_kmem_read_bitfield_uint16(meta, TYPE_ZONE_PAGE_METADATA_BF0_OFFSET, TYPE_ZONE_PAGE_METADATA_BF0_MEM_ZM_INLINE_BITMAP_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_BF0_MEM_ZM_INLINE_BITMAP_BIT_SIZE);
     
     if (zm_inline_bitmap) {
         return xe_util_zalloc_meta_clear_bitmap_inline(meta, eidx);

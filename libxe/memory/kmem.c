@@ -153,6 +153,34 @@ void xe_kmem_write_int64(uintptr_t dst, uintptr_t off, int64_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
+#define bitfield_reader(name, type) \
+    type xe_kmem_read_bitfield_##name(uintptr_t base, uintptr_t off, int bit_offset, int bit_size) { \
+        xe_assert_cond(bit_offset, <, NBBY * sizeof(type)); \
+        xe_assert_cond(bit_offset + bit_size, <=, NBBY * sizeof(type)); \
+        type val = xe_kmem_read_##name(base, off); \
+        return (val >> bit_offset) & ((1ULL << bit_size) - 1); \
+    }
+
+bitfield_reader(uint8, uint8_t);
+bitfield_reader(uint16, uint16_t);
+bitfield_reader(uint32, uint32_t);
+bitfield_reader(uint64, uint64_t);
+
+#define bitfield_writer(name, type) \
+    void xe_kmem_write_bitfield_##name(uintptr_t dst, uintptr_t off, type value, int bit_offset, int bit_size) { \
+        xe_assert_cond(bit_offset, <, NBBY * sizeof(type)); \
+        xe_assert_cond(bit_offset + bit_size, <=, NBBY * sizeof(type)); \
+        type bitfield = xe_kmem_read_##name(dst, off); \
+        bitfield &= ~(((1ULL << bit_size) - 1) << bit_offset); \
+        bitfield |= (value << bit_offset); \
+        xe_kmem_write_##name(dst, off, bitfield); \
+    } \
+
+bitfield_writer(uint8, uint8_t);
+bitfield_writer(uint16, uint16_t);
+bitfield_writer(uint32, uint32_t);
+bitfield_writer(uint64, uint64_t);
+
 void xe_kmem_copy(uintptr_t dst, uintptr_t src, size_t size) {
     char buffer[128];
     size_t done = 0;
