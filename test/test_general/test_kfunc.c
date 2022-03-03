@@ -11,20 +11,18 @@
 #include <xe/slider/kernel.h>
 #include <xe/util/kfunc.h>
 #include <xe/util/assert.h>
-#include <xe/allocator/pipe.h>
+#include <xe/allocator/small_mem.h>
 
 #include <macos_params.h>
 
 
 void test_kfunc(void) {
-    xe_allocator_pipe_t allocator;
-    
-    // This message should appear in Console.app
+    // This message should appear from kernel process in Console.app
     char message[] = "XE: xe_util_kfunc test run";
     
     uintptr_t address;
-    int error = xe_allocator_pipe_allocate(sizeof(message), &allocator, &address);
-    xe_assert_err(error);
+    xe_allocator_small_mem_t allocator = xe_allocator_small_mem_allocate(sizeof(message), &address);
+    
     xe_kmem_write(address, 0, message, sizeof(message));
     
     xe_util_kfunc_t util = xe_util_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
@@ -36,5 +34,6 @@ void test_kfunc(void) {
         xe_util_kfunc_exec(util, xe_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE), args);
     }
     
+    xe_allocator_small_mem_destroy(&allocator);
     xe_util_kfunc_destroy(&util);
 }

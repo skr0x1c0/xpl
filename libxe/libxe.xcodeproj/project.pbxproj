@@ -27,7 +27,7 @@
 		8466F39C276DCAC5004F651E /* io_registry_entry.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB4C276DC6E500138492 /* io_registry_entry.c */; };
 		8466F39D276DCAD3004F651E /* iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5B276DC6E500138492 /* iosurface.c */; };
 		8466F39E276DCAD3004F651E /* msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB56276DC6E500138492 /* msdosfs.c */; };
-		8466F39F276DCAD3004F651E /* pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5F276DC6E500138492 /* pipe.c */; };
+		8466F39F276DCAD3004F651E /* small_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB5F276DC6E500138492 /* small_mem.c */; };
 		8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB7C276DC6E500138492 /* kmem_msdosfs.c */; };
 		8466F3A1276DCAE2004F651E /* kmem_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB80276DC6E500138492 /* kmem_remote.c */; };
 		8466F3A4276DCAE2004F651E /* kmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F7BB79276DC6E500138492 /* kmem.c */; };
@@ -98,8 +98,8 @@
 		84F7BB59276DC6E500138492 /* msdosfs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = msdosfs.h; sourceTree = "<group>"; };
 		84F7BB5B276DC6E500138492 /* iosurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = iosurface.c; sourceTree = "<group>"; };
 		84F7BB5C276DC6E500138492 /* iosurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iosurface.h; sourceTree = "<group>"; };
-		84F7BB5E276DC6E500138492 /* pipe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pipe.h; sourceTree = "<group>"; };
-		84F7BB5F276DC6E500138492 /* pipe.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pipe.c; sourceTree = "<group>"; };
+		84F7BB5E276DC6E500138492 /* small_mem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = small_mem.h; sourceTree = "<group>"; };
+		84F7BB5F276DC6E500138492 /* small_mem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = small_mem.c; sourceTree = "<group>"; };
 		84F7BB62276DC6E500138492 /* binary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary.h; sourceTree = "<group>"; };
 		84F7BB63276DC6E500138492 /* binary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = binary.c; sourceTree = "<group>"; };
 		84F7BB64276DC6E500138492 /* ptrauth.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ptrauth.h; sourceTree = "<group>"; };
@@ -175,7 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				84F7BB5C276DC6E500138492 /* iosurface.h */,
-				84F7BB5E276DC6E500138492 /* pipe.h */,
+				84F7BB5E276DC6E500138492 /* small_mem.h */,
 				8403C45927BCDC65003FAFE8 /* large_mem.h */,
 			);
 			path = allocator;
@@ -324,7 +324,7 @@
 			isa = PBXGroup;
 			children = (
 				84F7BB5B276DC6E500138492 /* iosurface.c */,
-				84F7BB5F276DC6E500138492 /* pipe.c */,
+				84F7BB5F276DC6E500138492 /* small_mem.c */,
 				8403C45A27BCDC65003FAFE8 /* large_mem.c */,
 			);
 			path = allocators;
@@ -461,7 +461,7 @@
 				8466F3A9276DCAF2004F651E /* hdiutil.c in Sources */,
 				8466F39A276DCAC5004F651E /* io_surface.c in Sources */,
 				8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */,
-				8466F39F276DCAD3004F651E /* pipe.c in Sources */,
+				8466F39F276DCAD3004F651E /* small_mem.c in Sources */,
 				8466F3AD276DCAFE004F651E /* kalloc_heap.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

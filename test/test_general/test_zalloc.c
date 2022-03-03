@@ -12,6 +12,7 @@
 #include <xe/util/misc.h>
 #include <xe/util/log.h>
 #include <xe/util/assert.h>
+#include <xe/allocator/small_mem.h>
 
 #include <macos_params.h>
 
@@ -24,20 +25,20 @@ void test_zalloc(void) {
         VAR_ZONE_IO_EVENT_SOURCE_COUNTER,
         VAR_ZONE_IO_EVENT_SOURCE_RESERVED
     };
-    
-    
+
+
     for (int i=0; i<xe_array_size(zones); i++) {
         uintptr_t zone = xe_kmem_read_uint64(xe_slider_kernel_slide(zones[i]), 0);
-        
+
         xe_log_info("testing zalloc for zone %p", (void*)zone);
         xe_util_zalloc_t util = xe_util_zalloc_create(zone, 1);
         uintptr_t ptr = xe_util_zalloc_alloc(util, 0);
-        xe_log_debug("allocated %p for zone %p", (void*)ptr, (void*)zone);
+        xe_log_debug("allocated %p from zone %p", (void*)ptr, (void*)zone);
         xe_log_info("zalloc test for zone %p is ok", (void*)zone);
     }
     
     uint16_t kheap_zones[] = {
-        6144
+        16, 1024, 16384
     };
     
     for (int i=0; i<xe_array_size(kheap_zones); i++) {
@@ -46,7 +47,7 @@ void test_zalloc(void) {
         xe_log_info("testing zalloc for zone %p", (void*)zone);
         xe_util_zalloc_t util = xe_util_zalloc_create(zone, 1);
         uintptr_t ptr = xe_util_zalloc_alloc(util, 0);
-        xe_log_debug("allocated %p for zone %p", (void*)ptr, (void*)zone);
+        xe_log_debug("allocated %p from zone %p", (void*)ptr, (void*)zone);
         xe_log_info("zalloc test for zone %p is ok", (void*)zone);
     }
 }

