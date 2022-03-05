@@ -15,6 +15,9 @@ int xe_util_binary_hex_dump(const char* data, size_t data_size) {
             printf("\n");
         }
     }
+    if (data_size % 8 != 0) {
+        printf("\n");
+    }
     return 0;
 }
 
