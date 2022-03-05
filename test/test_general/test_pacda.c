@@ -10,26 +10,29 @@
 
 #include <xe/xnu/proc.h>
 #include <xe/util/pacda.h>
+#include <xe/util/log.h>
+#include <xe/util/assert.h>
+#include <xe/allocator/large_mem.h>
 
 #include "test_pacda.h"
 
 
 void test_pacda(void) {
     uintptr_t proc = xe_xnu_proc_current_proc();
-    printf("[INFO] pid: %d\n", getpid());
-    printf("[INFO] proc: %p\n", (void*)proc);
+    xe_log_info("pid: %d", getpid());
+    xe_log_info("proc: %p", (void*)proc);
     
     for (int i=0; i<3; i++) {
-        uintptr_t ptr = proc;
         uintptr_t ctx = 0xabcdef;
         uintptr_t signed_ptr;
         
-        int error = xe_util_pacda_sign(proc, ptr, ctx, &signed_ptr);
-        if (error) {
-            printf("[ERROR] ptr sign failed, err: %d\n", error);
-            return;
-        }
+        uintptr_t addr;
+        xe_allocator_large_mem_t allocator = xe_allocator_large_mem_allocate(16384 * 4, &addr);
         
-        printf("[INFO] signed ptr: %p\n", (void*)signed_ptr);
+        int error = xe_util_pacda_sign(proc, addr, ctx, &signed_ptr);
+        xe_assert_err(error);
+        
+        xe_log_info("signed ptr: %p", (void*)signed_ptr);
+        xe_allocator_large_mem_free(&allocator);
     }
 }

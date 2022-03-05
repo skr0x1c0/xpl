@@ -63,7 +63,7 @@ uintptr_t xe_io_surface_root(void) {
     xe_assert_err(error);
 
     uintptr_t io_resources;
-    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_kernel_slide(VAR_IO_RESOURCES_VTABLE+ 0x10), &io_resources);
+    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_kernel_slide(VAR_IO_RESOURCES_VTABLE + 0x10), &io_resources);
     xe_assert_err(error);
 
     uintptr_t io_surface_root;
