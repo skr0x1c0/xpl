@@ -14,6 +14,10 @@
 		5E2DA73F27C8E8E800C8D041 /* kmem_msdosfs_img.dmg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 84F7BB58276DC6E500138492 /* kmem_msdosfs_img.dmg */; };
 		5E381E8827C987CB00AD803B /* thread.h in Headers */ = {isa = PBXBuildFile; fileRef = 5E381E8627C987CB00AD803B /* thread.h */; };
 		5E381E8927C987CB00AD803B /* thread.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E381E8727C987CB00AD803B /* thread.c */; };
+		5E6AA8D927D78A8200933AF6 /* sandbox.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E6AA8D727D78A8200933AF6 /* sandbox.c */; };
+		5E6AA8DA27D78A8200933AF6 /* tcc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E6AA8D827D78A8200933AF6 /* tcc.c */; };
+		5E6AA8DD27D78D6600933AF6 /* ipc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5E6AA8DB27D78D6600933AF6 /* ipc.h */; };
+		5E6AA8DE27D78D6600933AF6 /* ipc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E6AA8DC27D78D6600933AF6 /* ipc.c */; };
 		8403C45B27BCDC65003FAFE8 /* large_mem.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403C45927BCDC65003FAFE8 /* large_mem.h */; };
 		8403C45C27BCDC65003FAFE8 /* large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45A27BCDC65003FAFE8 /* large_mem.c */; };
 		8403CCBD27BD875400A62155 /* kfunc.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403CCBB27BD875400A62155 /* kfunc.h */; };
@@ -65,6 +69,12 @@
 		5E32F12E27C828490014FA80 /* kmem_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_internal.h; sourceTree = "<group>"; };
 		5E381E8627C987CB00AD803B /* thread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		5E381E8727C987CB00AD803B /* thread.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = thread.c; sourceTree = "<group>"; };
+		5E6AA8CE27D7882B00933AF6 /* sandbox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sandbox.h; sourceTree = "<group>"; };
+		5E6AA8D127D7884000933AF6 /* tcc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tcc.h; sourceTree = "<group>"; };
+		5E6AA8D727D78A8200933AF6 /* sandbox.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sandbox.c; sourceTree = "<group>"; };
+		5E6AA8D827D78A8200933AF6 /* tcc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcc.c; sourceTree = "<group>"; };
+		5E6AA8DB27D78D6600933AF6 /* ipc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ipc.h; sourceTree = "<group>"; };
+		5E6AA8DC27D78D6600933AF6 /* ipc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ipc.c; sourceTree = "<group>"; };
 		8403C45927BCDC65003FAFE8 /* large_mem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = large_mem.h; sourceTree = "<group>"; };
 		8403C45A27BCDC65003FAFE8 /* large_mem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = large_mem.c; sourceTree = "<group>"; };
 		8403CCBB27BD875400A62155 /* kfunc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kfunc.h; sourceTree = "<group>"; };
@@ -206,6 +216,7 @@
 			children = (
 				5E381E8627C987CB00AD803B /* thread.h */,
 				84F7BB50276DC6E500138492 /* proc.h */,
+				5E6AA8DB27D78D6600933AF6 /* ipc.h */,
 			);
 			path = xnu;
 			sourceTree = "<group>";
@@ -234,6 +245,8 @@
 				5E13849627C80669001164F1 /* cp.h */,
 				84F7BB57276DC6E500138492 /* msdosfs.h */,
 				5E06439627CC8303005EC0E4 /* zalloc.h */,
+				5E6AA8CE27D7882B00933AF6 /* sandbox.h */,
+				5E6AA8D127D7884000933AF6 /* tcc.h */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -307,6 +320,7 @@
 			children = (
 				84F7BB51276DC6E500138492 /* proc.c */,
 				5E381E8727C987CB00AD803B /* thread.c */,
+				5E6AA8DC27D78D6600933AF6 /* ipc.c */,
 			);
 			path = xnu;
 			sourceTree = "<group>";
@@ -342,6 +356,8 @@
 				5E13849727C8066A001164F1 /* cp.c */,
 				84F7BB56276DC6E500138492 /* msdosfs.c */,
 				5E06439727CC8303005EC0E4 /* zalloc.c */,
+				5E6AA8D727D78A8200933AF6 /* sandbox.c */,
+				5E6AA8D827D78A8200933AF6 /* tcc.c */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -375,6 +391,7 @@
 				5E06439827CC8303005EC0E4 /* zalloc.h in Headers */,
 				8403CCBD27BD875400A62155 /* kfunc.h in Headers */,
 				5E13849827C8066A001164F1 /* cp.h in Headers */,
+				5E6AA8DD27D78D6600933AF6 /* ipc.h in Headers */,
 				5E381E8827C987CB00AD803B /* thread.h in Headers */,
 				8403C45B27BCDC65003FAFE8 /* large_mem.h in Headers */,
 			);
@@ -444,6 +461,7 @@
 				8466F399276DCAC5004F651E /* os_array.c in Sources */,
 				8466F39C276DCAC5004F651E /* io_registry_entry.c in Sources */,
 				8466F3AC276DCAFE004F651E /* pacda.c in Sources */,
+				5E6AA8DA27D78A8200933AF6 /* tcc.c in Sources */,
 				8466F3A1276DCAE2004F651E /* kmem_remote.c in Sources */,
 				8466F3AA276DCAFE004F651E /* binary.c in Sources */,
 				8466F39D276DCAD3004F651E /* iosurface.c in Sources */,
@@ -455,9 +473,11 @@
 				8466F39B276DCAC5004F651E /* os_string.c in Sources */,
 				8403CCBE27BD875400A62155 /* kfunc.c in Sources */,
 				8466F3AF276DCAFE004F651E /* dispatch.c in Sources */,
+				5E6AA8D927D78A8200933AF6 /* sandbox.c in Sources */,
 				8466F3A8276DCAED004F651E /* proc.c in Sources */,
 				5E381E8927C987CB00AD803B /* thread.c in Sources */,
 				84374D6127817CE900E2E187 /* kext.c in Sources */,
+				5E6AA8DE27D78D6600933AF6 /* ipc.c in Sources */,
 				8466F3A9276DCAF2004F651E /* hdiutil.c in Sources */,
 				8466F39A276DCAC5004F651E /* io_surface.c in Sources */,
 				8466F3A0276DCAE2004F651E /* kmem_msdosfs.c in Sources */,

@@ -6,6 +6,8 @@
 //
 
 #include <unistd.h>
+#include <libproc.h>
+
 #include <sys/errno.h>
 
 #include "xnu/proc.h"
@@ -66,4 +68,44 @@ int xe_xnu_proc_find_fd_data(uintptr_t proc, int fd, uintptr_t* out) {
     
     *out = xe_xnu_proc_find_fd_data_from_ofiles(fdesc_ofiles, fd);
     return 0;
+}
+
+void xe_xnu_proc_iter_pids(_Bool(^callback)(pid_t pid)) {
+    int num_pids = proc_listallpids(NULL, 0);
+    pid_t* pids = malloc(sizeof(pid_t) * num_pids);
+    int res = proc_listallpids(pids, num_pids * sizeof(pid_t));
+    xe_assert(res >= 0);
+    
+    for (int i=0; i<num_pids; i++) {
+        if (callback(pids[i])) {
+            break;
+        }
+        if (pids[i] == 0) {
+            break;
+        }
+    }
+    
+    free(pids);
+}
+
+void xe_xnu_proc_iter_procs(_Bool(^callback)(uintptr_t proc)) {
+    xe_xnu_proc_iter_pids(^_Bool(pid_t pid) {
+        uintptr_t proc;
+        int error = xe_xnu_proc_find(pid, &proc);
+        xe_assert_err(error);
+        return callback(proc);
+    });
+}
+
+void xe_xnu_proc_iter_pids_with_binary(const char* binary_path, _Bool(^callback)(pid_t pid)) {
+    xe_xnu_proc_iter_pids(^_Bool(pid_t pid) {
+        char path[PATH_MAX];
+        int res = proc_pidpath(pid, &path, sizeof(path));
+        xe_assert(res >= 0);
+        if (strncmp(path, binary_path, sizeof(path)) == 0) {
+            return callback(pid);
+        } else {
+            return 0;
+        }
+    });
 }
