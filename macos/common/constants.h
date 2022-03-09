@@ -21,4 +21,6 @@
 
 #define xe_vm_kernel_address_valid(addr) (addr >= XE_VM_MIN_KERNEL_ADDRESS && addr <= XE_VM_MAX_KERNEL_ADDRESS)
 
+#define PTOV_TABLE_SIZE 8
+
 #endif /* macos_constants_h */
