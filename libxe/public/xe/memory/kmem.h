@@ -21,6 +21,7 @@ uint8_t xe_kmem_read_uint8(uintptr_t base, uintptr_t off);
 uint16_t xe_kmem_read_uint16(uintptr_t base, uintptr_t off);
 uint32_t xe_kmem_read_uint32(uintptr_t base, uintptr_t off);
 uint64_t xe_kmem_read_uint64(uintptr_t base, uintptr_t off);
+uintptr_t xe_kmem_read_ptr(uintptr_t base, uintptr_t off);
 int8_t xe_kmem_read_int8(uintptr_t base, uintptr_t off);
 int16_t xe_kmem_read_int16(uintptr_t base, uintptr_t off);
 int32_t xe_kmem_read_int32(uintptr_t base, uintptr_t off);

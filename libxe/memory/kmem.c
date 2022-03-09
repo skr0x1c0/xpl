@@ -13,6 +13,7 @@
 #include "memory/kmem_internal.h"
 #include "util/misc.h"
 #include "util/assert.h"
+#include "util/ptrauth.h"
 
 
 struct xe_kmem_backend {
@@ -95,6 +96,16 @@ uint64_t xe_kmem_read_uint64(uintptr_t base, uintptr_t off) {
     uint64_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
+}
+
+uintptr_t xe_kmem_read_ptr(uintptr_t base, uintptr_t off) {
+    uintptr_t value = xe_kmem_read_uint64(base, off);
+    if (!value) {
+        return 0;
+    }
+    uintptr_t ptr = value | XE_PTRAUTH_MASK;
+    xe_assert_kaddr(ptr);
+    return ptr;
 }
 
 int8_t xe_kmem_read_int8(uintptr_t base, uintptr_t off) {
