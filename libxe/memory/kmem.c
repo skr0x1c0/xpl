@@ -13,7 +13,9 @@
 #include "memory/kmem_internal.h"
 #include "util/misc.h"
 #include "util/assert.h"
+#include "util/log.h"
 #include "util/ptrauth.h"
+#include "slider/kernel.h"
 
 
 struct xe_kmem_backend {
@@ -48,10 +50,26 @@ void xe_kmem_backend_destroy(xe_kmem_backend_t* backend_p) {
     *backend_p = NULL;
 }
 
+void xe_kmem_validate_addr_range(uintptr_t base, size_t size) {
+    uintptr_t end = base + size;
+    if (xe_vm_kernel_address_valid(base) && xe_vm_kernel_address_valid(end)) {
+        return;
+    }
+    
+    uintptr_t physmap_base = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_PHYSMAP_BASE), 0);
+    uintptr_t physmap_end = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_PHYSMAP_END), 0);
+    if (base >= physmap_base && base < physmap_end && end >= physmap_base && end <= physmap_end) {
+        return;
+    }
+    
+    xe_log_error("address range [%p, %p) not in kernel map [%p, %p) or phys map [%p, %p)", (void*)base, (void*)end, (void*)XE_VM_MIN_KERNEL_ADDRESS, (void*)XE_VM_MAX_KERNEL_ADDRESS, (void*)physmap_base, (void*)physmap_end);
+    xe_assert(0);
+}
+
 void xe_kmem_read(void* dst, uintptr_t base, uintptr_t off, size_t size) {
     xe_assert(kmem_backend != NULL);
-    xe_assert_kaddr(base);
     xe_assert_cond(base + off, >=, base);
+    xe_kmem_validate_addr_range(base + off, size);
     size_t max_read_size = kmem_backend->ops->max_read_size;
     size_t done = 0;
     while (done < size) {
@@ -63,8 +81,8 @@ void xe_kmem_read(void* dst, uintptr_t base, uintptr_t off, size_t size) {
 
 void xe_kmem_write(uintptr_t base, uintptr_t off, void* src, size_t size) {
     xe_assert(kmem_backend != NULL);
-    xe_assert_kaddr(base);
     xe_assert_cond(base + off, >=, base);
+    xe_kmem_validate_addr_range(base + off, size);
     size_t max_write_size = kmem_backend->ops->max_write_size;
     size_t done = 0;
     while (done < size) {
