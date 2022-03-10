@@ -48,7 +48,7 @@ void xe_os_dictionary_set_value_at_idx(uintptr_t dict, int idx, uintptr_t value)
     xe_kmem_write_uint64(dst, 0, value);
 }
 
-int xe_os_dictionary_set_value_of_key(uintptr_t dict, char* key, uintptr_t value) {
+int xe_os_dictionary_set_value_of_key(uintptr_t dict, const char* key, uintptr_t value) {
     int idx;
     int error = xe_os_dictionary_find_value(dict, key, NULL, &idx);
     if (error) {

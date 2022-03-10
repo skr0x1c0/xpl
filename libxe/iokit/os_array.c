@@ -17,7 +17,6 @@ uint xe_os_array_count(uintptr_t array) {
 }
 
 uintptr_t xe_os_array_value_at_index(uintptr_t array, int index) {
-    uintptr_t values = xe_kmem_read_uint64(array, TYPE_OS_ARRAY_MEM_ARRAY_OFFSET);
-    values = xe_ptrauth_strip(values);
-    return xe_kmem_read_uint64(values, index * sizeof(uintptr_t));
+    uintptr_t values = xe_kmem_read_ptr(array, TYPE_OS_ARRAY_MEM_ARRAY_OFFSET);
+    return xe_kmem_read_ptr(values, index * sizeof(uintptr_t));
 }

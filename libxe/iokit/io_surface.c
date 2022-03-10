@@ -20,6 +20,7 @@
 #include "iokit/os_dictionary.h"
 #include "util/assert.h"
 #include "util/ptrauth.h"
+#include "util/misc.h"
 
 #include "macos_params.h"
 
@@ -58,16 +59,14 @@ IOSurfaceRef xe_io_surface_create(uintptr_t* addr_out) {
 uintptr_t xe_io_surface_root(void) {
     uintptr_t io_registry_root = xe_io_registry_entry_root();
 
-    uintptr_t pe_device;
-    int error = xe_io_registry_entry_find_child_by_name(io_registry_root, "J316sAP", &pe_device);
-    xe_assert_err(error);
-
-    uintptr_t io_resources;
-    error = xe_io_registry_entry_find_child_by_type(pe_device, xe_slider_kernel_slide(VAR_IO_RESOURCES_VTABLE + 0x10), &io_resources);
-    xe_assert_err(error);
-
+    struct xe_io_registry_filter path[] = {
+        { "name", VALUE_TYPE_STRING, { .string = "device-tree" } },
+        { "IOBSD", VALUE_TYPE_STRING, { .string = "IOService" } },  // TODO: better constraint
+        { "IOClass", VALUE_TYPE_STRING, { .string = "IOSurfaceRoot" } }
+    };
+    
     uintptr_t io_surface_root;
-    error = xe_io_registry_entry_find_child_by_name(io_resources, "IOSurfaceRoot", &io_surface_root);
+    int error = xe_io_registry_search(io_registry_root, path, xe_array_size(path), &io_surface_root);
     xe_assert_err(error);
 
     return io_surface_root;
