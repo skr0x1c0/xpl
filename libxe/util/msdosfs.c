@@ -81,8 +81,8 @@ int xe_util_msdosfs_mount(const char* base_img_path, const char* label, xe_util_
     xe_assert(fd_mount >= 0);
     
     args.mask = ACCESSPERMS;
-    args.uid = 501;
-    args.gid = 20;
+    args.uid = getuid();
+    args.gid = getgid();
     args.magic = MSDOSFS_ARGSMAGIC;
     args.fspec = dev_path;
     args.flags = MSDOSFSMNT_LABEL | MNT_UNKNOWNPERMISSIONS;
