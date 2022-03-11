@@ -482,5 +482,6 @@ guard let localAddress = channel.localAddress else {
     fatalError("Unable to bind to specified \(host):\(port)")
 }
 
+print("SMB server started running on \(localAddress)")
 try channel.closeFuture.wait()
 print("SMB server stopped")
