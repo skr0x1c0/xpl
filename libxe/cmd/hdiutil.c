@@ -47,7 +47,7 @@ int xe_cmd_exec(const char* exec_path, const char* argv[], pid_t* pid, int* std_
 
 
 int xe_cmd_hdiutil_attach(const char* image, const char* opts[], size_t num_opts, char* dev_out, size_t dev_size) {
-    const char** args = alloca(sizeof(char*) * num_opts + 4);
+    const char* args[num_opts + 4];
     args[0] = "/usr/bin/hdiutil";
     args[1] = "attach";
     for (int i=0; i<num_opts; i++) {
