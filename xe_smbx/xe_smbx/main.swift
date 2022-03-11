@@ -453,8 +453,7 @@ final class MessageReader: ByteToMessageDecoder {
 // MARK: - Server setup
 let arguments = CommandLine.arguments
 let host = XE_SMBX_HOST
-let port = Int(XE_SMBX_PORT_START)
-let portCount = Int(XE_SMBX_PORT_COUNT);
+let port = Int(XE_SMBX_PORT)
 
 var limit = rlimit(rlim_cur: 0, rlim_max: 0)
 getrlimit(RLIMIT_NOFILE, &limit)
@@ -478,17 +477,10 @@ defer {
     try! group.syncShutdownGracefully()
 }
 
-let ports = port..<port+portCount;
-let channelFutures = ports.map { bootstrap.bind(host: host, port: $0) }
-let channels = try channelFutures.map { try $0.wait() }
-
-channels.forEach { channel in
-    guard let localAddress = channel.localAddress else {
-        fatalError("Unable to bind to specified \(host):\(port)")
-    }
-    print("SMB server started and listening on \(localAddress)")
+let channel = try bootstrap.bind(host: host, port: port).wait()
+guard let localAddress = channel.localAddress else {
+    fatalError("Unable to bind to specified \(host):\(port)")
 }
 
-_ = try channels.map { try $0.closeFuture.wait() }
-
+try channel.closeFuture.wait()
 print("SMB server stopped")

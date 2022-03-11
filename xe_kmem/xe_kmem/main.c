@@ -45,7 +45,7 @@ int main(int argc, const char* argv[]) {
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(XE_SMBX_PORT_START);
+    smb_addr.sin_port = htons(XE_SMBX_PORT);
     inet_aton(XE_SMBX_HOST, &smb_addr.sin_addr);
     
     xe_kmem_backend_t kmem_slow = kmem_boostrap_create(&smb_addr);
