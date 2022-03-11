@@ -19,6 +19,7 @@
 #include "test_zalloc.h"
 #include "test_kfunc.h"
 #include "test_vnode.h"
+#include "test_sudo.h"
 
 
 struct test_case {
@@ -33,7 +34,8 @@ const struct test_case test_cases[] = {
     { test_zalloc, "zalloc" },
     { test_pacda, "pacda" },
     { test_kfunc, "kfunc" },
-    { test_vnode, "vnode" }
+    { test_vnode, "vnode" },
+    { test_sudo, "sudo" }
 };
 
 
