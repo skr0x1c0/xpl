@@ -99,7 +99,8 @@ void kmem_read_session_build_iod(kmem_read_session_t session, const struct socka
     assert(offsetof(struct smbiod, iod_ref_cnt) + sizeof(uint32_t) < fake_iod_end);
     fake_iod.iod_ref_cnt = 1;
     
-    // mark area covered by socket address
+    // mark area covered by socket address so that assertion below will
+    // fail when this area is used by any required fields
     *((uintptr_t*)((char*)&fake_iod + fake_iod_start - 8)) = 0xabcdef1234567890;
     
     assert(offsetof(struct smbiod, iod_flags) < fake_iod_start);
