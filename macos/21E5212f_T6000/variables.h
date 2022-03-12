@@ -5,8 +5,8 @@
 //  Created by admin on 1/4/22.
 //
 
-#ifndef macos_21E5212f_variables_h
-#define macos_21E5212f_variables_h
+#ifndef macos_21E5212f_T6000_variables_h
+#define macos_21E5212f_T6000_variables_h
 
 #define VAR_MH_EXECUTE_HEADER_ADDR 0xfffffe0007004000
 #define VAR_KERNPROC_ADDR 0xfffffe000722f908
