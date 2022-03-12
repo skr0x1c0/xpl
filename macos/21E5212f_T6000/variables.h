@@ -52,4 +52,4 @@
 
 #define VAR_MAC_POLICY_LIST 0xfffffe0007bf1bc0
 
-#endif /* macos_21E5212f_variables_h */
+#endif /* macos_21E5212f_T6000_variables_h */

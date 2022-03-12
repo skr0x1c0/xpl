@@ -20,15 +20,15 @@
 
 
 void test_zalloc(void) {
-    uintptr_t zones[] = {
-        VAR_ZONE_IO_EVENT_SOURCE,
-        VAR_ZONE_IO_EVENT_SOURCE_COUNTER,
-        VAR_ZONE_IO_EVENT_SOURCE_RESERVED
+    uintptr_t kalloc_type_views[] = {
+        VAR_IO_EVENT_SOURCE_KTV,
+        VAR_IO_EVENT_SOURCE_COUNTER_KTV,
+        VAR_IO_EVENT_SOURCE_RESERVED_KTV,
     };
 
 
-    for (int i=0; i<xe_array_size(zones); i++) {
-        uintptr_t zone = xe_kmem_read_uint64(xe_slider_kernel_slide(zones[i]), 0);
+    for (int i=0; i<xe_array_size(kalloc_type_views); i++) {
+        uintptr_t zone = xe_kmem_read_uint64(xe_slider_kernel_slide(kalloc_type_views[i]), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET);
 
         xe_log_info("testing zalloc for zone %p", (void*)zone);
         xe_util_zalloc_t util = xe_util_zalloc_create(zone, 1);

