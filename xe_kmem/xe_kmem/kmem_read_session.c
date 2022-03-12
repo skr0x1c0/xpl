@@ -164,7 +164,7 @@ kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr)
     kmem_read_session_build_sock_addr(kmem_read_session, smb_addr);
     kmem_read_session_build_sock_addr_entry(kmem_read_session, smb_addr);
     kmem_read_session_build_iod(kmem_read_session, smb_addr);
-    kmem_allocator_nrnw_allocate(nrnw_allocator, 32, XE_PAGE_SIZE / 32 * 8);
+    kmem_allocator_nrnw_allocate(nrnw_allocator, 32, XE_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_session(kmem_read_session, smb_addr);
     
     kmem_allocator_nrnw_destroy(&nrnw_allocator);

