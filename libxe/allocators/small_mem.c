@@ -47,7 +47,6 @@ xe_allocator_small_mem_t xe_allocator_small_mem_allocate(size_t size, uintptr_t*
     uintptr_t buffer = xe_ptrauth_strip(xe_kmem_read_uint64(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET));
     uint buffer_size = xe_kmem_read_uint32(pipe, TYPE_PIPEBUF_MEM_SIZE_OFFSET);
     xe_assert(buffer_size >= size);
-    xe_log_debug("pipe allocator allocated entry size: %d", buffer_size);
     
     xe_allocator_small_mem_t allocator = (xe_allocator_small_mem_t)malloc(sizeof(struct xe_allocator_small_mem));
     allocator->fd0 = fds[0];

@@ -30,7 +30,7 @@ int xe_util_msdosfs_loadkext(void) {
 
 
 int xe_util_msdosfs_mount(const char* base_img_path, const char* label, xe_util_msdosfs_t* mount_out) {
-    char temp_dir[PATH_MAX] = "/tmp/exp_msdos.XXXXXXXX";
+    char temp_dir[] = "/tmp/exp_msdos.XXXXXXXX";
     if (!mkdtemp(temp_dir)) {
         return errno;
     }

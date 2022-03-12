@@ -39,7 +39,6 @@ xe_util_vnode_t xe_util_vnode_create(void) {
     xe_util_msdosfs_get_mountpoint(msdosfs_util, mount_point, sizeof(mount_point));
     
     char buffer[PATH_MAX];
-    
     snprintf(buffer, sizeof(buffer), "%s/data1", mount_point);
     int cctl_fd = open(buffer, O_RDONLY);
     xe_assert(cctl_fd >= 0);
