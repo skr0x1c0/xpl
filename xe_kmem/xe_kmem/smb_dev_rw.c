@@ -313,20 +313,30 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t* dev1_p,
         }
     });
     
+    _Bool dev1_ok = dev1 && dev1->active;
+    _Bool dev2_ok = dev2 && dev2->active;
+    
+    if (!dev1_ok && !dev2_ok) {
+        xe_log_error("failed to captue both kext.48 elements with smb_dev");
+        getpass("press enter to continue. THIS WILL CAUSE KERNEL PANIC\n");
+        abort();
+    } else if (!dev1_ok) {
+        xe_log_warn("failed to capture saddr_entry using smb_dev");
+    } else if (!dev2_ok) {
+        xe_log_warn("failed to capture saddr with smb_dev");
+    }
+    
     if (dev1 && dev2) {
         *dev1_p = dev1;
         *dev2_p = dev2;
     } else if (dev1) {
-        xe_log_warn("failed to capture saddr with smb_dev");
         *dev1_p = dev1;
         *dev2_p = NULL;
     } else if (dev2) {
-        xe_log_warn("failed to capture saddr_entry using smb_dev");
         *dev1_p = dev2;
         *dev2_p = NULL;
     } else {
-        xe_log_error("failed to capture both kext.48 with smb_dev");
-        getpass("[INFO] press enter to continue. THIS WILL CAUSE KERNEL PANIC");
+        // not reachable
         abort();
     }
     
