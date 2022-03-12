@@ -303,12 +303,12 @@ void xe_util_zalloc_disable_pcpu_cache(uintptr_t zone) {
         xe_log_warn("disabling pcpu cache for zone %p with z_recirc_cur: %d", (void*)zone, z_recirc_cur);
         // Make sure zone_caching never gets enabled by `compute_zone_working_set_size`
         xe_kmem_write_int8(xe_slider_kernel_slide(VAR_ZONE_CACHING_DISABLED), 0, -1);
+        // Zero out z_recirc
+        uint64_t z_recirc[2] = { 0, zone + TYPE_ZONE_MEM_Z_RECIRC_OFFSET };
+        xe_kmem_write_uint32(zone, TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET, 0);
+        xe_kmem_write(zone, TYPE_ZONE_MEM_Z_RECIRC_OFFSET, z_recirc, sizeof(z_recirc));
         // Zero out z_pcpu_cache for all CPUs
         xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET, xe_util_zalloc_z_pcpu_cache);
-        // Zero out z_recirc
-        xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_RECIRC_OFFSET, 0);
-        xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_RECIRC_OFFSET + 8, zone + TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET);
-        xe_kmem_write_uint32(zone, TYPE_ZONE_MEM_Z_RECIRC_CUR_OFFSET, 0);
     } else {
         xe_kmem_write_uint64(zone, TYPE_ZONE_MEM_Z_PCPU_CACHE_OFFSET, 0);
     }
