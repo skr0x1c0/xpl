@@ -18,7 +18,7 @@
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
 			dstPath = "";
-			dstSubfolderSpec = 16;
+			dstSubfolderSpec = 6;
 			files = (
 				5E06142327D11C27009352EF /* entitlements.plist in CopyFiles */,
 			);
@@ -270,6 +270,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -283,6 +284,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

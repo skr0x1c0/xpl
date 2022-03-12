@@ -276,6 +276,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -297,6 +298,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

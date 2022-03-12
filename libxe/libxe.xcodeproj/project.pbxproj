@@ -22,6 +22,10 @@
 		5E6AA8DA27D78A8200933AF6 /* tcc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E6AA8D827D78A8200933AF6 /* tcc.c */; };
 		5E6AA8DD27D78D6600933AF6 /* ipc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5E6AA8DB27D78D6600933AF6 /* ipc.h */; };
 		5E6AA8DE27D78D6600933AF6 /* ipc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E6AA8DC27D78D6600933AF6 /* ipc.c */; };
+		5EBACB3527DA7ACF00D1342E /* sudo.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EBACB3327DA7ACF00D1342E /* sudo.h */; };
+		5EBACB3627DA7ACF00D1342E /* sudo.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EBACB3427DA7ACF00D1342E /* sudo.c */; };
+		5EBACB3927DA860300D1342E /* vnode.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EBACB3727DA860300D1342E /* vnode.h */; };
+		5EBACB3A27DA860300D1342E /* vnode.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EBACB3827DA860300D1342E /* vnode.c */; };
 		8403C45B27BCDC65003FAFE8 /* large_mem.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403C45927BCDC65003FAFE8 /* large_mem.h */; };
 		8403C45C27BCDC65003FAFE8 /* large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45A27BCDC65003FAFE8 /* large_mem.c */; };
 		8403CCBD27BD875400A62155 /* kfunc.h in Headers */ = {isa = PBXBuildFile; fileRef = 8403CCBB27BD875400A62155 /* kfunc.h */; };
@@ -57,7 +61,7 @@
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = Resources/libxe/memory;
-			dstSubfolderSpec = 16;
+			dstSubfolderSpec = 6;
 			files = (
 				5E2DA73F27C8E8E800C8D041 /* kmem_msdosfs_img.dmg in CopyFiles */,
 			);
@@ -83,6 +87,10 @@
 		5E6AA8D827D78A8200933AF6 /* tcc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcc.c; sourceTree = "<group>"; };
 		5E6AA8DB27D78D6600933AF6 /* ipc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ipc.h; sourceTree = "<group>"; };
 		5E6AA8DC27D78D6600933AF6 /* ipc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ipc.c; sourceTree = "<group>"; };
+		5EBACB3327DA7ACF00D1342E /* sudo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sudo.h; sourceTree = "<group>"; };
+		5EBACB3427DA7ACF00D1342E /* sudo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sudo.c; sourceTree = "<group>"; };
+		5EBACB3727DA860300D1342E /* vnode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vnode.h; sourceTree = "<group>"; };
+		5EBACB3827DA860300D1342E /* vnode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vnode.c; sourceTree = "<group>"; };
 		8403C45927BCDC65003FAFE8 /* large_mem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = large_mem.h; sourceTree = "<group>"; };
 		8403C45A27BCDC65003FAFE8 /* large_mem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = large_mem.c; sourceTree = "<group>"; };
 		8403CCBB27BD875400A62155 /* kfunc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kfunc.h; sourceTree = "<group>"; };
@@ -257,6 +265,8 @@
 				5E06439627CC8303005EC0E4 /* zalloc.h */,
 				5E6AA8CE27D7882B00933AF6 /* sandbox.h */,
 				5E6AA8D127D7884000933AF6 /* tcc.h */,
+				5EBACB3327DA7ACF00D1342E /* sudo.h */,
+				5EBACB3727DA860300D1342E /* vnode.h */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -370,6 +380,8 @@
 				5E06439727CC8303005EC0E4 /* zalloc.c */,
 				5E6AA8D727D78A8200933AF6 /* sandbox.c */,
 				5E6AA8D827D78A8200933AF6 /* tcc.c */,
+				5EBACB3427DA7ACF00D1342E /* sudo.c */,
+				5EBACB3827DA860300D1342E /* vnode.c */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -405,7 +417,9 @@
 				8403CCBD27BD875400A62155 /* kfunc.h in Headers */,
 				5E495F0127D852E9003AFC98 /* pmap.h in Headers */,
 				5E13849827C8066A001164F1 /* cp.h in Headers */,
+				5EBACB3527DA7ACF00D1342E /* sudo.h in Headers */,
 				5E6AA8DD27D78D6600933AF6 /* ipc.h in Headers */,
+				5EBACB3927DA860300D1342E /* vnode.h in Headers */,
 				5E381E8827C987CB00AD803B /* thread.h in Headers */,
 				8403C45B27BCDC65003FAFE8 /* large_mem.h in Headers */,
 			);
@@ -478,6 +492,7 @@
 				8466F3AC276DCAFE004F651E /* pacda.c in Sources */,
 				5E6AA8DA27D78A8200933AF6 /* tcc.c in Sources */,
 				8466F3A1276DCAE2004F651E /* kmem_remote.c in Sources */,
+				5EBACB3627DA7ACF00D1342E /* sudo.c in Sources */,
 				8466F3AA276DCAFE004F651E /* binary.c in Sources */,
 				8466F39D276DCAD3004F651E /* iosurface.c in Sources */,
 				8466F3AB276DCAFE004F651E /* lck_rw.c in Sources */,
@@ -488,6 +503,7 @@
 				5E10053B27DA4CE100F8149A /* os_object.c in Sources */,
 				8466F39B276DCAC5004F651E /* os_string.c in Sources */,
 				8403CCBE27BD875400A62155 /* kfunc.c in Sources */,
+				5EBACB3A27DA860300D1342E /* vnode.c in Sources */,
 				8466F3AF276DCAFE004F651E /* dispatch.c in Sources */,
 				5E6AA8D927D78A8200933AF6 /* sandbox.c in Sources */,
 				8466F3A8276DCAED004F651E /* proc.c in Sources */,
@@ -627,6 +643,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/public/xe,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = xe;
@@ -645,6 +662,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/public/xe,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = xe;

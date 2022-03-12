@@ -257,6 +257,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -269,6 +270,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

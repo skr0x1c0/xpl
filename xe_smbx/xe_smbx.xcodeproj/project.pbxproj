@@ -280,6 +280,7 @@
 					$SOURCE_ROOT/../xe_kmem/xe_kmem/public,
 					$SOURCE_ROOT/../xe_kmem/xe_kmem/external,
 				);
+				INSTALL_PATH = /;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -301,6 +302,7 @@
 					$SOURCE_ROOT/../xe_kmem/xe_kmem/public,
 					$SOURCE_ROOT/../xe_kmem/xe_kmem/external,
 				);
+				INSTALL_PATH = /;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

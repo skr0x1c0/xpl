@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		5E10937E27C2516D00D96A73 /* test_kfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E10937D27C2516D00D96A73 /* test_kfunc.c */; };
 		5E10937F27C2516D00D96A73 /* test_kfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E10937D27C2516D00D96A73 /* test_kfunc.c */; };
+		5E21C65F27DAE679005E543F /* test_vnode.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E21C65E27DAE679005E543F /* test_vnode.c */; };
+		5E26C0C227DAFFF30011C5AD /* test_sudo.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E26C0C127DAFFF30011C5AD /* test_sudo.c */; };
+		5E26C0C327DAFFF30011C5AD /* test_sudo.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E26C0C127DAFFF30011C5AD /* test_sudo.c */; };
+		5E26C0C427DAFFFC0011C5AD /* test_vnode.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E21C65E27DAE679005E543F /* test_vnode.c */; };
 		8403C45F27BCE5F8003FAFE8 /* test_large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */; };
 		8403C46027BCE5F8003FAFE8 /* test_large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */; };
 		8415898927B1E62100729788 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8415898827B1E62100729788 /* main.c */; };
@@ -51,8 +55,8 @@
 		};
 		84184D03278E439F00334806 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1;
 			dstSubfolderSpec = 0;
 			files = (
 			);
@@ -90,6 +94,10 @@
 /* Begin PBXFileReference section */
 		5E10937C27C2516D00D96A73 /* test_kfunc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_kfunc.h; sourceTree = "<group>"; };
 		5E10937D27C2516D00D96A73 /* test_kfunc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_kfunc.c; sourceTree = "<group>"; };
+		5E21C65D27DAE679005E543F /* test_vnode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_vnode.h; sourceTree = "<group>"; };
+		5E21C65E27DAE679005E543F /* test_vnode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_vnode.c; sourceTree = "<group>"; };
+		5E26C0C027DAFFF30011C5AD /* test_sudo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_sudo.h; sourceTree = "<group>"; };
+		5E26C0C127DAFFF30011C5AD /* test_sudo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_sudo.c; sourceTree = "<group>"; };
 		8403C45D27BCE5F8003FAFE8 /* test_large_mem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_large_mem.h; sourceTree = "<group>"; };
 		8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_large_mem.c; sourceTree = "<group>"; };
 		8415898627B1E62100729788 /* test_kmem_gym */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_gym; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -215,6 +223,10 @@
 				8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */,
 				84263D1E27BE474500BFC4EA /* test_zalloc.h */,
 				84263D1F27BE474500BFC4EA /* test_zalloc.c */,
+				5E21C65D27DAE679005E543F /* test_vnode.h */,
+				5E21C65E27DAE679005E543F /* test_vnode.c */,
+				5E26C0C027DAFFF30011C5AD /* test_sudo.h */,
+				5E26C0C127DAFFF30011C5AD /* test_sudo.c */,
 				84184D1B278E49C300334806 /* registry.h */,
 				84184D1C278E49C300334806 /* registry.c */,
 			);
@@ -397,10 +409,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E21C65F27DAE679005E543F /* test_vnode.c in Sources */,
 				84184D1D278E49C300334806 /* registry.c in Sources */,
 				84184D31278E4CC800334806 /* test_pacda.c in Sources */,
 				84184D09278E439F00334806 /* main_gym.c in Sources */,
 				84184D1A278E489500334806 /* test_lck_rw.c in Sources */,
+				5E26C0C227DAFFF30011C5AD /* test_sudo.c in Sources */,
 				5E10937E27C2516D00D96A73 /* test_kfunc.c in Sources */,
 				84263D2027BE474500BFC4EA /* test_zalloc.c in Sources */,
 				8403C45F27BCE5F8003FAFE8 /* test_large_mem.c in Sources */,
@@ -417,7 +431,9 @@
 				84184D2B278E4A6E00334806 /* registry.c in Sources */,
 				5E10937F27C2516D00D96A73 /* test_kfunc.c in Sources */,
 				84263D2127BE474500BFC4EA /* test_zalloc.c in Sources */,
+				5E26C0C327DAFFF30011C5AD /* test_sudo.c in Sources */,
 				8403C46027BCE5F8003FAFE8 /* test_large_mem.c in Sources */,
+				5E26C0C427DAFFFC0011C5AD /* test_vnode.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -449,6 +465,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 12.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -464,6 +481,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 12.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -591,6 +609,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -606,6 +625,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -619,6 +639,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -631,6 +652,7 @@
 					$SOURCE_ROOT/../macos,
 					$SOURCE_ROOT/../libxe/public,
 				);
+				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -645,6 +667,7 @@
 					$SOURCE_ROOT/../macos,
 					/usr/local/include,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -660,6 +683,7 @@
 					$SOURCE_ROOT/../macos,
 					/usr/local/include,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -675,6 +699,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -690,6 +715,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

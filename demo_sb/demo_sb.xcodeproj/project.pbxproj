@@ -261,6 +261,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -274,6 +275,7 @@
 					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
+				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
