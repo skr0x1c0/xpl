@@ -24,6 +24,7 @@ typedef struct kmem_read_session* kmem_read_session_t;
 
 kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr);
 uintptr_t kmem_read_session_get_addr(kmem_read_session_t session);
+int kmem_read_session_read(kmem_read_session_t session, int smb_dev_fd, void* dst, uintptr_t src, size_t size);
 void kmem_read_session_destroy(kmem_read_session_t* session_p);
 
 #endif /* kmem_read_session_h */

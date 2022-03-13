@@ -18,6 +18,6 @@ int smb_dev_rw_write(smb_dev_rw_t rw, struct smb_dev* dev);
 int smb_dev_rw_get_dev_fd(smb_dev_rw_t rw);
 _Bool smb_dev_rw_is_active(smb_dev_rw_t dev);
 uintptr_t smb_dev_rw_get_session(smb_dev_rw_t dev);
-void smb_dev_rw_destroy(smb_dev_rw_t rw);
+void smb_dev_rw_destroy(smb_dev_rw_t* rw_p);
 
 #endif /* smb_dev_rw_h */

