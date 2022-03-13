@@ -29,10 +29,7 @@
 
 #define MAX_TRIES 25
 
-#define SMB_FD_COUNT 10
-#define SMB_NUM_CLEANUP_ATTEMPTS 16
-
-#define NUM_SAMPLES_FOR_PROBABILITY 50
+#define NUM_SAMPLES_FOR_PROBABILITY 100
 #define CUTOFF_PROBABILITY 0.95
 
 
@@ -170,7 +167,7 @@ int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t
         xe_assert_cond(first_segment_len, ==, snb_name_seglen);
         
         int bytes_to_skip = zone_size - offsetof(struct sockaddr_nb, snb_name);
-        xe_util_binary_hex_dump(&local_nb_name[bytes_to_skip], data_size);
+        xe_log_debug_hexdump(&local_nb_name[bytes_to_skip], data_size, "neighbor data: ");
         memcpy(data, &local_nb_name[bytes_to_skip], data_size);
         
         free(local_nb_name);
