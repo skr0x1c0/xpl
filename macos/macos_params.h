@@ -8,23 +8,18 @@
 #ifndef macos_params_h
 #define macos_params_h
 
-#define MACOS_21E230_T8101
+#define IDENT(x) x
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+#define PATH(version, variant, file) STR(IDENT(version)IDENT(_)IDENT(variant)IDENT(/)IDENT(file))
 
-#if defined(MACOS_21E5212f_T6000)
-#include "21E5212f_T6000/functions.h"
-#include "21E5212f_T6000/variables.h"
-#include "21E5212f_T6000/image.h"
-#include "21E5212f_T6000/types.h"
-#include "21E5212f_T6000/constants.h"
-#elif defined(MACOS_21E230_T8101)
-#include "21E230_T8101/functions.h"
-#include "21E230_T8101/variables.h"
-#include "21E230_T8101/image.h"
-#include "21E230_T8101/types.h"
-#include "21E230_T8101/constants.h"
-#else
-#error "Unsupported platform"
-#endif
+#define MACOS_VERSION v21E5212f
+#define MACOS_KERNEL_VARIANT T6000
 
+#include PATH(MACOS_VERSION, MACOS_KERNEL_VARIANT, functions.h)
+#include PATH(MACOS_VERSION, MACOS_KERNEL_VARIANT, variables.h)
+#include PATH(MACOS_VERSION, MACOS_KERNEL_VARIANT, image.h)
+#include PATH(MACOS_VERSION, MACOS_KERNEL_VARIANT, types.h)
+#include PATH(MACOS_VERSION, MACOS_KERNEL_VARIANT, constants.h)
 
 #endif /* macos_params_h */
