@@ -13,5 +13,6 @@
 #define FUNC_OS_REPORT_WITH_BACKTRACE 0xfffffe0007913d64
 #define FUNC_VN_DEFAULT_ERROR 0xfffffe0007505a8c
 #define FUNC_ML_NOFAULT_COPY_ADDR 0xfffffe00073e0cf8
+#define FUNC_ZALLOC_RO_MUTATE_ADDR 0xfffffe0007253e7c
 
 #endif /* macos_21E5212f_T6000_functions_h */

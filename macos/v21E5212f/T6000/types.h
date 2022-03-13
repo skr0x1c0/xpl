@@ -8,6 +8,6 @@
 #ifndef macos_21E5212f_T6000_types_h
 #define macos_21E5212f_T6000_types_h
 
-#include "../common/types.h"
+#include "../../common/kernel/types.h"
 
 #endif /* macos_21E5212f_T6000_types_h */

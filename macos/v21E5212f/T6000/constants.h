@@ -8,6 +8,6 @@
 #ifndef macos_21E5212f_T6000_constants_h
 #define macos_21E5212f_T6000_constants_h
 
-#include "../common/constants.h"
+#include "../../common/kernel/constants.h"
 
 #endif /* macos_21E5212f_T6000_constants_h */
