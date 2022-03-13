@@ -48,8 +48,13 @@ void test_vnode() {
     
     char buffer[sizeof(data)];
     bzero(buffer, sizeof(buffer));
-    xe_util_vnode_read(util, vnode, buffer, sizeof(buffer));
+    ssize_t read_bytes = read(file, buffer, sizeof(buffer));
+    xe_assert_cond(read_bytes, ==, sizeof(buffer));
+    res = memcmp(data, buffer, sizeof(data));
+    xe_assert(res == 0);
     
+    bzero(buffer, sizeof(buffer));
+    xe_util_vnode_read(util, vnode, buffer, sizeof(buffer));
     res = memcmp(data, buffer, sizeof(data));
     xe_assert(res == 0);
     

