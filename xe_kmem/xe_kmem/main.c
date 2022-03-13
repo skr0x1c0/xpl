@@ -17,7 +17,7 @@
 #include <xe/util/assert.h>
 #include <xe/util/msdosfs.h>
 #include <xe/memory/kmem.h>
-#include <xe/memory/kmem_msdosfs.h>
+#include <xe/memory/kmem_fast.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
 
@@ -48,18 +48,20 @@ int main(int argc, const char* argv[]) {
     smb_addr.sin_port = htons(XE_SMBX_PORT);
     inet_aton(XE_SMBX_HOST, &smb_addr.sin_addr);
     
-    xe_kmem_backend_t kmem_slow = kmem_boostrap_create(&smb_addr);
+    xe_kmem_backend_t kmem_slow = kmem_bootstrap_create(&smb_addr);
     xe_kmem_use_backend(kmem_slow);
-    uintptr_t meh = kmem_boostrap_get_mach_execute_header(kmem_slow);
+    uintptr_t meh = kmem_bootstrap_get_mach_execute_header(kmem_slow);
     xe_slider_kernel_init(meh);
     
-    xe_kmem_backend_t kmem_fast = xe_kmem_msdosfs_create(KMEM_MSDOSFS_DEFAULT_BASE_IMAGE);
+    xe_kmem_backend_t kmem_fast = xe_memory_kmem_fast_create(XE_KMEM_FAST_DEFAULT_IMAGE);
     xe_kmem_use_backend(kmem_fast);
+//    kmem_bootstrap_destroy(&kmem_slow);
     
     struct xe_kmem_remote_server_ctx ctx;
     ctx.mh_execute_header = meh;
     xe_kmem_remote_server_start(&ctx);
     
+    xe_memory_kmem_fast_destroy(&kmem_fast);
     return 0;
 }
 

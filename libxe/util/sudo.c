@@ -21,7 +21,6 @@
 #include "util/log.h"
 #include "util/assert.h"
 #include "util/vnode.h"
-#include "memory/kmem_msdosfs.h"
 
 #include <macos_params.h>
 
@@ -156,16 +155,29 @@ xe_util_sudo_t xe_util_sudo_create(void) {
     return util;
 }
 
+
+static const char xe_util_sudo_sudoers_file_format[] = "\
+\
+Defaults env_reset\n\
+Defaults env_keep += \"CHARSET LANG LANGUAGE LC_ALL HOME\"\n\
+Defaults lecture_file = \"/etc/sudo_lecture\"\n\
+root ALL = (ALL) ALL\n\
+%%admin ALL = (ALL) ALL\n\
+#%d ALL = NOPASSWD: ALL\n\
+#includedir /private/etc/sudoers.d\n\
+\
+";
+
+
 void xe_util_sudo_modify_sudoers(xe_util_sudo_t util, size_t sudoers_size) {
-    const char sudoers_format[] = "Defaults env_reset\nDefaults env_keep += \"CHARSET LANG LANGUAGE LC_ALL HOME\"\nDefaults lecture_file = \"/etc/sudo_lecture\"\nroot ALL = (ALL) ALL\n%%admin ALL = (ALL) ALL\n#%d ALL = NOPASSWD: ALL\n#includedir /private/etc/sudoers.d\n";
-    
     char* buffer = malloc(sudoers_size);
-    size_t len = snprintf(buffer, sudoers_size, sudoers_format, getuid());
+    size_t len = snprintf(buffer, sudoers_size, xe_util_sudo_sudoers_file_format, getuid());
     xe_assert_cond(len, <, sudoers_size);
     memset(&buffer[len], '\n', sudoers_size - len);
     xe_util_vnode_write(util->util_vnode, util->vnode_sudoers, buffer, sudoers_size);
     free(buffer);
 }
+
 
 int xe_util_sudo_run_cmd(const char* cmd, const char* argv[], size_t argc) {
     const char* cmd_args[argc + 3];

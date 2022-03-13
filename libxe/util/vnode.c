@@ -15,7 +15,7 @@
 #include "util/assert.h"
 #include "util/misc.h"
 #include "memory/kmem.h"
-#include "memory/kmem_msdosfs.h"
+#include "memory/kmem_fast.h"
 #include "allocator/small_mem.h"
 #include "slider/kernel.h"
 #include "xnu/proc.h"
@@ -33,7 +33,7 @@ struct xe_util_vnode {
 
 xe_util_vnode_t xe_util_vnode_create(void) {
     xe_util_msdosfs_t msdosfs_util;
-    int error = xe_util_msdosfs_mount(KMEM_MSDOSFS_DEFAULT_BASE_IMAGE, "mount", &msdosfs_util);
+    int error = xe_util_msdosfs_mount(XE_KMEM_FAST_DEFAULT_IMAGE, "mount", &msdosfs_util);
     xe_assert_err(error);
     
     char mount_point[PATH_MAX];
