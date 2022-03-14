@@ -14,6 +14,7 @@
 
 #include "memory/kmem.h"
 #include "slider/kernel.h"
+#include "xnu/proc.h"
 #include "iokit/io_surface.h"
 #include "iokit/io_registry_entry.h"
 #include "iokit/os_array.h"
@@ -21,38 +22,72 @@
 #include "util/assert.h"
 #include "util/ptrauth.h"
 #include "util/misc.h"
+#include "util/log.h"
 
 #include "macos_params.h"
 
 
-static _Atomic size_t xe_io_surface_keygen = 0;
+UInt32 xe_io_surface_get_index(IOSurfaceRef surface) {
+    uintptr_t surface_client = *((uintptr_t*)((uintptr_t)surface + 8));
+    uint32_t* index = (uint32_t*)(surface_client + 0x78);
+    return *index;
+}
+
+
+uintptr_t xe_io_surface_get_root_user_client(uintptr_t task) {
+    uintptr_t root = xe_io_surface_root();
+
+    uintptr_t registry = xe_io_registry_entry_registry_table(root);
+    uintptr_t children;
+    int error = xe_os_dictionary_find_value(registry, "IOServiceChildLinks", &children, NULL);
+    xe_assert_err(error);
+
+    for (int i=xe_os_array_count(children)-1; i>=0; i--) {
+        uintptr_t root_user_client = xe_os_array_value_at_index(children, i);
+        uintptr_t owner_task = xe_kmem_read_ptr(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_TASK_OFFSET);
+        if (task == owner_task) {
+            return root_user_client;
+        }
+    }
+    
+    xe_log_error("root user client for current task not found");
+    abort();
+}
+
+
+uintptr_t xe_io_surface_get_user_client(uintptr_t root_user_client, uint32_t index) {
+    uint num_clients = xe_kmem_read_uint32(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_COUNT_OFFSET);
+    xe_assert_cond(index, <, num_clients);
+    
+    uintptr_t client_array = xe_kmem_read_uint64(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_ARRAY_OFFSET);
+    
+    return xe_kmem_read_ptr(client_array, index * sizeof(uintptr_t));
+}
 
 
 IOSurfaceRef xe_io_surface_create(uintptr_t* addr_out) {
+    uintptr_t proc = xe_xnu_proc_current_proc();
+    uintptr_t task = xe_kmem_read_ptr(proc, TYPE_PROC_MEM_TASK_OFFSET);
+    
     CFMutableDictionaryRef props = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     int alloc_size_raw_value = 8;
     CFNumberRef alloc_size_cfnum = CFNumberCreate(NULL, kCFNumberSInt32Type, &alloc_size_raw_value);
     CFDictionarySetValue(props, CFSTR("IOSurfaceAllocSize"), alloc_size_cfnum);
     CFDictionarySetValue(props, CFSTR("IOSurfaceIsGlobal"), kCFBooleanTrue);
 
-    IOSurfaceRef surface = IOSurfaceCreate(props);
-    xe_assert(surface != NULL);
+    IOSurfaceRef surface_ref = IOSurfaceCreate(props);
+    xe_assert(surface_ref != NULL);
     CFRelease(alloc_size_cfnum);
     CFRelease(props);
     
-    char key[NAME_MAX];
-    snprintf(key, sizeof(key), "xe_io_surface_%d_%lu", getpid(), atomic_fetch_add(&xe_io_surface_keygen, 1));
-    CFStringRef cf_key = CFStringCreateWithCString(kCFAllocatorDefault, key, kCFStringEncodingUTF8);
-    xe_assert(cf_key != NULL);
-    IOSurfaceSetValue(surface, cf_key, kCFBooleanTrue);
-    CFRelease(cf_key);
+    uint32_t index = xe_io_surface_get_index(surface_ref);
+    uintptr_t root_user_client = xe_io_surface_get_root_user_client(task);
+    uintptr_t user_client = xe_io_surface_get_user_client(root_user_client, index);
+    uintptr_t surface = xe_kmem_read_ptr(user_client, TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET);
+    xe_assert_cond(xe_kmem_read_ptr(surface, TYPE_IOSURFACE_MEM_TASK_OFFSET), ==, task);
     
-    uintptr_t surface_addr;
-    int error = xe_io_surface_scan_all_clients_for_prop(key, &surface_addr);
-    xe_assert_err(error);
-    
-    *addr_out = surface_addr;
-    return surface;
+    *addr_out = surface;
+    return surface_ref;
 }
 
 
@@ -70,56 +105,4 @@ uintptr_t xe_io_surface_root(void) {
     xe_assert_err(error);
 
     return io_surface_root;
-}
-
-
-int xe_io_surface_scan_user_client_for_prop(uintptr_t root_user_client, char* key, uintptr_t* out) {
-    uint clients = xe_kmem_read_uint32(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_COUNT_OFFSET);
-    
-    uintptr_t client_array_p = xe_kmem_read_uint64(root_user_client, TYPE_IOSURFACE_ROOT_USER_CLIENT_MEM_CLIENT_ARRAY_OFFSET);
-    uintptr_t client_array[clients];
-    xe_kmem_read(client_array, client_array_p, 0, sizeof(client_array));
-    
-    for (uint i=0; i<clients; i++) {
-        uintptr_t user_client = client_array[i];
-        if (!user_client) {
-            continue;
-        }
-        
-        uintptr_t surface = xe_kmem_read_uint64(xe_ptrauth_strip(user_client), TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET);
-        uintptr_t props_dict = xe_kmem_read_uint64(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET);
-        
-        if (!props_dict) {
-            continue;
-        }
-        
-        uintptr_t temp;
-        int error = xe_os_dictionary_find_value(props_dict, key, &temp, NULL);
-        if (!error) {
-            *out = surface;
-            return 0;
-        }
-    }
-    
-    return ENOENT;
-}
-
-int xe_io_surface_scan_all_clients_for_prop(char* key, uintptr_t* out) {
-    uintptr_t root = xe_io_surface_root();
-
-    uintptr_t registry = xe_io_registry_entry_registry_table(root);
-    uintptr_t children;
-    int error = xe_os_dictionary_find_value(registry, "IOServiceChildLinks", &children, NULL);
-    xe_assert_err(error);
-
-    for (int i=xe_os_array_count(children)-1; i>=0; i--) {
-        uintptr_t target_surface = 0;
-        error = xe_io_surface_scan_user_client_for_prop(xe_os_array_value_at_index(children, i), key, &target_surface);
-        if (!error) {
-            *out = target_surface;
-            return 0;
-        }
-    }
-    
-    return ENOENT;
 }

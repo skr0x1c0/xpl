@@ -13,9 +13,9 @@
 #include <IOKit/IOKitLib.h>
 #include <IOSurface/IOSurface.h>
 
-IOSurfaceRef xe_io_surface_create(uintptr_t* addr_out);
 uintptr_t xe_io_surface_root(void);
-int xe_io_surface_scan_user_client_for_prop(uintptr_t root_user_client, char* key, uintptr_t* out);
-int xe_io_surface_scan_all_clients_for_prop(char* key, uintptr_t* out);
+uintptr_t xe_io_surface_get_root_user_client(uintptr_t task);
+uintptr_t xe_io_surface_get_user_client(uintptr_t root_user_client, uint32_t index);
+IOSurfaceRef xe_io_surface_create(uintptr_t* addr_out);
 
 #endif /* xe_io_surface_h */

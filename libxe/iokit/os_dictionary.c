@@ -15,6 +15,7 @@
 #include "memory/kmem.h"
 #include "util/ptrauth.h"
 #include "util/assert.h"
+#include "util/log.h"
 
 #include "macos_params.h"
 
@@ -65,6 +66,10 @@ int xe_os_dictionary_find_value(uintptr_t dict, const char* value, uintptr_t* pt
     char buffer[PATH_MAX];
     for (int i=0; i<count; i++) {
         uintptr_t key = xe_os_dictionary_key(dict_entry, i);
+        if (!key) {
+            xe_log_warn("null key in dictionary %p", (void*)dict_entry);
+            continue;
+        }
         
         size_t len = xe_os_string_read(buffer, key, sizeof(buffer));
         xe_assert(len <= sizeof(buffer));
