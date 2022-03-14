@@ -50,8 +50,7 @@ uintptr_t xe_io_surface_get_root_user_client(uintptr_t task) {
         }
     }
     
-    xe_log_error("root user client for current task not found");
-    abort();
+    return 0;
 }
 
 
@@ -82,6 +81,7 @@ IOSurfaceRef xe_io_surface_create(uintptr_t* addr_out) {
     
     uint32_t index = xe_io_surface_get_index(surface_ref);
     uintptr_t root_user_client = xe_io_surface_get_root_user_client(task);
+    xe_assert(root_user_client > 0);
     uintptr_t user_client = xe_io_surface_get_user_client(root_user_client, index);
     uintptr_t surface = xe_kmem_read_ptr(user_client, TYPE_IOSURFACE_CLIENT_MEM_IOSURFACE_OFFSET);
     xe_assert_cond(xe_kmem_read_ptr(surface, TYPE_IOSURFACE_MEM_TASK_OFFSET), ==, task);
