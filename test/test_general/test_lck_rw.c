@@ -15,6 +15,7 @@
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
 #include <xe/xnu/proc.h>
+#include <xe/xnu/thread.h>
 #include <xe/util/lck_rw.h>
 #include <xe/util/dispatch.h>
 #include <xe/util/ptrauth.h>
@@ -66,7 +67,13 @@ void test_lck_rw(void) {
     xe_util_lck_rw_t util_lock = xe_util_lck_rw_lock_exclusive(proc, lck_rw);
     printf("[INFO] lock done\n");
 
+    uintptr_t* waiting_thread = alloca(sizeof(uintptr_t));
+    dispatch_semaphore_t sem_create_start = dispatch_semaphore_create(0);
+    
     dispatch_async(xe_dispatch_queue(), ^() {
+        *waiting_thread = xe_xnu_thread_current_thread();
+        dispatch_semaphore_signal(sem_create_start);
+        
         IOSurfaceRef surface = iosurface_create();
         size_t array_len = (16384 * 3) / 8;
         printf("[INFO] begin set value\n");
@@ -74,7 +81,13 @@ void test_lck_rw(void) {
         printf("[INFO] done set value\n");
     });
 
-    sleep(3);
+    dispatch_semaphore_wait(sem_create_start, DISPATCH_TIME_FOREVER);
+    printf("waiting thread: %p\n", (void*)*waiting_thread);
+    
+    int error = xe_util_lck_rw_wait_for_contention(util_lock, *waiting_thread, 4000);
+    if (error) {
+        printf("lck_rw_wait failed, err: %d\n", error);
+    }
     
     printf("pid: %d\n", xe_kmem_read_uint32(proc, TYPE_PROC_MEM_P_PID_OFFSET));
     
@@ -84,9 +97,10 @@ void test_lck_rw(void) {
     uintptr_t cursor = xe_kmem_read_uint64(task, TYPE_TASK_MEM_THREADS_OFFSET);
     while (cursor != 0 && cursor != task + TYPE_TASK_MEM_THREADS_OFFSET) {
         uintptr_t kernel_stack = xe_kmem_read_uint64(cursor, TYPE_THREAD_MEM_KERNEL_STACK_OFFSET);
+        uintptr_t kstackptr = xe_kmem_read_uint64(cursor, TYPE_THREAD_MEM_MACHINE_OFFSET + TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET);
         int state = xe_kmem_read_int32(cursor, TYPE_THREAD_MEM_STATE_OFFSET);
 
-        printf("thread: %p\t kernel stack: %p\t state: %d\n", (void*)cursor, (void*)kernel_stack, state);
+        printf("thread: %p\t kernel stack: %p\t kstackptr: %p\t state: %d\n", (void*)cursor, (void*)kernel_stack, (void*)kstackptr, state);
         cursor = xe_kmem_read_uint64(cursor, TYPE_THREAD_MEM_TASK_THREADS_OFFSET);
     }
 

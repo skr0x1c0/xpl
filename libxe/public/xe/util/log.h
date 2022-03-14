@@ -10,6 +10,7 @@
 
 #include "binary.h"
 
+#define xe_log_verbose(...) printf("[V] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
 #define xe_log_debug(...) printf("[D] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
 #define xe_log_info(...) printf("[I] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
 #define xe_log_warn(...) printf("[W] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
