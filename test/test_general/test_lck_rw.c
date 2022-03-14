@@ -64,7 +64,7 @@ void test_lck_rw(void) {
     printf("[INFO] locking %p\n", (void*)lck_rw);
     
     printf("[INFO] lock start\n");
-    xe_util_lck_rw_t util_lock = xe_util_lck_rw_lock_exclusive(proc, lck_rw);
+    xe_util_lck_rw_t util_lock = xe_util_lck_rw_lock_exclusive(lck_rw);
     printf("[INFO] lock done\n");
 
     uintptr_t* waiting_thread = alloca(sizeof(uintptr_t));

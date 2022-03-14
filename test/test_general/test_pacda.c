@@ -29,7 +29,7 @@ void test_pacda(void) {
         uintptr_t addr;
         xe_allocator_large_mem_t allocator = xe_allocator_large_mem_allocate(16384 * 4, &addr);
         
-        int error = xe_util_pacda_sign(proc, addr, ctx, &signed_ptr);
+        int error = xe_util_pacda_sign(addr, ctx, &signed_ptr);
         xe_assert_err(error);
         
         xe_log_info("signed ptr: %p", (void*)signed_ptr);

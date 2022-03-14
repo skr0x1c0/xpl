@@ -165,7 +165,9 @@ void xe_util_lck_read_necp_uuid_id_mapping_state(xe_util_lck_rw_t util) {
 }
 
 
-xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t proc, uintptr_t lock) {
+xe_util_lck_rw_t xe_util_lck_rw_lock_exclusive(uintptr_t lock) {
+    uintptr_t proc = xe_xnu_proc_current_proc();
+    
     struct sockaddr_in6 src_addr;
     bzero(&src_addr, sizeof(src_addr));
     src_addr.sin6_addr = in6addr_loopback;

