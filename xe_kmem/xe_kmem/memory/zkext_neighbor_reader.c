@@ -19,6 +19,7 @@
 #include <xe/util/assert.h>
 #include <xe/util/dispatch.h>
 #include <xe/util/binary.h>
+#include <xe/util/misc.h>
 
 #include "zkext_neighbor_reader.h"
 #include "kmem_neighbor_reader.h"
@@ -126,7 +127,7 @@ double kmem_zkext_neighbor_reader_check(kmem_zkext_neighour_reader_t reader, uin
     return (double)num_hits / (double)NUM_SAMPLES_FOR_PROBABILITY;
 }
 
-int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, char* data, size_t data_size) {
+int kmem_zkext_neighbor_reader_read_internal(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, char* data, size_t data_size) {
     xe_assert_cond(data_size, <=, zone_size);
     xe_assert_cond(reader->state, ==, STATE_CREATED);
 //    xe_assert_cond(zone_size, >=, 64);
@@ -178,6 +179,26 @@ int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t
     
 done:
     return 0;
+}
+
+int kmem_zkext_neighbor_reader_read(kmem_zkext_neighour_reader_t reader, uint8_t zone_size, char* data, size_t data_size) {
+    dispatch_queue_t queue = dispatch_queue_create("reader", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INTERACTIVE, DISPATCH_QUEUE_PRIORITY_HIGH));
+    
+    volatile _Bool* stop = alloca(sizeof(_Bool));
+    *stop = FALSE;
+    int* res = alloca(sizeof(int));
+    dispatch_apply(xe_cpu_count(), queue, ^(size_t index) {
+        if (index == 0) {
+            xe_sleep_ms(10);
+            *res = kmem_zkext_neighbor_reader_read_internal(reader, zone_size, data, data_size);
+            *stop = TRUE;
+        } else {
+            while (!*stop) {}
+        }
+    });
+    
+    dispatch_release(queue);
+    return *res;
 }
 
 void kmem_zkext_neighbor_reader_reset(kmem_zkext_neighour_reader_t reader) {
