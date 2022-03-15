@@ -13,7 +13,7 @@
 #include <xe/util/assert.h>
 #include <xe/allocator/small_mem.h>
 
-#include <macos_params.h>
+#include <macos/macos.h>
 
 
 void test_kfunc(void) {

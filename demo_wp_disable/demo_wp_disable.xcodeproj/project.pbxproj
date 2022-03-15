@@ -254,7 +254,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe/public,
 				);
 				INSTALL_PATH = /;
@@ -267,7 +267,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe/public,
 				);
 				INSTALL_PATH = /;

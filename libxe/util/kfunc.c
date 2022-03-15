@@ -29,8 +29,8 @@
 #include "util/misc.h"
 #include "util/asm.h"
 
-#include "macos_params.h"
-#include "macos_arm64.h"
+#include <macos/macos.h>
+#include <macos/xnu/osfmk/mach/arm/thread_status.h>
 
 #if defined(KERNEL_T6000)
 #define ARM64_THREAD_ERET_ENTRY_OFFSET 0x14c

@@ -303,7 +303,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/public/xe_dev,
 				);
 				PRODUCT_NAME = xe_dev;
@@ -319,7 +319,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/public/xe_dev,
 				);
 				PRODUCT_NAME = xe_dev;

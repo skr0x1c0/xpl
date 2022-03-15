@@ -11,7 +11,7 @@
 #include "util/ptrauth.h"
 #include "util/assert.h"
 
-#include "macos_params.h"
+#include <macos/macos.h>
 
 
 size_t xe_os_string_length(uintptr_t string) {

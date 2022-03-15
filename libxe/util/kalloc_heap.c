@@ -10,7 +10,7 @@
 #include "util/kalloc_heap.h"
 #include "memory/kmem.h"
 
-#include "macos_params.h"
+#include <macos/macos.h>
 
 
 uintptr_t xe_util_kh_find_zone_for_size(uintptr_t heap, size_t size) {

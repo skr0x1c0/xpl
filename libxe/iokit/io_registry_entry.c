@@ -19,7 +19,7 @@
 #include "util/misc.h"
 #include "util/assert.h"
 
-#include "macos_params.h"
+#include <macos/macos.h>
 
 
 uintptr_t xe_io_registry_entry_registry_table(uintptr_t entry) {
@@ -40,27 +40,6 @@ size_t xe_io_registry_entry_location(uintptr_t entry, char* location, size_t loc
         return 0;
     }
     return xe_os_string_read(location, prop, location_length);
-}
-
-int xe_io_registry_entry_find_child_by_type(uintptr_t entry, uintptr_t type, uintptr_t* out) {    
-    uintptr_t registry_table = xe_io_registry_entry_registry_table(entry);
-    uintptr_t child_array;
-    int error = xe_os_dictionary_find_value(registry_table, "IOServiceChildLinks", &child_array, NULL);
-    if (error) {
-        return error;
-    }
-    
-    uint count = xe_os_array_count(child_array);
-    for (int i=0; i<count; i++) {
-        uintptr_t child = xe_os_array_value_at_index(child_array, i);
-        uintptr_t class = xe_ptrauth_strip(xe_kmem_read_uint64(child, 0));
-        if (class == type) {
-            *out = child;
-            return 0;
-        }
-    }
-    
-    return ENOENT;
 }
 
 int xe_io_registry_filter_dict(uintptr_t dict, const struct xe_io_registry_filter* filter) {

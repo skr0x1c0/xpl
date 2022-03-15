@@ -8,7 +8,7 @@
 #include <string.h>
 #include <mach/arm/vm_types.h>
 
-#include <macos_params.h>
+#include <macos/macos.h>
 
 #include "xnu/pmap.h"
 #include "memory/kmem.h"

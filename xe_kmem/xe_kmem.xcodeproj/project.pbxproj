@@ -383,7 +383,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../xe_smbx/xe_smbx/public,
 					$SOURCE_ROOT/../libxe/public,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 				);
 				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
@@ -399,7 +399,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../xe_smbx/xe_smbx/public,
 					$SOURCE_ROOT/../libxe/public,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 				);
 				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;

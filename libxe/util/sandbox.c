@@ -15,7 +15,7 @@
 #include "util/assert.h"
 #include "allocator/small_mem.h"
 
-#include <macos_params.h>
+#include <macos/macos.h>
 
 #include "util/sandbox.h"
 

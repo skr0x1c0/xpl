@@ -9,7 +9,7 @@
 #include "memory/kmem.h"
 #include "util/assert.h"
 
-#include <macos_params.h>
+#include <macos/macos.h>
 
 
 uintptr_t xe_os_object_get_meta_class(uintptr_t instance) {
@@ -44,12 +44,13 @@ uintptr_t xe_os_object_get_meta_class(uintptr_t instance) {
 
 _Bool xe_os_object_is_instance_of(uintptr_t instance, uintptr_t meta_class) {
     uintptr_t g_meta_class = xe_os_object_get_meta_class(instance);
-    do {
+    xe_assert_kaddr(g_meta_class);
+    while (g_meta_class != 0) {
         if (g_meta_class == meta_class) {
             return 1;
         } else {
             g_meta_class = xe_kmem_read_ptr(g_meta_class, TYPE_OS_META_CLASS_MEM_SUPER_CLASS_LINK_OFFSET);
         }
-    } while (g_meta_class != 0);
+    }
     return 0;
 }

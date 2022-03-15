@@ -12,7 +12,7 @@
 #include <IOSurface/IOSurface.h>
 
 #include "allocator/large_mem.h"
-#include "macos_params.h"
+#include <macos/macos.h>
 #include "memory/kmem.h"
 #include "iokit/io_surface.h"
 #include "util/assert.h"

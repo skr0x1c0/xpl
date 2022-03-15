@@ -22,7 +22,7 @@
 #include <xe/util/assert.h>
 
 #include "test_lck_rw.h"
-#include "macos_params.h"
+#include <macos/macos.h>
 
 
 IOSurfaceRef iosurface_create(void) {

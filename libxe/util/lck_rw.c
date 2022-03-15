@@ -25,7 +25,7 @@
 #include "util/log.h"
 #include "util/asm.h"
 
-#include "macos_params.h"
+#include <macos/macos.h>
 
 
 #define MAX_NECP_UUID_MAPPING_ID 128

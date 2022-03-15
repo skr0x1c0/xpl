@@ -15,7 +15,6 @@
 #include "util/ptrauth.h"
 #include "util/lck_rw.h"
 #include "util/dispatch.h"
-#include "macos_params.h"
 #include "memory/kmem.h"
 #include "slider/kernel.h"
 #include "util/assert.h"
@@ -25,7 +24,7 @@
 #include "iokit/os_dictionary.h"
 #include "iokit/io_surface.h"
 
-#include "macos_params.h"
+#include <macos/macos.h>
 
 #define LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET 0x24c
 

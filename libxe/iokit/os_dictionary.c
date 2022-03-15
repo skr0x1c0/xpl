@@ -17,7 +17,7 @@
 #include "util/assert.h"
 #include "util/log.h"
 
-#include "macos_params.h"
+#include <macos/macos.h>
 
 
 uint xe_os_dictionary_count(uintptr_t dict) {
