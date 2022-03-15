@@ -14,11 +14,12 @@
 #include <xe/util/misc.h>
 #include <xe/util/assert.h>
 
+#include <xe_smbx/smbx_conf.h>
+
 #include "../external/smbfs/smb_dev.h"
 #include "../external/smbfs/netbios.h"
 #include "../external/smbfs/smb_dev_2.h"
 #include "../external/smbfs/smb2_mc.h"
-#include "../public/xe_kmem/smbx_conf.h"
 
 #include "client.h"
 
@@ -229,7 +230,7 @@ int smb_client_ioc_read_saved_nb_ssn_request(int fd_dev, uint32_t key, char* ser
     bzero(rpbuf, rpbuf_size);
     
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
-    req.ioc_cmd = XE_KMEM_SMB_CMD_GET_SAVED_NB_SSN_REQUEST;
+    req.ioc_cmd = XE_SMBX_SMB_CMD_GET_SAVED_NB_SSN_REQUEST;
     req.ioc_twords = &key;
     req.ioc_twc = sizeof(key) / 2;
     req.ioc_rpbuf = (char*)rpbuf;
@@ -269,7 +270,7 @@ int smb_client_ioc_read_last_nb_ssn_request(int fd_dev, char* dst, uint32_t dst_
     bzero(&req, sizeof(req));
     
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
-    req.ioc_cmd = XE_KMEM_SMB_CMD_GET_LAST_NB_SSN_REQUEST;
+    req.ioc_cmd = XE_SMBX_SMB_CMD_GET_LAST_NB_SSN_REQUEST;
     req.ioc_rpbuf = dst;
     req.ioc_rpbufsz = dst_size;
     

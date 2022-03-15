@@ -21,7 +21,8 @@
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
 
-#include "public/xe_kmem/smbx_conf.h"
+#include <xe_smbx/smbx_conf.h>
+
 #include "smb/client.h"
 #include "smb/params.h"
 

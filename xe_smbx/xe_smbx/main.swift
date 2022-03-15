@@ -81,9 +81,9 @@ extension RequestHandler {
             status = handleCmdTreeDisconnect(request: &request, response: &response)
         case SMB_COM_LOGOFF_ANDX:
             status = handleCmdLogoff(request: &request, response: &response)
-        case XE_KMEM_SMB_CMD_GET_LAST_NB_SSN_REQUEST:
+        case XE_SMBX_SMB_CMD_GET_LAST_NB_SSN_REQUEST:
             status = handleCustomCmdReadLastNbSsnRequest(request: &request, response: &response)
-        case XE_KMEM_SMB_CMD_GET_SAVED_NB_SSN_REQUEST:
+        case XE_SMBX_SMB_CMD_GET_SAVED_NB_SSN_REQUEST:
             status = handleCustomCmdReadSavedRequest(request: &request, response: &response)
         default:
             print("[WARN] unsupported command", cmd)
@@ -359,27 +359,27 @@ extension RequestHandler {
         let ssnRequest = NetbiosSsnRequest(serverNbName: serverNbName, localNbName: localNbName)
         lastNetbiosSsnRequest = ssnRequest
         
-        // Check and process xe_kmem_nb_laddr_cmd if it is embedded in laddr
-        if localNbName.count < MemoryLayout<xe_kmem_nb_laddr_cmd>.size + 1 {
+        // Check and process xe_smbx_nb_laddr_cmd if it is embedded in laddr
+        if localNbName.count < MemoryLayout<xe_smbx_nb_laddr_cmd>.size + 1 {
             return UInt8(NB_SSN_POSRESP)
         }
         
-        var laddrCmd = xe_kmem_nb_laddr_cmd()
+        var laddrCmd = xe_smbx_nb_laddr_cmd()
         _ = localNbName.withUnsafeBufferPointer {
             memcpy(&laddrCmd, $0.baseAddress! + 1 /* skip first byte containing length of segment */, MemoryLayout.size(ofValue: laddrCmd))
         }
         
-        if laddrCmd.magic != XE_KMEM_NB_LADDR_CMD_MAGIC {
+        if laddrCmd.magic != XE_SMBX_NB_LADDR_CMD_MAGIC {
             return UInt8(NB_SSN_POSRESP)
         }
         
-        if laddrCmd.flags & UInt16(XE_KMEM_NB_LADDR_CMD_FLAG_SAVE) != 0 {
+        if laddrCmd.flags & UInt16(XE_SMBX_NB_LADDR_CMD_FLAG_SAVE) != 0 {
             dispatchQueueStore.sync {
                 savedNetbiosSsnRequestStore[UInt32(laddrCmd.key)] = ssnRequest
             }
         }
         
-        if laddrCmd.flags & UInt16(XE_KMEM_NB_LADDR_CMD_FLAG_FAIL) != 0 {
+        if laddrCmd.flags & UInt16(XE_SMBX_NB_LADDR_CMD_FLAG_FAIL) != 0 {
             return UInt8(NB_SSN_NEGRESP)
         } else {
             return UInt8(NB_SSN_POSRESP)

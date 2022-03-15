@@ -76,7 +76,6 @@
 		84EB7CEC277AEFE10083D06C /* zkext_alloc_small.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zkext_alloc_small.c; sourceTree = "<group>"; };
 		84EE1911278350B600B6D700 /* kmem_oob_reader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_oob_reader.h; sourceTree = "<group>"; };
 		84EE1912278350B600B6D700 /* kmem_oob_reader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_oob_reader.c; sourceTree = "<group>"; };
-		84EE193427835E7500B6D700 /* smbx_conf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smbx_conf.h; sourceTree = "<group>"; };
 		84F269BF2771C2AD008C285E /* allocator_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_rw.h; sourceTree = "<group>"; };
 		84F269C02771C2AD008C285E /* allocator_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_rw.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -122,7 +121,6 @@
 		8466F427276DCE9E004F651E /* xe_kmem */ = {
 			isa = PBXGroup;
 			children = (
-				84EE193227835E2F00B6D700 /* public */,
 				84591398276F847300F15CBA /* external */,
 				84E77E9B2771A4390085EDC2 /* memory */,
 				84E77E992771A26F0085EDC2 /* smb */,
@@ -185,22 +183,6 @@
 				84EE1912278350B600B6D700 /* kmem_oob_reader.c */,
 			);
 			path = memory;
-			sourceTree = "<group>";
-		};
-		84EE193227835E2F00B6D700 /* public */ = {
-			isa = PBXGroup;
-			children = (
-				84EE193327835E6900B6D700 /* xe_kmem */,
-			);
-			path = public;
-			sourceTree = "<group>";
-		};
-		84EE193327835E6900B6D700 /* xe_kmem */ = {
-			isa = PBXGroup;
-			children = (
-				84EE193427835E7500B6D700 /* smbx_conf.h */,
-			);
-			path = xe_kmem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -399,7 +381,7 @@
 				BUILD_VARIANTS = normal;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
+					$SOURCE_ROOT/../xe_smbx/xe_smbx/public,
 					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
@@ -415,7 +397,7 @@
 				BUILD_VARIANTS = normal;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
+					$SOURCE_ROOT/../xe_smbx/xe_smbx/public,
 					$SOURCE_ROOT/../libxe/public,
 					$SOURCE_ROOT/../macos,
 				);
