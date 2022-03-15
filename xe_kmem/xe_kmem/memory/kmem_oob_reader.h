@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 
-struct kmem_neighbor_reader_args {
+struct kmem_oob_reader_args {
     //  SMB server IPV4 socket address
     struct sockaddr_in smb_addr;
     
@@ -50,6 +50,6 @@ struct kmem_neighbor_reader_args {
 };
 
 
-void kmem_neighbor_reader_read(const struct kmem_neighbor_reader_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
+void kmem_oob_reader_read(const struct kmem_oob_reader_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
 
 #endif /* zkext_neighbor_reader_xs_h */

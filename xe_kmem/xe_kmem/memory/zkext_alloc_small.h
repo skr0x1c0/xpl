@@ -13,7 +13,7 @@
 #include "../smb/nic_allocator.h"
 
 #include "allocator_prpw.h"
-#include "kmem_neighbor_reader.h"
+#include "kmem_oob_reader.h"
 
 
 /*

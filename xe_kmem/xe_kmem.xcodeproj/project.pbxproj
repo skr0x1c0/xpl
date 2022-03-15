@@ -23,7 +23,7 @@
 		84E77EA12771B1630085EDC2 /* zkext_free.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E77EA02771B1630085EDC2 /* zkext_free.c */; };
 		84E8BC4F27722B70004E9C29 /* allocator_nic_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 84E8BC4E27722B70004E9C29 /* allocator_nic_parallel.c */; };
 		84EB7CED277AEFE10083D06C /* zkext_alloc_small.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EB7CEC277AEFE10083D06C /* zkext_alloc_small.c */; };
-		84EE1913278350B600B6D700 /* kmem_neighbor_reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EE1912278350B600B6D700 /* kmem_neighbor_reader.c */; };
+		84EE1913278350B600B6D700 /* kmem_oob_reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 84EE1912278350B600B6D700 /* kmem_oob_reader.c */; };
 		84F269C12771C2AD008C285E /* allocator_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84F269C02771C2AD008C285E /* allocator_rw.c */; };
 /* End PBXBuildFile section */
 
@@ -74,8 +74,8 @@
 		84E8D9A727818EBB00DC9F69 /* params.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = params.h; sourceTree = "<group>"; };
 		84EB7CEB277AEFE10083D06C /* zkext_alloc_small.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = zkext_alloc_small.h; sourceTree = "<group>"; };
 		84EB7CEC277AEFE10083D06C /* zkext_alloc_small.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zkext_alloc_small.c; sourceTree = "<group>"; };
-		84EE1911278350B600B6D700 /* kmem_neighbor_reader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_neighbor_reader.h; sourceTree = "<group>"; };
-		84EE1912278350B600B6D700 /* kmem_neighbor_reader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_neighbor_reader.c; sourceTree = "<group>"; };
+		84EE1911278350B600B6D700 /* kmem_oob_reader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_oob_reader.h; sourceTree = "<group>"; };
+		84EE1912278350B600B6D700 /* kmem_oob_reader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_oob_reader.c; sourceTree = "<group>"; };
 		84EE193427835E7500B6D700 /* smbx_conf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smbx_conf.h; sourceTree = "<group>"; };
 		84F269BF2771C2AD008C285E /* allocator_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = allocator_rw.h; sourceTree = "<group>"; };
 		84F269C02771C2AD008C285E /* allocator_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_rw.c; sourceTree = "<group>"; };
@@ -181,8 +181,8 @@
 				84E77E9D2771A4790085EDC2 /* zkext_neighbor_reader.c */,
 				84EB7CEB277AEFE10083D06C /* zkext_alloc_small.h */,
 				84EB7CEC277AEFE10083D06C /* zkext_alloc_small.c */,
-				84EE1911278350B600B6D700 /* kmem_neighbor_reader.h */,
-				84EE1912278350B600B6D700 /* kmem_neighbor_reader.c */,
+				84EE1911278350B600B6D700 /* kmem_oob_reader.h */,
+				84EE1912278350B600B6D700 /* kmem_oob_reader.c */,
 			);
 			path = memory;
 			sourceTree = "<group>";
@@ -269,7 +269,7 @@
 				5E08AE4B27C95A0100907499 /* kmem_bootstrap.c in Sources */,
 				8428F027277E39220087ED81 /* allocator_prpw.c in Sources */,
 				84E8BC4F27722B70004E9C29 /* allocator_nic_parallel.c in Sources */,
-				84EE1913278350B600B6D700 /* kmem_neighbor_reader.c in Sources */,
+				84EE1913278350B600B6D700 /* kmem_oob_reader.c in Sources */,
 				84E77E9E2771A4790085EDC2 /* zkext_neighbor_reader.c in Sources */,
 				845913A5276F859800F15CBA /* client.c in Sources */,
 				845913A4276F857E00F15CBA /* ssn_allocator.c in Sources */,
