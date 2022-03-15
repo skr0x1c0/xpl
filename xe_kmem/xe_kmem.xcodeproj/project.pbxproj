@@ -10,7 +10,6 @@
 		5E08AE4B27C95A0100907499 /* kmem_bootstrap.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E08AE4A27C95A0100907499 /* kmem_bootstrap.c */; };
 		5E08AE4E27C9645300907499 /* kmem_write_session.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E08AE4D27C9645300907499 /* kmem_write_session.c */; };
 		84079CA72770548400C4B188 /* libproc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 84079CA62770547F00C4B188 /* libproc.tbd */; platformFilter = maccatalyst; };
-		84079CAA2770687400C4B188 /* saddr_allocator.c in Sources */ = {isa = PBXBuildFile; fileRef = 84079CA92770687400C4B188 /* saddr_allocator.c */; };
 		8408843C27C4B07900EEAD12 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8408843B27C4B07900EEAD12 /* main.c */; };
 		840A8E7D27C5299300B0C5ED /* kmem_read_session.c in Sources */ = {isa = PBXBuildFile; fileRef = 840A8E7C27C5299300B0C5ED /* kmem_read_session.c */; };
 		840A8E8027C530E800B0C5ED /* smb_dev_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 840A8E7F27C530E800B0C5ED /* smb_dev_rw.c */; };
@@ -46,8 +45,6 @@
 		5E08AE4C27C9645300907499 /* kmem_write_session.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_write_session.h; sourceTree = "<group>"; };
 		5E08AE4D27C9645300907499 /* kmem_write_session.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_write_session.c; sourceTree = "<group>"; };
 		84079CA62770547F00C4B188 /* libproc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libproc.tbd; path = usr/lib/libproc.tbd; sourceTree = SDKROOT; };
-		84079CA82770687400C4B188 /* saddr_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saddr_allocator.h; sourceTree = "<group>"; };
-		84079CA92770687400C4B188 /* saddr_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saddr_allocator.c; sourceTree = "<group>"; };
 		8408843B27C4B07900EEAD12 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		840A8E7B27C5299300B0C5ED /* kmem_read_session.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kmem_read_session.h; sourceTree = "<group>"; };
 		840A8E7C27C5299300B0C5ED /* kmem_read_session.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kmem_read_session.c; sourceTree = "<group>"; };
@@ -128,7 +125,6 @@
 				84EE193227835E2F00B6D700 /* public */,
 				84591398276F847300F15CBA /* external */,
 				84E77E9B2771A4390085EDC2 /* memory */,
-				84E77E9A2771A2EB0085EDC2 /* xnu */,
 				84E77E992771A26F0085EDC2 /* smb */,
 				8408843B27C4B07900EEAD12 /* main.c */,
 				840A8E7B27C5299300B0C5ED /* kmem_read_session.h */,
@@ -166,15 +162,6 @@
 				84E8D9A727818EBB00DC9F69 /* params.h */,
 			);
 			path = smb;
-			sourceTree = "<group>";
-		};
-		84E77E9A2771A2EB0085EDC2 /* xnu */ = {
-			isa = PBXGroup;
-			children = (
-				84079CA92770687400C4B188 /* saddr_allocator.c */,
-				84079CA82770687400C4B188 /* saddr_allocator.h */,
-			);
-			path = xnu;
 			sourceTree = "<group>";
 		};
 		84E77E9B2771A4390085EDC2 /* memory */ = {
@@ -287,7 +274,6 @@
 				845913A5276F859800F15CBA /* client.c in Sources */,
 				845913A4276F857E00F15CBA /* ssn_allocator.c in Sources */,
 				5E08AE4E27C9645300907499 /* kmem_write_session.c in Sources */,
-				84079CAA2770687400C4B188 /* saddr_allocator.c in Sources */,
 				8408843C27C4B07900EEAD12 /* main.c in Sources */,
 				84E77EA12771B1630085EDC2 /* zkext_free.c in Sources */,
 			);

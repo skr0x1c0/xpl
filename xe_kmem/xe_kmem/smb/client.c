@@ -170,6 +170,16 @@ int smb_client_ioc_auth_info(int fd_dev, char* gss_cpn, uint32_t gss_cpn_size, c
     struct smbioc_auth_info req;
     bzero(&req, sizeof(req));
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
+    
+    /// Workaround for handling bug in nsmb_dev_ioctl (case SMBIOC_AUTH_INFO)
+    if (gss_cpn_size == 0) {
+        gss_cpn_size = UINT32_MAX;
+    }
+    
+    /// Workaround for handling bug in nsmb_dev_ioctl (case SMBIOC_AUTH_INFO)
+    if (gss_spn_size == 0) {
+        gss_spn_size = UINT32_MAX;
+    }
 
     req.ioc_client_size = gss_cpn_size;
     req.ioc_client_name = (user_addr_t)gss_cpn;

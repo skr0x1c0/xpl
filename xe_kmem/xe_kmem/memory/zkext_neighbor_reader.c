@@ -26,7 +26,6 @@
 #include "allocator_nrnw.h"
 #include "macos_params.h"
 
-#include "../xnu/saddr_allocator.h"
 #include "../smb/client.h"
 
 #define MAX_TRIES 25
@@ -103,7 +102,7 @@ double kmem_zkext_neighbor_reader_check(const struct sockaddr_in* smb_addr, uint
         for (int i=0; i<num_overwritten; i++) {
             struct sockaddr_in in;
             memcpy(&in, &local_nb_name[bytes_to_skip + i * 64], sizeof(struct sockaddr_in));
-            if (in.sin_len != 64 || in.sin_family != AF_INET) {
+            if (in.sin_len != 64 || in.sin_family != ALLOCATOR_NRNW_SOCK_ADDR_FAMILY || in.sin_port != ALLOCATOR_NRNW_SOCK_ADDR_PORT) {
                 is_hit = FALSE;
                 break;
             }
