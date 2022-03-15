@@ -16,10 +16,10 @@
 
 #include <xe_smbx/smbx_conf.h>
 
-#include "../external/smbfs/smb_dev.h"
-#include "../external/smbfs/netbios.h"
-#include "../external/smbfs/smb_dev_2.h"
-#include "../external/smbfs/smb2_mc.h"
+#include <smbfs/smb_dev.h>
+#include <smbfs/netbios.h>
+#include <smbfs/smb_dev_2.h>
+#include <smbfs/smb2_mc.h>
 
 #include "client.h"
 

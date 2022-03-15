@@ -3,9 +3,9 @@
 
 #include <arpa/inet.h>
 
-#include "../external/smbfs/smb_dev.h"
-#include "../external/smbfs/smb_dev_2.h"
-#include "../external/smbfs/smb2_mc.h"
+#include <smbfs/smb_dev.h>
+#include <smbfs/smb_dev_2.h>
+#include <smbfs/smb2_mc.h>
 
 typedef int smb_nic_allocator;
 

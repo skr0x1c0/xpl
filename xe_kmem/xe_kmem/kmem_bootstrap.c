@@ -12,7 +12,7 @@
 #include <xe/util/assert.h>
 #include <xe/util/log.h>
 #include <xe/util/ptrauth.h>
-#include <macos_params.h>
+#include <macos/macos.h>
 
 #include "smb/client.h"
 #include "smb/params.h"

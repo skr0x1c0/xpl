@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "../external/smbfs/smb2_mc.h"
+#include <smbfs/smb2_mc.h>
 
 typedef struct kmem_zkext_free_session* kmem_zkext_free_session_t;
 kmem_zkext_free_session_t kmem_zkext_free_session_create(const struct sockaddr_in* smb_addr);

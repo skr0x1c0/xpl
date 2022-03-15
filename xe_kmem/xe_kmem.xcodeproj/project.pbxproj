@@ -54,7 +54,6 @@
 		840EFC7E27C4F4B50092A896 /* allocator_nrnw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = allocator_nrnw.c; sourceTree = "<group>"; };
 		8428F025277E39220087ED81 /* allocator_prpw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = allocator_prpw.c; sourceTree = "<group>"; };
 		8428F026277E39220087ED81 /* allocator_prpw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = allocator_prpw.h; sourceTree = "<group>"; };
-		84591399276F849200F15CBA /* smbfs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = smbfs; sourceTree = "<group>"; };
 		8459139C276F84DC00F15CBA /* ssn_allocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ssn_allocator.h; sourceTree = "<group>"; };
 		8459139D276F84DC00F15CBA /* client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client.h; sourceTree = "<group>"; };
 		8459139F276F84DC00F15CBA /* nic_allocator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = nic_allocator.c; sourceTree = "<group>"; };
@@ -93,14 +92,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		84591398276F847300F15CBA /* external */ = {
-			isa = PBXGroup;
-			children = (
-				84591399276F849200F15CBA /* smbfs */,
-			);
-			path = external;
-			sourceTree = "<group>";
-		};
 		8466F41C276DCE9E004F651E = {
 			isa = PBXGroup;
 			children = (
@@ -121,7 +112,6 @@
 		8466F427276DCE9E004F651E /* xe_kmem */ = {
 			isa = PBXGroup;
 			children = (
-				84591398276F847300F15CBA /* external */,
 				84E77E9B2771A4390085EDC2 /* memory */,
 				84E77E992771A26F0085EDC2 /* smb */,
 				8408843B27C4B07900EEAD12 /* main.c */,

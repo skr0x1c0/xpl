@@ -1,9 +1,9 @@
 #ifndef smb_client_h
 #define smb_client_h
 
-#include "../external/smbfs/smb2_mc.h"
-#include "../external/smbfs/smb_dev.h"
-#include "../external/smbfs/netbios.h"
+#include <smbfs/smb2_mc.h>
+#include <smbfs/smb_dev.h>
+#include <smbfs/netbios.h>
 
 int smb_client_load_kext(void);
 int smb_client_open_dev(void);

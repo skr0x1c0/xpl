@@ -17,16 +17,16 @@
 #include <xe/util/log.h>
 #include <xe/util/assert.h>
 
+#include <smbfs/netbios.h>
+#include <macos/macos.h>
+
 #include "../smb/nic_allocator.h"
 #include "../smb/ssn_allocator.h"
-#include "../external/smbfs/netbios.h"
 
 #include "zkext_alloc_small.h"
 #include "kmem_oob_reader.h"
 #include "allocator_rw.h"
 #include "allocator_prpw.h"
-
-#include <macos/macos.h>
 
 
 #define NUM_PAD_ELEMENTS (XE_PAGE_SIZE / 32)
