@@ -25,10 +25,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E1E5D8127E130B0002459EA /* smbx_conf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smbx_conf.h; sourceTree = "<group>"; };
 		84973FAE278F2ABC009ABD74 /* xe_smbx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xe_smbx; sourceTree = BUILT_PRODUCTS_DIR; };
 		84973FB1278F2ABC009ABD74 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		84973FB8278F2ACF009ABD74 /* xe_smbx-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "xe_smbx-Bridging-Header.h"; sourceTree = "<group>"; };
-		84973FBD278F2B6F009ABD74 /* swift-nio */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-nio"; path = "../external/swift-nio"; sourceTree = "<group>"; };
+		84973FBD278F2B6F009ABD74 /* swift-nio */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-nio"; path = "../libs/swift-nio"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +45,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5E1E5D7F27E1303A002459EA /* public */ = {
+			isa = PBXGroup;
+			children = (
+				5E1E5D8027E13043002459EA /* xe_smbx */,
+			);
+			path = public;
+			sourceTree = "<group>";
+		};
+		5E1E5D8027E13043002459EA /* xe_smbx */ = {
+			isa = PBXGroup;
+			children = (
+				5E1E5D8127E130B0002459EA /* smbx_conf.h */,
+			);
+			path = xe_smbx;
+			sourceTree = "<group>";
+		};
 		84973FA5278F2ABC009ABD74 = {
 			isa = PBXGroup;
 			children = (
@@ -65,6 +82,7 @@
 		84973FB0278F2ABC009ABD74 /* xe_smbx */ = {
 			isa = PBXGroup;
 			children = (
+				5E1E5D7F27E1303A002459EA /* public */,
 				84973FB1278F2ABC009ABD74 /* main.swift */,
 				84973FB8278F2ACF009ABD74 /* xe_smbx-Bridging-Header.h */,
 			);
@@ -277,7 +295,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../xe_kmem/xe_kmem/public,
+					$SOURCE_ROOT/public/xe_smbx,
 					$SOURCE_ROOT/../xe_kmem/xe_kmem/external,
 				);
 				INSTALL_PATH = /;
@@ -299,7 +317,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../xe_kmem/xe_kmem/public,
+					$SOURCE_ROOT/public/xe_smbx,
 					$SOURCE_ROOT/../xe_kmem/xe_kmem/external,
 				);
 				INSTALL_PATH = /;
