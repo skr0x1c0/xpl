@@ -25,7 +25,7 @@
 
 
 /*
- * The ioctl command `SMBIOC_AUTH_INFO` can be used for reading authentication
+ * The ioctl command `SMBIOC_AUTH_INFO` ia used for reading the authentication
  * info used during SMB session setup. The authentication info is stored in
  * memory pointed by `iod->iod_gss.gss_cpn` and `iod->iod_gss.gss_spn`. Their
  * lengths are stored in `iod->iod_gss.gss_cpn_len` and `iod->iod_gss.gss_spn_len`
@@ -45,12 +45,12 @@
  * `fake_session->iod_tailq_head.tqh_first` will have the value of `fake_iod->iod_gss.gss_cpn`
  * set to the address of kernel memory from where data is to be read and
  * `fake_iod->iod_gss.gss_cpn_len` set to the length of data to be read from memory.
- * Then the data from kernel memory can be read using SMBIOC_AUTH_INFO ioctl command
+ * Then the data from kernel memory can then be read using SMBIOC_AUTH_INFO ioctl command
  *
  * Inorder to avoid having to construct new fake smb_session and fake iod for each
- * kernel memory read (which is slow and may fail), we change the value of pointer
+ * kernel memory read (which is slow and may fail), we set the value of pointer
  * `fake_session->session_interface_table.client_nic_info_list.tqh_first` to address of
- * `fake_iod->iod_gss.gss_spn`. This allows use to update the value of fields
+ * `fake_iod->iod_gss.gss_spn`. This allows us to update the value of fields
  * `fake_iod->iod_gss.gss_cpn` and `fake_iod->iod_gss.gss_cpn_len` by executing the
  * ioctl command of type SMBIOC_UPDATE_CLIENT_INTERFACES, providing us with a reliable
  * and fast arbitary kernel memory reader.
