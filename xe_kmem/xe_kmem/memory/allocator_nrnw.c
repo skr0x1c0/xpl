@@ -35,6 +35,9 @@ void kmem_allocator_nrnw_allocate(kmem_allocator_nrnw_t allocator, size_t alloc_
     xe_assert_cond(alloc_size, <=, 256);
     xe_assert_cond(num_allocs, <=, UINT32_MAX);
     
+    /// With every allocation of a socket address, an allocation of type `struct sock_addr_entry` is
+    /// also done. The size of `struct sock_addr_entry` is 24 bytes, which will end up in kext.32 zone
+    /// So we need to make only `num_allocs / 2` to get `num_allocs` allocations in kext.32 zone
     if (alloc_size > 16 && alloc_size <= 32) {
         num_allocs = (num_allocs + 1) / 2;
     }
@@ -48,12 +51,17 @@ void kmem_allocator_nrnw_allocate(kmem_allocator_nrnw_t allocator, size_t alloc_
     struct network_nic_info* cursor = infos;
     for (int i=0; i<num_allocs; i++) {
         uint32_t idx = atomic_fetch_add(&allocator->keygen, 1);
+        /// Each NIC stores the list of associated socket addresses in a linked list. When a socket address
+        /// is added to the NIC, it is compared with all the existing socket address to avoid duplicates. As the
+        /// size of linked list grows, associating new socket address with NIC will become slow. To avoid this
+        /// we will associate only upto 1024 IP addresses per NIC
         cursor->nic_index = idx / 1024;
         cursor->next_offset = (uint32_t)info_size;
         cursor->addr_4.sin_len = alloc_size;
-        cursor->addr_4.sin_family = AF_INET;
+        cursor->addr_4.sin_family = ALLOCATOR_NRNW_SOCK_ADDR_FAMILY;
+        /// Socket address with same IP address are not allowed in the same NIC (they will be ignored)
         cursor->addr_4.sin_addr.s_addr = idx;
-        cursor->addr_4.sin_port = 0;
+        cursor->addr_4.sin_port = ALLOCATOR_NRNW_SOCK_ADDR_PORT;
         
         cursor = (struct network_nic_info*)((char*)cursor + info_size);
     }
