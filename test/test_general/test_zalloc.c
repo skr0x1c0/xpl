@@ -14,7 +14,7 @@
 #include <xe/util/assert.h>
 #include <xe/allocator/small_mem.h>
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 #include "test_zalloc.h"
 

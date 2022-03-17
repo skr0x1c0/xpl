@@ -16,7 +16,7 @@
 #include "util/assert.h"
 #include "util/ptrauth.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 int xe_xnu_proc_find(pid_t proc_id, uintptr_t* proc_out) {

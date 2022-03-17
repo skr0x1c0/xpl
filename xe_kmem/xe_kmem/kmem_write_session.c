@@ -17,7 +17,7 @@
 #include <xe/xnu/thread.h>
 #include <xe/util/assert.h>
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 #include "kmem_write_session.h"
 #include "smb/params.h"

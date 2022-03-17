@@ -56,13 +56,7 @@ void xe_kmem_validate_addr_range(uintptr_t base, size_t size) {
         return;
     }
     
-    uintptr_t physmap_base = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_PHYSMAP_BASE), 0);
-    uintptr_t physmap_end = xe_kmem_read_uint64(xe_slider_kernel_slide(VAR_PHYSMAP_END), 0);
-    if (base >= physmap_base && base < physmap_end && end >= physmap_base && end <= physmap_end) {
-        return;
-    }
-    
-    xe_log_error("address range [%p, %p) not in kernel map [%p, %p) or phys map [%p, %p)", (void*)base, (void*)end, (void*)XE_VM_MIN_KERNEL_ADDRESS, (void*)XE_VM_MAX_KERNEL_ADDRESS, (void*)physmap_base, (void*)physmap_end);
+    xe_log_error("address range [%p, %p) not in kernel map [%p, %p)", (void*)base, (void*)end, (void*)XE_VM_MIN_KERNEL_ADDRESS, (void*)XE_VM_MAX_KERNEL_ADDRESS);
     xe_assert(0);
 }
 

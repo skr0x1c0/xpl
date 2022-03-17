@@ -24,7 +24,7 @@
 #include "zkext_neighbor_reader.h"
 #include "kmem_oob_reader.h"
 #include "allocator_nrnw.h"
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 #include "../smb/client.h"
 

@@ -8,9 +8,14 @@
 #ifndef xe_util_log_h
 #define xe_util_log_h
 
-#include "binary.h"
+#include "./binary.h"
 
+#if 0
 #define xe_log_verbose(...) printf("[V] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
+#else
+#define xe_log_verbose(...)
+#endif
+
 #define xe_log_debug(...) printf("[D] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
 #define xe_log_info(...) printf("[I] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
 #define xe_log_warn(...) printf("[W] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")

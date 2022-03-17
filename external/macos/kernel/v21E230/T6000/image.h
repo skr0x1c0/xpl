@@ -5,8 +5,8 @@
 //  Created by admin on 1/4/22.
 //
 
-#ifndef macos_21E5212f_T6000_image_h
-#define macos_21E5212f_T6000_image_h
+#ifndef macos_21E230_T6000_image_h
+#define macos_21E230_T6000_image_h
 
 #define XE_IMAGE_SEGMENT_TEXT_BASE 0xfffffe0007004000
 #define XE_IMAGE_SEGMENT_TEXT_SIZE 0xe8000
@@ -35,4 +35,4 @@
 #define XE_IMAGE_SEGMENT_BOOT_DATA_BASE 0xfffffe0007c2c000
 #define XE_IMAGE_SEGMENT_BOOT_DATA_SIZE 0x48000
 
-#endif /* macos_21E5212f_T6000_image_h */
+#endif /* macos_21E230_T6000_image_h */

@@ -9,7 +9,7 @@
 #include "memory/kmem.h"
 #include "util/assert.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 uintptr_t xe_os_object_get_meta_class(uintptr_t instance) {

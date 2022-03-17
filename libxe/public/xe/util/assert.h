@@ -14,7 +14,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 #define xe_abort() getpass("press enter to continue\n"); abort()
 

@@ -14,7 +14,7 @@
 #include "util/dispatch.h"
 #include "allocator/large_mem.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 #define ZM_CHUNK_LEN_MAX        0x8

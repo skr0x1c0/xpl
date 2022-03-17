@@ -9,7 +9,7 @@
 #include "memory/kmem.h"
 #include "util/ptrauth.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 uint xe_os_array_count(uintptr_t array) {

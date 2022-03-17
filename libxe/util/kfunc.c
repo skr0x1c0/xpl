@@ -29,18 +29,12 @@
 #include "util/misc.h"
 #include "util/asm.h"
 
-#include <macos/macos.h>
-#include <macos/xnu/osfmk/mach/arm/thread_status.h>
+#include <macos/kernel.h>
+#include <macos/kernel/xnu/osfmk/mach/arm/thread_status.h>
 
-#if defined(KERNEL_T6000)
-#define ARM64_THREAD_ERET_ENTRY_OFFSET 0x14c
-#define HV_VPCPU_ERET_ENTRY_OFFSET 0x218
-#elif defined(KERNEL_T8101)
+
 #define ARM64_THREAD_ERET_ENTRY_OFFSET 0x38
 #define HV_VPCPU_ERET_ENTRY_OFFSET 0xc0
-#else
-#error "unknown kernel variant"
-#endif
 
 #define LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET 0x24
 #define LR_IS_IO_CONNECT_METHOD_OFFSET 0x194

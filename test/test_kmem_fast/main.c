@@ -28,7 +28,7 @@
 #include <xe_dev/slider/kas.h>
 #include <xe_dev/memory/tester.h>
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 int main(int argc, const char* argv[]) {

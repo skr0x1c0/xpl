@@ -24,10 +24,29 @@
 #include "iokit/os_dictionary.h"
 #include "iokit/io_surface.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
+
+
+///
+/// 0xfffffe0007921308      str          xzr, [x19, #0x20]
+/// 0xfffffe000792130c      mov       w8, w9
+/// 0xfffffe0007921310      lsl          x2, x8, #0x4
+/// 0xfffffe0007921314      adrp      x0, -0x1fff8db8000
+/// 0xfffffe0007921318      add       x0, x0, #0xa38
+/// 0xfffffe000792131c      bl          0xfffffe00072b884c  =>  
+/// 0xfffffe0007921320      pacda   x21,x23
+/// 0xfffffe0007921324      str         x21, [x19, #0x20]
+/// 0xfffffe0007921328      str         w20, [x19, #0x18]
+/// 0xfffffe000792132c      mov      x0, x20
+/// 0xfffffe0007921330      ldp        x29, x30, [sp, #0x40]
+/// 0xfffffe0007921334      ldp        x20, x19, [sp, #0x30]
+/// 0xfffffe0007921338      ldp        x22, x21, [sp, #0x20]
+/// 0xfffffe000792133c      ldp        x24, x23, [sp, #0x10]
+/// 0xfffffe0007921340      ldp        x26, x25, [sp], #0x50
+/// 0xffffffe0007921344     retab
+///
 
 #define LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET 0x24c
-
 #define KALLOC_MAP_SWITCH_CAPACITY (XE_PAGE_SIZE * 3 / 16)
 #define KERNEL_MAP_SWITCH_CAPACITY (XE_PAGE_SIZE * 64 / 16)
 

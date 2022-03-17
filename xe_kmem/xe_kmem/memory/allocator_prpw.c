@@ -11,7 +11,7 @@
 #include "../smb/nic_allocator.h"
 
 #include "allocator_prpw.h"
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 #define MAX_NICS_PER_BACKEND 16

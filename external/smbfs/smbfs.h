@@ -45,29 +45,39 @@ struct smb_mount_args {
     int32_t        dev;
     int32_t        altflags;
     int32_t        KernelLogLevel;
-    uid_t        uid;
-    gid_t         gid;
+    uid_t          uid;
+    gid_t          gid;
     mode_t         file_mode;
     mode_t         dir_mode;
-    uint32_t    path_len;
+    uint32_t       path_len;
     int32_t        unique_id_len;
-    char        path[MAXPATHLEN] __attribute((aligned(8))); /* The starting path they want used for the mount */
-    char        url_fromname[MAXPATHLEN] __attribute((aligned(8))); /* The from name is the url used to mount the volume. */
-    unsigned char    unique_id[SMB_MAX_UNIQUE_ID] __attribute((aligned(8))); /* A set of bytes that uniquely identifies this volume */
-    char        volume_name[MAXPATHLEN] __attribute((aligned(8))); /* The starting path they want used for the mount */
-    uint64_t    ioc_reserved __attribute((aligned(8))); /* Force correct size always */
-    int32_t         ip_QoS;
+    char           path[MAXPATHLEN] __attribute((aligned(8))); /* The starting path they want used for the mount */
+    char           url_fromname[MAXPATHLEN] __attribute((aligned(8))); /* The from name is the url used to mount the volume. */
+    unsigned char  unique_id[SMB_MAX_UNIQUE_ID] __attribute((aligned(8))); /* A set of bytes that uniquely identifies this volume */
+    char           volume_name[MAXPATHLEN] __attribute((aligned(8))); /* The starting path they want used for the mount */
+    uint64_t       ioc_reserved __attribute((aligned(8))); /* Force correct size always */
+    int32_t        ip_QoS;
     int32_t        max_resp_timeout;
     int32_t        dir_cache_async_cnt;
     int32_t        dir_cache_max;
     int32_t        dir_cache_min;
-    int32_t         max_dirs_cached;
-    int32_t         max_dir_entries_cached;
-    uint32_t        max_read_size;
-    uint32_t        max_write_size;
+    int32_t        max_dirs_cached;
+    int32_t        max_dir_entries_cached;
+    uint32_t       max_read_size;
+    uint32_t       max_write_size;
     /* Snapshot time support */
-    char        snapshot_time[32] __attribute((aligned(8)));
+    char           snapshot_time[32] __attribute((aligned(8)));
     time_t         snapshot_local_time;
 };
+
+
+struct smbSockAddrPB {
+    void *sessionp;
+    struct sockaddr_storage addr;
+};
+
+
+#define smbfsGetSessionSockaddrFSCTL        _IOR('z', 20, struct sockaddr_storage)
+#define smbfsGetSessionSockaddrFSCTL2       _IOR('z', 30, struct smbSockAddrPB)
 
 #endif /* _SMBFS_SMBFS_H_ */

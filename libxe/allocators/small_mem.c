@@ -17,7 +17,7 @@
 #include "util/assert.h"
 #include "util/log.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 struct xe_allocator_small_mem {

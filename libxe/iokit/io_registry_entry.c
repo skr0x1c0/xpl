@@ -19,7 +19,7 @@
 #include "util/misc.h"
 #include "util/assert.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 uintptr_t xe_io_registry_entry_registry_table(uintptr_t entry) {

@@ -24,7 +24,7 @@
 #include "util/misc.h"
 #include "util/log.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 UInt32 xe_io_surface_get_index(IOSurfaceRef surface) {

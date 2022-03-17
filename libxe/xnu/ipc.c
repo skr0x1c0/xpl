@@ -5,7 +5,7 @@
 //  Created by sreejith on 3/8/22.
 //
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 #include "xnu/ipc.h"
 #include "memory/kmem.h"

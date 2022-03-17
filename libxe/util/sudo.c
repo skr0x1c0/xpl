@@ -22,7 +22,7 @@
 #include "util/assert.h"
 #include "util/vnode.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 struct xe_util_sudo {

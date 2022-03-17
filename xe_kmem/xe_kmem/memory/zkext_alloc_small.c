@@ -18,7 +18,7 @@
 #include <xe/util/assert.h>
 
 #include <smbfs/netbios.h>
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 #include "../smb/nic_allocator.h"
 #include "../smb/ssn_allocator.h"

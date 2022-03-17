@@ -14,7 +14,7 @@
 #include "util/assert.h"
 #include "util/log.h"
 
-#include <macos/macos.h>
+#include <macos/kernel.h>
 
 
 uintptr_t xe_xnu_thread_current_thread(void) {
