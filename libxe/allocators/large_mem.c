@@ -49,7 +49,7 @@ xe_allocator_large_mem_t xe_allocator_large_mem_allocate(size_t size, uintptr_t*
     
     uint32_t new_capacity = xe_kmem_read_uint32(props_dict, TYPE_OS_DICTIONARY_MEM_CAPACITY_OFFSET);
     xe_assert_cond(new_capacity, ==, expected_capacity);
-    uintptr_t dict_memory = xe_ptrauth_strip(xe_kmem_read_uint64(props_dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET));
+    uintptr_t dict_memory = xe_ptrauth_strip(xe_kmem_read_uint64(props_dict, TYPE_OS_DICTIONARY_MEM_DICTIONARY_OFFSET));
     uint32_t new_count = xe_kmem_read_uint32(props_dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET);
     
     xe_kmem_write_uint32(props_dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET, 0);
@@ -72,7 +72,7 @@ uintptr_t xe_allocator_large_mem_allocate_disowned(size_t size) {
     xe_allocator_large_mem_t allocator = xe_allocator_large_mem_allocate(size, &addr);
     xe_kmem_write_uint32(allocator->dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET, 0);
     xe_kmem_write_uint32(allocator->dict, TYPE_OS_DICTIONARY_MEM_CAPACITY_OFFSET, 0);
-    xe_kmem_write_uint64(allocator->dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET, 0);
+    xe_kmem_write_uint64(allocator->dict, TYPE_OS_DICTIONARY_MEM_DICTIONARY_OFFSET, 0);
     IOSurfaceRemoveAllValues(allocator->surface);
     IOSurfaceDecrementUseCount(allocator->surface);
     free(allocator->dict_memory_backup);
@@ -84,7 +84,7 @@ void xe_allocator_large_mem_free(xe_allocator_large_mem_t* allocator_p) {
     xe_allocator_large_mem_t allocator = *allocator_p;
     uint32_t current_count = xe_kmem_read_uint32(allocator->dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET);
     xe_assert_cond(current_count, ==, 0);
-    xe_kmem_write(xe_ptrauth_strip(xe_kmem_read_uint64(allocator->dict, TYPE_OS_DICTIONARY_MEM_DICT_ENTRY_OFFSET)), 0, allocator->dict_memory_backup, current_count * 16);
+    xe_kmem_write(xe_ptrauth_strip(xe_kmem_read_uint64(allocator->dict, TYPE_OS_DICTIONARY_MEM_DICTIONARY_OFFSET)), 0, allocator->dict_memory_backup, current_count * 16);
     xe_kmem_write_uint32(allocator->dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET, allocator->dict_count);
     IOSurfaceRemoveAllValues(allocator->surface);
     IOSurfaceDecrementUseCount(allocator->surface);
