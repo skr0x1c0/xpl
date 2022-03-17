@@ -90,6 +90,7 @@ void mutate_csblob_entilements_der(xe_util_kfunc_t kfunc, uintptr_t cs_blob, uin
     xe_kmem_write_uint64(temp_buffer, TYPE_CS_BLOB_MEM_CSB_HASHTYPE_OFFSET, new_hash_type);
     
     uint64_t args[8];
+    bzero(args, sizeof(args));
     args[0] = 8;
     args[1] = cs_blob;
     args[2] = 0;
