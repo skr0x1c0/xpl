@@ -125,7 +125,7 @@ int main(int argc, const char * argv[]) {
 
     _Bool card_present = xe_io_registry_get_boolean_prop(sdxc_slot, "Card Present");
     if (!card_present) {
-        xe_log_error("sdxc card not present in card reader");
+        xe_log_error("sd card not present in card reader");
         exit(1);
     }
     
