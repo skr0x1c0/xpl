@@ -26,12 +26,9 @@ void test_kfunc(void) {
     xe_kmem_write(address, 0, message, sizeof(message));
     
     xe_util_kfunc_t util = xe_util_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
-    uint64_t args[8];
-    bzero(args, sizeof(args));
-    args[0] = address;
     
     for (int i=0; i<5; i++) {
-        xe_util_kfunc_exec(util, xe_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE), args);
+        xe_util_kfunc_execute_simple(util, xe_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE), address, 0, 0, 0, 0, 0, 0, 0);
     }
     
     xe_allocator_small_mem_destroy(&allocator);

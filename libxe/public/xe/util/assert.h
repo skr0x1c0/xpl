@@ -16,7 +16,10 @@
 
 #include <macos/kernel.h>
 
-#define xe_abort() getpass("press enter to continue\n"); abort()
+#include "./log.h"
+
+
+#define xe_abort() xe_log_print_backtrace(); getpass("press enter to continue\n"); abort()
 
 #define xe_assert(val) if (!(val)) { printf("[ERROR] assertion %s failed at %s:%d\n", #val, __FILE__, __LINE__); xe_abort(); }
 #define xe_assert_err(val) if ((val) != 0) { printf("[ERROR] error check failed at %s:%d, err: %s(%d)\n", __FILE__, __LINE__, strerror(val), val); xe_abort(); }

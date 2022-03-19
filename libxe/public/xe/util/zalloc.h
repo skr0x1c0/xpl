@@ -15,5 +15,6 @@ typedef struct xe_util_zalloc* xe_util_zalloc_t;
 uintptr_t xe_util_zalloc_find_zone_at_index(uint zone_index);
 xe_util_zalloc_t xe_util_zalloc_create(uintptr_t zone, int num_allocs);
 uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util, int element_idx);
+void xe_util_zalloc_destroy(xe_util_zalloc_t* util_p);
 
 #endif /* zone_h */

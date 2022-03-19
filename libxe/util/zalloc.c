@@ -414,3 +414,11 @@ uintptr_t xe_util_zalloc_alloc(xe_util_zalloc_t util, int element_idx) {
     uintptr_t page = xe_util_zalloc_pva_to_addr(util->stolen_pageq);
     return page + element_idx * z_elem_size;
 }
+
+
+void xe_util_zalloc_destroy(xe_util_zalloc_t* util_p) {
+    xe_util_zalloc_t util = *util_p;
+    // TODO: give stolen pages back to victim zone
+    free(util);
+    *util_p = NULL;
+}

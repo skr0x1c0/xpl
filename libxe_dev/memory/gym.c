@@ -23,7 +23,7 @@ void xe_kmem_gym_read(void* ctx, void* dst, uintptr_t src, size_t size) {
     }
 }
 
-void xe_kmem_gym_write(void* ctx, uintptr_t dst, void* src, size_t size) {
+void xe_kmem_gym_write(void* ctx, uintptr_t dst, const void* src, size_t size) {
     int error = gym_destructible_write(dst, (char*)src, size);
     if (error) {
         xe_log_error("gym destructible write failed, dst: %p, size: %lu, err: %d", (void*)dst, size, error);

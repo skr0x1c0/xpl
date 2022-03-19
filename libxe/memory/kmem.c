@@ -60,9 +60,8 @@ void xe_kmem_validate_addr_range(uintptr_t base, size_t size) {
     xe_assert(0);
 }
 
-void xe_kmem_read(void* dst, uintptr_t base, uintptr_t off, size_t size) {
+void xe_kmem_read(void* dst, uintptr_t base, ssize_t off, size_t size) {
     xe_assert(kmem_backend != NULL);
-    xe_assert_cond(base + off, >=, base);
     xe_kmem_validate_addr_range(base + off, size);
     size_t max_read_size = kmem_backend->ops->max_read_size;
     size_t done = 0;
@@ -73,9 +72,8 @@ void xe_kmem_read(void* dst, uintptr_t base, uintptr_t off, size_t size) {
     }
 }
 
-void xe_kmem_write(uintptr_t base, uintptr_t off, void* src, size_t size) {
+void xe_kmem_write(uintptr_t base, ssize_t off, const void* src, size_t size) {
     xe_assert(kmem_backend != NULL);
-    xe_assert_cond(base + off, >=, base);
     xe_kmem_validate_addr_range(base + off, size);
     size_t max_write_size = kmem_backend->ops->max_write_size;
     size_t done = 0;
@@ -86,31 +84,31 @@ void xe_kmem_write(uintptr_t base, uintptr_t off, void* src, size_t size) {
     }
 }
 
-uint8_t xe_kmem_read_uint8(uintptr_t base, uintptr_t off) {
+uint8_t xe_kmem_read_uint8(uintptr_t base, ssize_t off) {
     uint8_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-uint16_t xe_kmem_read_uint16(uintptr_t base, uintptr_t off) {
+uint16_t xe_kmem_read_uint16(uintptr_t base, ssize_t off) {
     uint16_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-uint32_t xe_kmem_read_uint32(uintptr_t base, uintptr_t off) {
+uint32_t xe_kmem_read_uint32(uintptr_t base, ssize_t off) {
     uint32_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-uint64_t xe_kmem_read_uint64(uintptr_t base, uintptr_t off) {
+uint64_t xe_kmem_read_uint64(uintptr_t base, ssize_t off) {
     uint64_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-uintptr_t xe_kmem_read_ptr(uintptr_t base, uintptr_t off) {
+uintptr_t xe_kmem_read_ptr(uintptr_t base, ssize_t off) {
     uintptr_t value = xe_kmem_read_uint64(base, off);
     if (!value) {
         return 0;
@@ -120,64 +118,64 @@ uintptr_t xe_kmem_read_ptr(uintptr_t base, uintptr_t off) {
     return ptr;
 }
 
-int8_t xe_kmem_read_int8(uintptr_t base, uintptr_t off) {
+int8_t xe_kmem_read_int8(uintptr_t base, ssize_t off) {
     int8_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-int16_t xe_kmem_read_int16(uintptr_t base, uintptr_t off) {
+int16_t xe_kmem_read_int16(uintptr_t base, ssize_t off) {
     int16_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-int32_t xe_kmem_read_int32(uintptr_t base, uintptr_t off) {
+int32_t xe_kmem_read_int32(uintptr_t base, ssize_t off) {
     int32_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-int64_t xe_kmem_read_int64(uintptr_t base, uintptr_t off) {
+int64_t xe_kmem_read_int64(uintptr_t base, ssize_t off) {
     int64_t value;
     xe_kmem_read(&value, base, off, sizeof(value));
     return value;
 }
 
-void xe_kmem_write_uint8(uintptr_t base, uintptr_t off, uint8_t value) {
+void xe_kmem_write_uint8(uintptr_t base, ssize_t off, uint8_t value) {
     xe_kmem_write(base, off, &value, sizeof(value));
 }
 
-void xe_kmem_write_uint16(uintptr_t dst, uintptr_t off, uint16_t value) {
+void xe_kmem_write_uint16(uintptr_t dst, ssize_t off, uint16_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
-void xe_kmem_write_uint32(uintptr_t dst, uintptr_t off, uint32_t value) {
+void xe_kmem_write_uint32(uintptr_t dst, ssize_t off, uint32_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
-void xe_kmem_write_uint64(uintptr_t dst, uintptr_t off, uint64_t value) {
+void xe_kmem_write_uint64(uintptr_t dst, ssize_t off, uint64_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
-void xe_kmem_write_int8(uintptr_t dst, uintptr_t off, int8_t value) {
+void xe_kmem_write_int8(uintptr_t dst, ssize_t off, int8_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
-void xe_kmem_write_int16(uintptr_t dst, uintptr_t off, int16_t value) {
+void xe_kmem_write_int16(uintptr_t dst, ssize_t off, int16_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
-void xe_kmem_write_int32(uintptr_t dst, uintptr_t off, int32_t value) {
+void xe_kmem_write_int32(uintptr_t dst, ssize_t off, int32_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
-void xe_kmem_write_int64(uintptr_t dst, uintptr_t off, int64_t value) {
+void xe_kmem_write_int64(uintptr_t dst, ssize_t off, int64_t value) {
     xe_kmem_write(dst, off, &value, sizeof(value));
 }
 
 #define bitfield_reader(name, type) \
-    type xe_kmem_read_bitfield_##name(uintptr_t base, uintptr_t off, int bit_offset, int bit_size) { \
+    type xe_kmem_read_bitfield_##name(uintptr_t base, ssize_t off, int bit_offset, int bit_size) { \
         xe_assert_cond(bit_offset, <, NBBY * sizeof(type)); \
         xe_assert_cond(bit_offset + bit_size, <=, NBBY * sizeof(type)); \
         type val = xe_kmem_read_##name(base, off); \
@@ -190,7 +188,7 @@ bitfield_reader(uint32, uint32_t);
 bitfield_reader(uint64, uint64_t);
 
 #define bitfield_writer(name, type) \
-    void xe_kmem_write_bitfield_##name(uintptr_t dst, uintptr_t off, type value, int bit_offset, int bit_size) { \
+    void xe_kmem_write_bitfield_##name(uintptr_t dst, ssize_t off, type value, int bit_offset, int bit_size) { \
         xe_assert_cond(bit_offset, <, NBBY * sizeof(type)); \
         xe_assert_cond(bit_offset + bit_size, <=, NBBY * sizeof(type)); \
         type bitfield = xe_kmem_read_##name(dst, off); \

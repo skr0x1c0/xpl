@@ -110,7 +110,7 @@ void xe_memory_kmem_fast_populate_cache(xe_memory_kmem_fast_t kmem) {
 }
 
 
-void xe_memory_kmem_fast_write(void* ctx, uintptr_t dst, void* src, size_t size) {
+void xe_memory_kmem_fast_write(void* ctx, uintptr_t dst, const void* src, size_t size) {
     xe_memory_kmem_fast_t kmem = (xe_memory_kmem_fast_t)ctx;
     
     char mount[TYPE_MSDOSFSMOUNT_SIZE];

@@ -10,7 +10,7 @@
 
 struct xe_kmem_ops {
     void(*read)(void* ctx, void* dst, uintptr_t src, size_t size);
-    void(*write)(void* ctx, uintptr_t dst, void* src, size_t size);
+    void(*write)(void* ctx, uintptr_t dst, const void* src, size_t size);
     
     size_t max_read_size;
     size_t max_write_size;
