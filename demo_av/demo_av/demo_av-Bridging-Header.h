@@ -8,9 +8,12 @@
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
 #include <xe/util/sandbox.h>
+#include <xe/util/sudo.h>
 #include <xe/util/tcc.h>
 #include <xe/xnu/proc.h>
+#include <xe/util/cp.h>
+#include <xe/util/msdosfs.h>
 
-#include <macos_params.h>
+#include <macos/kernel.h>
 
 #include "privacy.h"

