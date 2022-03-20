@@ -66,6 +66,15 @@ int smb_ssn_allocator_read(smb_ssn_allocator id, char* data1_out, uint32_t data1
     struct smbioc_auth_info req;
     bzero(&req, sizeof(req));
     req.ioc_version = SMB_IOC_STRUCT_VERSION;
+    
+    // TODO: update documentation
+    if (data1_size == 0) {
+        data1_size = UINT32_MAX;
+    }
+    
+    if (data2_size == 0) {
+        data2_size = UINT32_MAX;
+    }
 
     req.ioc_client_size = data1_size;
     req.ioc_client_name = (user_addr_t)data1_out;

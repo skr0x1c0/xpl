@@ -12,7 +12,7 @@
 
 typedef struct smb_dev_rw* smb_dev_rw_t;
 
-void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t* dev1_p, smb_dev_rw_t* dev2_p);
+void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t devs[2]);
 int smb_dev_rw_read(smb_dev_rw_t rw, struct smb_dev* out);
 int smb_dev_rw_write(smb_dev_rw_t rw, struct smb_dev* dev);
 int smb_dev_rw_get_dev_fd(smb_dev_rw_t rw);

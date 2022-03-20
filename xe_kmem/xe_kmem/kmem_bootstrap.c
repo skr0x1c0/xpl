@@ -82,7 +82,7 @@ int kmem_boostrap_setup_dev(struct kmem_bootstrap* kmem, struct kmem_bootstrap_d
             break;
         default:
             xe_log_error("invalid config %d", config);
-            abort();
+            xe_abort();
     }
     
     struct smb_dev smb_dev;
@@ -132,11 +132,11 @@ struct kmem_bootstrap_dev* kmem_bootstrap_get_dev(struct kmem_bootstrap* kmem, k
         }
     }
     
-    xe_log_error("no smb_dev_rw left for read");
-    abort();
+    xe_log_error("no smb_dev_rw left");
+    xe_abort();
 }
 
-int kmem_boostrap_try_write(struct kmem_bootstrap* kmem, uintptr_t dst, void* src, uint32_t size) {
+int kmem_boostrap_try_write(struct kmem_bootstrap* kmem, uintptr_t dst, const void* src, uint32_t size) {
     int block_size = MAXTHREADNAMESIZE;
     
     uintptr_t write_start = dst;
@@ -216,7 +216,7 @@ void kmem_bootstrap_read(void* ctx, void* dst, uintptr_t src, size_t size) {
 }
 
 
-void kmem_bootstrap_write(void* ctx, uintptr_t dst, void* src, size_t size) {
+void kmem_bootstrap_write(void* ctx, uintptr_t dst, const void* src, size_t size) {
     xe_assert_cond(size, <=, MAX_WRITE_SIZE);
     struct kmem_bootstrap* kmem = (struct kmem_bootstrap*)ctx;
     int error;
@@ -236,7 +236,7 @@ static const struct xe_kmem_ops kmem_ro_ops = {
 
 xe_kmem_backend_t kmem_bootstrap_create(const struct sockaddr_in* smb_addr) {
     smb_dev_rw_t devs[2] = { NULL, NULL };
-    smb_dev_rw_create(smb_addr, &devs[0], &devs[1]);
+    smb_dev_rw_create(smb_addr, devs);
     
     int dev_count = 0;
     if (devs[0] && devs[1]) {
@@ -244,7 +244,7 @@ xe_kmem_backend_t kmem_bootstrap_create(const struct sockaddr_in* smb_addr) {
     } else if (devs[0]) {
         dev_count = 1;
     } else {
-        abort();
+        xe_abort();
     }
     
     struct kmem_bootstrap* kmem = malloc(sizeof(struct kmem_bootstrap));

@@ -81,7 +81,7 @@ int kmem_allocator_rw_allocate(kmem_allocator_rw_t allocator, int count, kmem_al
     return error;
 }
 
-int kmem_allocator_rw_filter(kmem_allocator_rw_t allocator, int offset, int count, uint32_t data1_size, uint32_t data2_size, kmem_allocator_rw_data_filter filter, void* filter_ctx, int64_t* found_idx_out) {
+int kmem_allocator_rw_filter(kmem_allocator_rw_t allocator, int offset, int count, uint32_t data1_size, uint32_t data2_size, kmem_allocator_rw_data_filter filter, void* filter_ctx, int* found_idx_out) {
     if ((offset + count) > allocator->write_index) {
         return ERANGE;
     }
