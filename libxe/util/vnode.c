@@ -91,7 +91,7 @@ xe_util_vnode_t xe_util_vnode_create(void) {
     int cctl_fd = open(buffer, O_RDONLY);
     xe_assert(cctl_fd >= 0);
     
-    /// Store the address of vnode associated with the `cctl_fd`
+    /// Store the address of `struct denode` associated with the `cctl_fd`
     uintptr_t cctl_vnode;
     error = xe_xnu_proc_find_fd_data(proc, cctl_fd, &cctl_vnode);
     xe_assert_err(error);
