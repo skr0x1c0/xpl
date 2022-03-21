@@ -51,7 +51,7 @@ int main(int argc, const char* argv[]) {
     
     xe_kmem_backend_t kmem_slow = kmem_bootstrap_create(&smb_addr);
     xe_kmem_use_backend(kmem_slow);
-    uintptr_t meh = kmem_bootstrap_get_mach_execute_header(kmem_slow);
+    uintptr_t meh = kmem_bootstrap_get_mh_execute_header(kmem_slow);
     xe_slider_kernel_init(meh);
     
     xe_kmem_backend_t kmem_fast = xe_memory_kmem_fast_create(XE_KMEM_FAST_DEFAULT_IMAGE);
