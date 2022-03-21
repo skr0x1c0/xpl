@@ -19,6 +19,18 @@
 #include "util/log.h"
 
 
+///
+/// This module provides a fast arbitary kernel memory read / write primitive by using the
+/// module `utils/vnode.c` to read / write data from / to arbitrary kernel memory location
+/// via a vnode to a open file. To write data to a arbitary kernel memory location `dst`, from
+/// user memory `src` of size `length`, the data `src` is first written to a open file `bridge_fd`.
+/// Then we use `xe_util_vnode_read_kernel` method to copy the data in `bridge_fd` to
+/// `dst`. Similarly to read data from a arbitary kernel memory location `src` of size `length` to
+/// user memory `dst`, we use `xe_util_vnode_write_kernel` method to copy the data from
+/// `src` to `bridge_fd` and the we read the data from `bridge_fd` to user buffer `dst`
+///
+
+
 typedef struct xe_memory_kmem_fast {
     xe_util_vnode_t util_vnode;
     int bridge_fd;
@@ -35,7 +47,9 @@ void xe_memory_kmem_fast_read(void* ctx, void* dst, uintptr_t src, size_t size) 
     off_t off = lseek(kmem->bridge_fd, 0, SEEK_SET);
     xe_assert_errno(off < 0);
     
+    /// Copy data from `src` to `bridge_fd`
     xe_util_vnode_write_kernel(kmem->util_vnode, kmem->bridge_vnode, src, size);
+    
     ssize_t bytes_read = read(kmem->bridge_fd, dst, size);
     xe_assert_cond(bytes_read, ==, size)
 }
@@ -51,6 +65,7 @@ void xe_memory_kmem_fast_write(void* ctx, uintptr_t dst, const void* src, size_t
     ssize_t bytes_written = write(kmem->bridge_fd, src, size);
     xe_assert_cond(bytes_written, ==, size);
     
+    /// Copy data from `bridge_fd` to `dst`
     xe_util_vnode_read_kernel(kmem->util_vnode, kmem->bridge_vnode, dst, size);
 }
 
