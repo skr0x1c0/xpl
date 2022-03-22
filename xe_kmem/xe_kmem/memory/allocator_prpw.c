@@ -60,66 +60,46 @@ size_t kmem_allocator_prpw_get_capacity(kmem_allocator_prpw_t allocator) {
     return allocator->backend_count * MAX_ALLOCS_PER_BACKEND;
 }
 
-int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, size_t count, kmem_allocator_prpw_data_reader reader, void* reader_ctx) {
-    size_t start_idx = atomic_fetch_add(&allocator->alloc_cursor, count);
-    if ((start_idx + count) > (allocator->backend_count * MAX_ALLOCS_PER_BACKEND)) {
-        atomic_fetch_sub(&allocator->alloc_cursor, count);
-        return ERANGE;
+int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, uint8_t address_len, sa_family_t address_family, const char* arbitary_data, int arbitary_data_len, int arbitary_data_offset) {
+    size_t index = atomic_fetch_add(&allocator->alloc_cursor, 1);
+    size_t backend = index / MAX_ALLOCS_PER_BACKEND;
+    
+    int min_offset = offsetof(struct sockaddr, sa_data);
+    if (address_family == AF_INET) {
+        min_offset = offsetof(struct sockaddr_in, sin_addr) + sizeof(struct in_addr);
+    } else if (address_family == AF_INET6) {
+        min_offset = offsetof(struct sockaddr_in6, sin6_addr) + sizeof(struct in6_addr);
     }
-
-    size_t end_idx = start_idx + count - 1;
-    size_t backend_start_idx = start_idx / MAX_ALLOCS_PER_BACKEND;
-    size_t backend_end_idx = end_idx / MAX_ALLOCS_PER_BACKEND;
-
-    return xe_util_dispatch_apply(&allocator->backends[backend_start_idx], sizeof(smb_nic_allocator), backend_end_idx - backend_start_idx + 1, NULL, ^(void* ctx, void* data, size_t index) {
-
-        size_t backend_idx = backend_start_idx + index;
-        size_t backend_alloc_start_idx = backend_idx * MAX_ALLOCS_PER_BACKEND;
-        size_t backend_alloc_end_idx = ((backend_idx + 1) * MAX_ALLOCS_PER_BACKEND) - 1;
-        size_t alloc_start_idx = xe_max(backend_alloc_start_idx, start_idx);
-        size_t alloc_end_idx = xe_min(backend_alloc_end_idx, end_idx);
-        size_t alloc_count = alloc_end_idx - alloc_start_idx + 1;
-
-        char buffer[sizeof(struct network_nic_info) * alloc_count + UINT8_MAX];
-        bzero(buffer, sizeof(buffer));
-        struct network_nic_info* infos = (struct network_nic_info*)buffer;
-
-        for (size_t i=0; i<alloc_count; i++)  {
-            size_t alloc_idx = alloc_start_idx + i;
-            infos[i].nic_index = (alloc_idx % MAX_ALLOCS_PER_BACKEND) / MAX_IPS_PER_NIC;
-            infos[i].nic_caps = 1;
-            infos[i].nic_type = 1;
-            infos[i].nic_link_speed = 1024 * 1024;
-            infos[i].port = 1;
-            infos[i].next_offset = sizeof(struct network_nic_info);
-            uint8_t len = 0;
-            sa_family_t family = 0;
-            char* data = NULL;
-            size_t data_len = 0;
-            reader(reader_ctx, &len, &family, &data, &data_len, alloc_idx - start_idx);
-            if (family == AF_INET) {
-                infos[i].addr_4.sin_len = len;
-                infos[i].addr_4.sin_addr.s_addr = (uint32_t)alloc_idx;
-                infos[i].addr_4.sin_family = family;
-                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in, sin_addr) - sizeof(struct in_addr));
-                memcpy((char*)&infos[i].addr_4 + offsetof(struct sockaddr_in, sin_addr) + sizeof(struct in_addr), data, data_len);
-            } else if (family == AF_INET6) {
-                infos[i].addr_16.sin6_len = len;
-                memcpy(&infos[i].addr_16.sin6_addr, &alloc_idx, sizeof(alloc_idx));
-                infos[i].addr_16.sin6_family = family;
-                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr_in6, sin6_addr) - sizeof(struct in6_addr));
-                memcpy((char*)&infos[i].addr_16 + offsetof(struct sockaddr_in6, sin6_addr) + sizeof(struct in6_addr), data, data_len);
-            } else {
-                infos[i].addr.sa_len = len;
-                infos[i].addr.sa_family = family;
-                xe_assert(data_len <= UINT8_MAX - offsetof(struct sockaddr, sa_data));
-                memcpy((char*)&infos[i].addr.sa_data[0], data, data_len);
-            }
-        }
-
-        return smb_nic_allocator_allocate(allocator->backends[backend_idx], infos, (uint32_t)alloc_count, (uint32_t)sizeof(buffer));
-    });
+    
+    if (arbitary_data_offset < min_offset) {
+        return EINVAL;
+    }
+    
+    if (arbitary_data_len + arbitary_data_offset > address_len) {
+        return EINVAL;
+    }
+    
+    /// Size of `struct network_nic_info` can hold only socket addresses upto 128 bytes size.
+    /// Allocate bigger memory if required
+    size_t info_size = sizeof(struct network_nic_info) - offsetof(struct network_nic_info, addr) + address_len;
+    struct network_nic_info* info = alloca(info_size);
+    bzero(info, info_size);
+    
+    info->nic_index = (index % MAX_ALLOCS_PER_BACKEND) / MAX_IPS_PER_NIC;
+    info->addr.sa_len = address_len;
+    info->addr.sa_family = address_family;
+    memcpy((char*)&info->addr + arbitary_data_offset, arbitary_data, arbitary_data_len);
+    
+    uint32_t addr = (index % MAX_ALLOCS_PER_BACKEND) % MAX_IPS_PER_NIC;
+    if (address_family == AF_INET) {
+        info->addr_4.sin_addr.s_addr = addr;
+    } else if (address_family == AF_INET6) {
+        memcpy(&info->addr_16.sin6_addr, &addr, sizeof(addr));
+    }
+    
+    return smb_nic_allocator_allocate(allocator->backends[backend], info, (uint32_t)1, (uint32_t)info_size);
 }
+
 
 int kmem_allocator_prpw_filter(kmem_allocator_prpw_t allocator, size_t offset, size_t count, kmem_allocator_prpw_data_filter filter, void* filter_ctx, int64_t* found_idx_out) {
     size_t alloc_cursor = allocator->alloc_cursor;
