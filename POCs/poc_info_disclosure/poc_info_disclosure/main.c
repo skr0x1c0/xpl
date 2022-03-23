@@ -23,7 +23,7 @@
 
 
 ///
-/// The `smbfsGetSessionSockaddrFSCTL2` fcntl command on files inslide SMB mount is
+/// The `smbfsGetSessionSockaddrFSCTL2` fcntl command on files inside SMB mount is
 /// handled by `smbfs_vnop_ioctl` method defined in `smbfs_vnops.c` as shown below :-
 ///
 /// static int32_t smbfs_vnop_ioctl(struct vnop_ioctl_args *ap)
@@ -38,7 +38,7 @@
 ///
 ///             // ***NOTE***: The pointer to `struct smb_session` is assigned to pb->sessionp
 ///             // The `struct smbSockAddrPB *pb` will be copied back to userland by `sys_fcntl_nocancel`
-///             // once after the `smbfs_vnop_ioctl` returns
+///             // after the `smbfs_vnop_ioctl` returns
 ///             pb->sessionp = sessionp;
 ///
 ///             /* <72239144> Return original server IP address that was used */
@@ -57,12 +57,12 @@
 ///
 /// As noted in the code snippet above, the pointer to `struct smb_session` is returned to the
 /// user land. The `struct smb_session` is of size 1296 and is allocated on kext.1664 zone.
-/// This information disclosure vulnerability may be used in explots to allocate kernel memory with
+/// This information disclosure vulnerability may be used in exploits to allocate kernel memory with
 /// controlled data at known address etc.
 ///
 /// The POC below demonstrates this information disclosure vulnerabilty.
 ///
-/// NOTE: This vulnerabilty is not used the any of the demo exploit chains
+/// NOTE: This vulnerabilty is not used in any of the demo exploit chains
 ///
 
 

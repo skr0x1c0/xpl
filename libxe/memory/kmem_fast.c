@@ -24,10 +24,10 @@
 /// module `utils/vnode.c` to read / write data from / to arbitrary kernel memory location
 /// via a vnode to a open file. To write data to a arbitary kernel memory location `dst`, from
 /// user memory `src` of size `length`, the data `src` is first written to a open file `bridge_fd`.
-/// Then we use `xe_util_vnode_read_kernel` method to copy the data in `bridge_fd` to
+/// Then we use `xe_util_vnode_read_kernel` method to copy the data in `bridge_vnode` to
 /// `dst`. Similarly to read data from a arbitary kernel memory location `src` of size `length` to
 /// user memory `dst`, we use `xe_util_vnode_write_kernel` method to copy the data from
-/// `src` to `bridge_fd` and the we read the data from `bridge_fd` to user buffer `dst`
+/// `src` to `bridge_vnode` and then we read the data from `bridge_fd` to user buffer `dst`
 ///
 
 
