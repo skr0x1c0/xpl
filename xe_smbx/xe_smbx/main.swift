@@ -81,6 +81,10 @@ extension RequestHandler {
             status = handleCmdTreeDisconnect(request: &request, response: &response)
         case SMB_COM_LOGOFF_ANDX:
             status = handleCmdLogoff(request: &request, response: &response)
+        case SMB_COM_TRANSACTION2:
+            status = handleCmdTransaction2(request: &request, response: &response)
+        case SMB_COM_NT_CREATE_ANDX:
+            status = handleCmdNTCreateAndX(request: &request, response: &response)
         case XE_SMBX_SMB_CMD_GET_LAST_NB_SSN_REQUEST:
             status = handleCustomCmdReadLastNbSsnRequest(request: &request, response: &response)
         case XE_SMBX_SMB_CMD_GET_SAVED_NB_SSN_REQUEST:
@@ -156,6 +160,69 @@ extension RequestHandler {
     }
 
     func handleCmdLogoff(request: inout ByteBuffer, response: inout ByteBuffer) -> Int32 {
+        return NTSTATUS_SUCCESS
+    }
+    
+    func handleCmdTransaction2(request: inout ByteBuffer, response: inout ByteBuffer) -> Int32 {
+        let wc = request.readInteger(endianness: .little, as: UInt8.self)
+        let totpcount = request.readInteger(endianness: .little, as: UInt16.self)!
+        let totdcount = request.readInteger(endianness: .little, as: UInt16.self)!
+        let t2Maxpcount = request.readInteger(endianness: .little, as: UInt16.self)!
+        let t2Maxdcount = request.readInteger(endianness: .little, as: UInt16.self)!
+        let t2Maxscount = request.readInteger(endianness: .little, as: UInt8.self)!
+        _ = request.readInteger(endianness: .little, as: UInt8.self)! // reserved
+        _ = request.readInteger(endianness: .little, as: UInt16.self)! // flags
+        _ = request.readInteger(endianness: .little, as: UInt32.self)! // timeout
+        _ = request.readInteger(endianness: .little, as: UInt16.self)! // reserved 2
+        let txpcountp = request.readInteger(endianness: .little, as: UInt16.self)!
+        let txpoffsetp = request.readInteger(endianness: .little, as: UInt16.self)!
+        let txdcountp = request.readInteger(endianness: .little, as: UInt16.self)!
+        let txdoffsetp = request.readInteger(endianness: .little, as: UInt16.self)!
+        let t2Setupcount = request.readInteger(endianness: .little, as: UInt8.self)!
+        
+        if t2Setupcount != 1 {
+            print("[WARN] received smbv1 transaction2 with \(t2Setupcount) setup count")
+            return Int32(NTSTATUS_NOT_CAPABLE)
+        }
+        
+        _ = request.readInteger(endianness: .little, as: UInt8.self)! // reserved
+        let t2Setupdata = request.readInteger(endianness: .little, as: UInt16.self)!
+        
+        var dbuf = ByteBuffer()
+        var pbuf = ByteBuffer()
+        var status: Int32!
+        switch Int32(t2Setupdata) {
+        case SMB_TRANS2_QUERY_FS_INFORMATION:
+            status = handleT2QueryFSInformation(request: &request, dbuf: &dbuf, pbuf: &pbuf)
+        case SMB_TRANS2_QUERY_PATH_INFORMATION:
+            status = handleT2QueryPathInformation(request: &request, dbuf: &dbuf, pbuf: &pbuf)
+        default:
+            print("[WARN] received unknown setup data \(t2Setupdata)")
+            return NTSTATUS_INVALID_SMB
+        }
+        
+        response.writeInteger(10, endianness: .little, as: UInt8.self) // wc
+        response.writeInteger(pbuf.writerIndex > 0 ? 1 : 0, endianness: .little, as: UInt16.self) // totpcount
+        response.writeInteger(dbuf.writerIndex > 0 ? 1 : 0, endianness: .little, as: UInt16.self) // totdcount
+        response.writeInteger(0, endianness: .little, as: UInt16.self) // reserved
+        response.writeInteger(UInt16(pbuf.writerIndex), endianness: .little, as: UInt16.self) // pcount
+        response.writeInteger(0, endianness: .little, as: UInt16.self) // poff
+        response.writeInteger(0, endianness: .little, as: UInt16.self) // pdisp
+        response.writeInteger(UInt16(dbuf.writerIndex), endianness: .little, as: UInt16.self) // dcount
+        response.writeInteger(0, endianness: .little, as: UInt16.self) // doff
+        response.writeInteger(0, endianness: .little, as: UInt16.self) // ddisp
+        
+        response.writeInteger(0, endianness: .little, as: UInt8.self) // wc
+        response.writeInteger(0, endianness: .little, as: UInt8.self) // reserved
+        response.writeInteger(0, endianness: .little, as: UInt16.self) // bc
+        
+        response.writeBuffer(&dbuf)
+        response.writeBuffer(&pbuf)
+        
+        return status
+    }
+    
+    func handleCmdNTCreateAndX(request: inout ByteBuffer, response: inout ByteBuffer) -> Int32 {
         return NTSTATUS_SUCCESS
     }
     
@@ -312,6 +379,62 @@ extension RequestHandler {
     func handleCmdTreeDisconnectV2(request: inout ByteBuffer, response: inout ByteBuffer) -> Int32 {
         response.writeInteger(4, endianness: .little, as: UInt16.self)  // struct size
         return NTSTATUS_SUCCESS
+    }
+}
+
+// MARK: - SMBv1 T2 Handling
+extension RequestHandler {
+    func handleT2QueryFSInformation(request: inout ByteBuffer, dbuf: inout ByteBuffer, pbuf: inout ByteBuffer) -> Int32 {
+        dbuf.writeInteger(8, endianness: .little, as: UInt64.self) // # allocated units
+        dbuf.writeInteger(8, endianness: .little, as: UInt64.self) // # free units
+        dbuf.writeInteger(32, endianness: .little, as: UInt32.self) // # sectors / unit
+        dbuf.writeInteger(32, endianness: .little, as: UInt32.self) // # bytes / sector
+        return NTSTATUS_SUCCESS
+    }
+    
+    func handleT2QueryPathInformation(request: inout ByteBuffer, dbuf: inout ByteBuffer, pbuf: inout ByteBuffer) -> Int32 {
+        dumpRequest(&request)
+        let wc = request.readInteger(endianness: .little, as: UInt8.self)!
+        _ = request.readInteger(endianness: .little, as: UInt32.self)!
+        let infoLevel = request.readInteger(endianness: .little, as: UInt16.self)!
+        
+        switch Int32(infoLevel) {
+        case SMB_QFILEINFO_ALL_INFO:
+            dbuf.writeInteger(0, endianness: .little, as: UInt64.self) // creation time
+            dbuf.writeInteger(0, endianness: .little, as: UInt64.self) // access time
+            dbuf.writeInteger(0, endianness: .little, as: UInt64.self) // write time
+            dbuf.writeInteger(0, endianness: .little, as: UInt64.self) // change time
+            dbuf.writeInteger(0, endianness: .little, as: UInt32.self) // attributes
+            dbuf.writeInteger(0, endianness: .little, as: UInt32.self) // pad
+            dbuf.writeInteger(0, endianness: .little, as: UInt64.self) // allocation size
+            dbuf.writeInteger(0, endianness: .little, as: UInt64.self) // file size
+            dbuf.writeInteger(0, endianness: .little, as: UInt32.self) // # hard links
+            dbuf.writeInteger(0, endianness: .little, as: UInt64.self) // creation time
+            dbuf.writeInteger(0, endianness: .little, as: UInt8.self) // delete pending
+            dbuf.writeInteger(0, endianness: .little, as: UInt8.self) // dir / file
+            dbuf.writeInteger(0, endianness: .little, as: UInt16.self) // unknown
+            dbuf.writeInteger(0, endianness: .little, as: UInt32.self) // xattrs
+            dbuf.writeInteger(0, endianness: .little, as: UInt8.self) // delete pending
+        default:
+            print("[WARN] ignoring t2 query path request with unknown infoLevel \(infoLevel)")
+        }
+        return NTSTATUS_SUCCESS
+    }
+}
+
+// MARK: - Debug
+extension RequestHandler {
+    private func dumpRequest(_ request: inout ByteBuffer) {
+        for i in 0..<request.readableBytes {
+            let byte = request.getInteger(at: i + request.readerIndex, endianness: .little, as: UInt8.self)!
+            let hex = String(byte, radix: 16, uppercase: false)
+            let terminator = (i + 1) % 8 == 0 ? "\n" : " "
+            let pad = byte > 15 ? "" : "0"
+            print("\(pad)\(hex)", terminator: terminator)
+        }
+        if request.readableBytes % 8 != 0 {
+            print("")
+        }
     }
 }
 
