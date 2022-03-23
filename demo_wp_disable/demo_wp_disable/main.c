@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <limits.h>
 
+#include <xe/xe.h>
 #include <xe/memory/kmem.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
@@ -98,6 +99,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
+    xe_init();
     xe_kmem_backend_t backend = xe_kmem_remote_client_create(argv[1]);
     xe_kmem_use_backend(backend);
     xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
