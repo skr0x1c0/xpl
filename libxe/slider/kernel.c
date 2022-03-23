@@ -18,26 +18,26 @@
 #include <macos/kernel.h>
 
 
-typedef struct xe_slider_segment_info {
+typedef struct segment_info {
     uintptr_t base;
     size_t size;
-} xe_slider_segment_info_t;
+} segment_info_t;
 
 
 struct xe_slider_segment_infos {
-    xe_slider_segment_info_t text;
-    xe_slider_segment_info_t data_const;
-    xe_slider_segment_info_t text_exec;
-    xe_slider_segment_info_t kld;
-    xe_slider_segment_info_t ppl_text;
-    xe_slider_segment_info_t ppl_data_const;
-    xe_slider_segment_info_t last_data_const;
-    xe_slider_segment_info_t last;
-    xe_slider_segment_info_t ppl_data;
-    xe_slider_segment_info_t kld_data;
-    xe_slider_segment_info_t data;
-    xe_slider_segment_info_t hib_data;
-    xe_slider_segment_info_t boot_data;
+    segment_info_t text;
+    segment_info_t data_const;
+    segment_info_t text_exec;
+    segment_info_t kld;
+    segment_info_t ppl_text;
+    segment_info_t ppl_data_const;
+    segment_info_t last_data_const;
+    segment_info_t last;
+    segment_info_t ppl_data;
+    segment_info_t kld_data;
+    segment_info_t data;
+    segment_info_t hib_data;
+    segment_info_t boot_data;
 };
 
 #define SEGMENT_INFO(seg) { XE_IMAGE_SEGMENT_##seg##_BASE, XE_IMAGE_SEGMENT_##seg##_SIZE }
@@ -121,40 +121,40 @@ void xe_slider_kernel_init(uintptr_t mh_execute_header) {
     free(commands);
 }
 
-#define IS_ADDR_IN(addr, infos, segment) (addr >= infos->segment.base && addr < infos->segment.base + infos->segment.size)
-#define SLIDE(addr, from, to, segment) (addr + ((int64_t)to->segment.base - (int64_t)from->segment.base))
+#define is_addr_in(addr, infos, segment) (addr >= infos->segment.base && addr < infos->segment.base + infos->segment.size)
+#define slide(addr, from, to, segment) (addr + ((int64_t)to->segment.base - (int64_t)from->segment.base))
 
 uintptr_t xe_slider_kernel_slide_internal(uintptr_t address, struct xe_slider_segment_infos* to, struct xe_slider_segment_infos* from) {
-    if (IS_ADDR_IN(address, from, text)) {
-        return SLIDE(address, from, to, text);
-    } else if (IS_ADDR_IN(address, from, data_const)) {
-        return SLIDE(address, from, to, data_const);
-    } else if (IS_ADDR_IN(address, from, text_exec)) {
-        return SLIDE(address, from, to, text_exec);
-    } else if (IS_ADDR_IN(address, from, kld)) {
-        return SLIDE(address, from, to, kld);
-    } else if (IS_ADDR_IN(address, from, ppl_text)) {
-        return SLIDE(address, from, to, ppl_text);
-    } else if (IS_ADDR_IN(address, from, ppl_data_const)) {
-        return SLIDE(address, from, to, ppl_data_const);
-    } else if (IS_ADDR_IN(address, from, last_data_const)) {
-        return SLIDE(address, from, to, last_data_const);
-    } else if (IS_ADDR_IN(address, from, last)) {
-        return SLIDE(address, from, to, last);
-    } else if (IS_ADDR_IN(address, from, ppl_data)) {
-        return SLIDE(address, from, to, ppl_data);
-    } else if (IS_ADDR_IN(address, from, kld_data)) {
-        return SLIDE(address, from, to, kld_data);
-    } else if (IS_ADDR_IN(address, from, data)) {
-        return SLIDE(address, from, to, data);
-    } else if (IS_ADDR_IN(address, from, hib_data)) {
-        return SLIDE(address, from, to, hib_data);
-    } else if (IS_ADDR_IN(address, from, boot_data)) {
-        return SLIDE(address, from, to, boot_data);
+    if (is_addr_in(address, from, text)) {
+        return slide(address, from, to, text);
+    } else if (is_addr_in(address, from, data_const)) {
+        return slide(address, from, to, data_const);
+    } else if (is_addr_in(address, from, text_exec)) {
+        return slide(address, from, to, text_exec);
+    } else if (is_addr_in(address, from, kld)) {
+        return slide(address, from, to, kld);
+    } else if (is_addr_in(address, from, ppl_text)) {
+        return slide(address, from, to, ppl_text);
+    } else if (is_addr_in(address, from, ppl_data_const)) {
+        return slide(address, from, to, ppl_data_const);
+    } else if (is_addr_in(address, from, last_data_const)) {
+        return slide(address, from, to, last_data_const);
+    } else if (is_addr_in(address, from, last)) {
+        return slide(address, from, to, last);
+    } else if (is_addr_in(address, from, ppl_data)) {
+        return slide(address, from, to, ppl_data);
+    } else if (is_addr_in(address, from, kld_data)) {
+        return slide(address, from, to, kld_data);
+    } else if (is_addr_in(address, from, data)) {
+        return slide(address, from, to, data);
+    } else if (is_addr_in(address, from, hib_data)) {
+        return slide(address, from, to, hib_data);
+    } else if (is_addr_in(address, from, boot_data)) {
+        return slide(address, from, to, boot_data);
     }
     
     xe_log_error("address does not belong to any known segment");
-    abort();
+    xe_abort();
 }
 
 uintptr_t xe_slider_kernel_slide(uintptr_t address) {

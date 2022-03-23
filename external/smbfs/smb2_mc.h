@@ -130,8 +130,8 @@ struct complete_nic_info_entry {
     struct sock_addr_list addr_list;
     
     struct {
-        struct complete_nic_info_entry* next;
-        struct complete_nic_info_entry** prev;
+        struct complete_nic_info_entry* tqe_next;
+        struct complete_nic_info_entry** tqe_prev;
     } next;
     
     struct {
