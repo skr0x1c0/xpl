@@ -139,7 +139,7 @@ uintptr_t xe_util_zalloc_find_victim_zone(int required_chunk_pages, int required
     }
     
     xe_log_error("failed to find victim zone");
-    abort();
+    xe_abort();
 }
 
 uint32_t xe_util_zalloc_steal_pageq(int required_chunk_pages, int required_bitmap_capacity, uintptr_t* victim_zone_out) {

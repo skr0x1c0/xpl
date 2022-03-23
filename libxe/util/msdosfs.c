@@ -38,7 +38,7 @@ int xe_util_msdosfs_mount(const char* base_img_path, const char* label, xe_util_
     struct stat st;
     if (stat(temp_dir, &st)) {
         printf("[ERROR] temp directory problem, err: %d\n", errno);
-        abort();
+        xe_abort();
     }
 
     char mount_point[PATH_MAX];

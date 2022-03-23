@@ -35,7 +35,7 @@ uintptr_t xe_xnu_thread_current_thread(void) {
     }
     
     xe_log_error("cannot find current thread with tid: %p", (void*)tid);
-    abort();
+    xe_abort();
 }
 
 
