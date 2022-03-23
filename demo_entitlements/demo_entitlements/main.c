@@ -96,7 +96,9 @@ void mutate_csblob_entilements_der(xe_util_kfunc_t kfunc, uintptr_t cs_blob, uin
     args[2] = 0;
     args[3] = temp_buffer;
     args[4] = TYPE_CS_BLOB_SIZE;
-    xe_util_kfunc_exec(kfunc, xe_slider_kernel_slide(FUNC_ZALLOC_RO_MUTATE_ADDR), args);
+    
+    uintptr_t zalloc_ro_mutate = xe_slider_kernel_slide(FUNC_ZALLOC_RO_MUTATE_ADDR);
+    xe_util_kfunc_execute_simple(kfunc, zalloc_ro_mutate, args);
     
     xe_allocator_small_mem_destroy(&allocator);
 }

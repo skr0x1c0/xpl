@@ -283,22 +283,6 @@ typedef struct link0 {
 }* link0_t;
 
 
-struct xe_util_kfunc_register_state {
-    uint64_t x19, x20, x21, x22;
-    uint64_t x23, x24, x25, x26;
-    uint64_t fp, sp, lr;
-};
-
-
-struct xe_util_kfunc_args {
-    uint64_t  x[29];
-    uint64_t  fp;
-    uint64_t  lr;
-    uint64_t  sp;
-    uint128_t q[31];
-};
-
-
 void xe_util_kfunc_link0_create_fake_block(link0_t link0) {
     xe_assert_cond(link0->block_allocator, !=, NULL);
     uintptr_t block = xe_util_zalloc_alloc(link0->block_allocator, 0);
@@ -893,32 +877,32 @@ void xe_util_kfunc_execute(xe_util_kfunc_t util, uintptr_t target_func, const st
 }
 
 
-void xe_util_kfunc_execute_simple(xe_util_kfunc_t util, uintptr_t target_func, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6, uint64_t x7) {
+void xe_util_kfunc_execute_simple(xe_util_kfunc_t util, uintptr_t target_func, uint64_t args[8]) {
     struct xe_util_kfunc_register_state register_state = xe_util_kfunc_pre_execute(util);
-    struct xe_util_kfunc_args args;
-    bzero(&args, sizeof(args));
+    struct xe_util_kfunc_args kfunc_args;
+    bzero(&kfunc_args, sizeof(kfunc_args));
     /// Set arguments to the target function
-    args.x[0] = x0;
-    args.x[1] = x1;
-    args.x[2] = x2;
-    args.x[3] = x3;
-    args.x[4] = x4;
-    args.x[5] = x5;
-    args.x[6] = x6;
-    args.x[7] = x7;
+    kfunc_args.x[0] = args[0];
+    kfunc_args.x[1] = args[1];
+    kfunc_args.x[2] = args[2];
+    kfunc_args.x[3] = args[3];
+    kfunc_args.x[4] = args[4];
+    kfunc_args.x[5] = args[5];
+    kfunc_args.x[6] = args[6];
+    kfunc_args.x[7] = args[7];
     /// Fixup required callee-saved registers
-    args.x[19] = register_state.x19;
-    args.x[20] = register_state.x20;
-    args.x[21] = register_state.x21;
-    args.x[22] = register_state.x22;
-    args.x[23] = register_state.x23;
-    args.x[24] = register_state.x24;
-    args.x[25] = register_state.x25;
-    args.x[26] = register_state.x26;
-    args.fp = register_state.fp;
-    args.lr = register_state.lr;
-    args.sp = register_state.sp;
-    xe_util_kfunc_execute(util, target_func, &args);
+    kfunc_args.x[19] = register_state.x19;
+    kfunc_args.x[20] = register_state.x20;
+    kfunc_args.x[21] = register_state.x21;
+    kfunc_args.x[22] = register_state.x22;
+    kfunc_args.x[23] = register_state.x23;
+    kfunc_args.x[24] = register_state.x24;
+    kfunc_args.x[25] = register_state.x25;
+    kfunc_args.x[26] = register_state.x26;
+    kfunc_args.fp = register_state.fp;
+    kfunc_args.lr = register_state.lr;
+    kfunc_args.sp = register_state.sp;
+    xe_util_kfunc_execute(util, target_func, &kfunc_args);
 }
 
 
