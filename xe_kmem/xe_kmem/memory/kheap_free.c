@@ -249,6 +249,7 @@ void xe_kheap_free_session_execute(xe_kheap_free_session_t session, const struct
         }
     });
     
+    dispatch_release(queue);
     session->capture_allocators = capture_allocators;
     session->num_capture_allocators = num_capture_allocators;
     session->state = STATE_DONE;
