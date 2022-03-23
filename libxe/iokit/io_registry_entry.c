@@ -78,12 +78,12 @@ int xe_io_registry_filter_dict(uintptr_t dict, const struct xe_io_registry_filte
                     return 0;
                 }
             } else {
-                abort();
+                xe_abort();
             }
             break;
         }
         default:
-            abort();
+            xe_abort();
     }
     return ENOENT;
 }
