@@ -11,12 +11,14 @@
 #include <sys/errno.h>
 #include <dispatch/dispatch.h>
 
+#include <xe/slider/kext.h>
 #include <xe/util/misc.h>
 #include <xe/util/dispatch.h>
 #include <xe/util/log.h>
 #include <xe/util/assert.h>
 
 #include <macos/kernel.h>
+#include <smbfs/kext.h>
 
 #include "../smb/nic_allocator.h"
 #include "../smb/client.h"
@@ -25,6 +27,7 @@
 #include "allocator_rw.h"
 #include "allocator_nrnw.h"
 #include "oob_reader_ovf.h"
+#include "safe_release.h"
 
 
 ///
@@ -256,19 +259,18 @@ void xe_kheap_free_session_execute(xe_kheap_free_session_t session, const struct
 }
 
 
-void xe_kheap_free_session_destroy(xe_kheap_free_session_t* session_p) {
+void xe_kheap_free_session_destroy(xe_kheap_free_session_t* session_p, xe_slider_kext_t slider) {
     xe_kheap_free_session_t session = *session_p;
     
     if (session->nic_allocator >= 0) {
         smb_nic_allocator_destroy(&session->nic_allocator);
     }
-    
-    if (session->capture_allocators) {
-        dispatch_apply(session->num_capture_allocators, DISPATCH_APPLY_AUTO, ^(size_t idx) {
-            smb_nic_allocator_destroy(&session->capture_allocators[idx]);
-        });
+        
+    for (int i=0; i<session->num_capture_allocators; i++) {
+        xe_safe_release_reset_client_nics(session->capture_allocators[i], slider);
+        smb_nic_allocator_destroy(&session->capture_allocators[i]);
     }
-    
+        
     free(session);
     *session_p = NULL;
 }

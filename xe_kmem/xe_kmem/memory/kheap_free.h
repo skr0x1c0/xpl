@@ -9,7 +9,7 @@
 #define zfree_kext_h
 
 #include <stdio.h>
-
+#include <xe/slider/kext.h>
 #include <smbfs/smb2_mc.h>
 
 typedef struct xe_kheap_free_session* xe_kheap_free_session_t;
@@ -28,8 +28,9 @@ struct complete_nic_info_entry xe_kheap_free_session_prepare(xe_kheap_free_sessi
 ///             `xe_kheap_free_session_prepare`
 void xe_kheap_free_session_execute(xe_kheap_free_session_t session, const struct complete_nic_info_entry* entry);
 
-/// Release resources
+/// Release resources. This method should be called only after kmem backend is initialized
 /// @param session_p  Pointer to`xe_kheap_free_session_t` created using `xe_kheap_free_session_create`
-void xe_kheap_free_session_destroy(xe_kheap_free_session_t* session_p);
+/// @param slider Slider for smbfs.kext
+void xe_kheap_free_session_destroy(xe_kheap_free_session_t* session_p, xe_slider_kext_t slider);
 
 #endif /* zfree_kext_h */

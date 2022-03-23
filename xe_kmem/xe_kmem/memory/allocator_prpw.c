@@ -218,6 +218,12 @@ int kmem_allocator_prpw_release_containing_backend(kmem_allocator_prpw_t allocat
     return kmem_allocator_prpw_trim_backend_count(allocator, alloc_index / MAX_ALLOCS_PER_BACKEND, 1);
 }
 
+void kmem_allocator_prpw_iter_backends(kmem_allocator_prpw_t allocator, void(^iterator)(int)) {
+    for (int i=0; i<allocator->backend_count; i++) {
+        iterator(allocator->backends[i]);
+    }
+}
+
 int kmem_allocator_prpw_destroy(kmem_allocator_prpw_t* id) {
     if (id == NULL) {
         return EINVAL;

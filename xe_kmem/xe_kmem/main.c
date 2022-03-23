@@ -56,7 +56,8 @@ int main(int argc, const char* argv[]) {
     
     xe_kmem_backend_t kmem_fast = xe_memory_kmem_fast_create(XE_KMEM_FAST_DEFAULT_IMAGE);
     xe_kmem_use_backend(kmem_fast);
-//    kmem_bootstrap_destroy(&kmem_slow);
+    
+    kmem_bootstrap_destroy(&kmem_slow);
     
     struct xe_kmem_remote_server_ctx ctx;
     ctx.mh_execute_header = meh;
