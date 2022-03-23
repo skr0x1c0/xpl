@@ -44,7 +44,7 @@ void test_vnode() {
     int res = ftruncate(file, sizeof(data));
     xe_assert_errno(res);
     xe_util_vnode_t util = xe_util_vnode_create();
-    xe_util_vnode_write(util, vnode, data, sizeof(data));
+    xe_util_vnode_write_user(util, vnode, data, sizeof(data));
     
     char buffer[sizeof(data)];
     bzero(buffer, sizeof(buffer));
@@ -54,7 +54,7 @@ void test_vnode() {
     xe_assert(res == 0);
     
     bzero(buffer, sizeof(buffer));
-    xe_util_vnode_read(util, vnode, buffer, sizeof(buffer));
+    xe_util_vnode_read_user(util, vnode, buffer, sizeof(buffer));
     res = memcmp(data, buffer, sizeof(data));
     xe_assert(res == 0);
     
