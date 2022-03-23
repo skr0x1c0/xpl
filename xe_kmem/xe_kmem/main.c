@@ -13,6 +13,7 @@
 #include <sys/resource.h>
 #include <arpa/inet.h>
 
+#include <xe/xe.h>
 #include <xe/util/binary.h>
 #include <xe/util/assert.h>
 #include <xe/util/msdosfs.h>
@@ -30,8 +31,8 @@
 
 
 int main(int argc, const char* argv[]) {
+    xe_init();
     smb_client_load_kext();
-    xe_util_msdosfs_loadkext();
     
     // Increase open file limit
     struct rlimit nofile_limit;

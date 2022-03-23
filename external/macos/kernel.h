@@ -8,32 +8,42 @@
 #ifndef macos_params_h
 #define macos_params_h
 
-#define _MACOS_XSTR(x) #x
-#define _MACOS_STR(x) _MACOS_XSTR(x)
+#include "../../env.h"
 
-#define MACOS_v21E230
-#define KERNEL_T6000
+#if defined(MACOS_21E230_T6000_RELEASE)
 
-#if defined(MACOS_v21E230)
-#define MACOS_VERSION v21E230
+#define MACOS_OSVERSION              "21E230"
+#define MACOS_OSVERSION_21E230       1
+#define MACOS_KERNEL_MACHINE         "T6000"
+#define MACOS_KERNEL_MACHINE_T6000   1
+#define MACOS_KERNEL_VARIANT         "RELEASE"
+#define MACOS_KERNEL_VARIANT_RELEASE 1
+#define MACOS_KERNEL_UUID            "178AA913-FCA9-33FD-A81C-DF08315F458D"
+
+#include "kernel/21E230/T6000/functions.h"
+#include "kernel/21E230/T6000/variables.h"
+#include "kernel/21E230/T6000/image.h"
+#include "kernel/21E230/T6000/types.h"
+#include "kernel/21E230/T6000/constants.h"
+
+#elif defined(MACOS_21E230_T8101_RELEASE)
+
+#define MACOS_OSVERSION              "21E230"
+#define MACOS_OSVERSION_21E230       1
+#define MACOS_KERNEL_MACHINE         "T8101"
+#define MACOS_KERNEL_MACHINE_T8101   1
+#define MACOS_KERNEL_VARIANT         "RELEASE"
+#define MACOS_KERNEL_VARIANT_RELEASE 1
+#define MACOS_KERNEL_UUID            "F027EB2E-26A7-3A4E-87FA-6A745379530C"
+
+#include "kernel/21E230/T8101/functions.h"
+#include "kernel/21E230/T8101/variables.h"
+#include "kernel/21E230/T8101/image.h"
+#include "kernel/21E230/T8101/types.h"
+#include "kernel/21E230/T8101/constants.h"
+
 #else
-#error unknown macos version
+#error valid configuration not selected
 #endif
-
-#if defined(KERNEL_T6000)
-#define MACOS_KERNEL_VARIANT T6000
-#elif defined(KERNEL_T8101)
-#define MACOS_KERNEL_VARIANT T8101
-#else
-#error unknown kernel variant
-#endif
-
-#define _MACOS_KERNEL_INCLUDES_DIR kernel/MACOS_VERSION/MACOS_KERNEL_VARIANT
-
-#include _MACOS_STR(_MACOS_KERNEL_INCLUDES_DIR/functions.h)
-#include _MACOS_STR(_MACOS_KERNEL_INCLUDES_DIR/variables.h)
-#include _MACOS_STR(_MACOS_KERNEL_INCLUDES_DIR/image.h)
-#include _MACOS_STR(_MACOS_KERNEL_INCLUDES_DIR/types.h)
-#include _MACOS_STR(_MACOS_KERNEL_INCLUDES_DIR/constants.h)
 
 #endif /* macos_params_h */

@@ -12,6 +12,7 @@
 
 #include <xe_dev/memory/tester.h>
 
+#include <xe/xe.h>
 #include <xe/memory/kmem.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/util/assert.h>
@@ -24,6 +25,7 @@ int main(int argc, const char * argv[]) {
     xe_assert(argc == 2);
     const char* socket_path = argv[1];
     
+    xe_init();
     xe_kmem_backend_t remote_backend = xe_kmem_remote_client_create(socket_path);
     xe_kmem_use_backend(remote_backend);
     gym_init();

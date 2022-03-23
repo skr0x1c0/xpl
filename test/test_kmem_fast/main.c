@@ -17,6 +17,7 @@
 #include <sys/fcntl.h>
 #include <gym_client.h>
 
+#include <xe/xe.h>
 #include <xe/memory/kmem.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/memory/kmem_fast.h>
@@ -32,6 +33,7 @@
 
 
 int main(int argc, const char* argv[]) {
+    xe_init();
     xe_kmem_use_backend(xe_kmem_gym_create());
     xe_slider_kernel_init(xe_slider_kas_get_mh_execute_header());
     xe_util_msdosfs_loadkext();
