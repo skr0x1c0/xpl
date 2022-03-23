@@ -28,12 +28,12 @@ static inline int xe_sleep_ms(uint64_t ms) {
 }
 
 
-static inline size_t xe_cpu_count(void) {
+static inline int xe_cpu_count(void) {
     size_t count;
     size_t out_size = sizeof(count);
     int res = sysctlbyname("hw.ncpu", &count, &out_size, NULL, 0);
     xe_assert_errno(res);
-    return count;
+    return (int)count;
 }
 
 
