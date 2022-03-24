@@ -32,7 +32,7 @@ void xe_verify_kernel_uuid(void) {
     xe_assert_errno(res);
     
     if (strncmp(buffer, MACOS_KERNEL_UUID, sizeof(buffer)) != 0) {
-        xe_log_error("kern.uuid does not match with MACOS_KERNEL_UUID used during build time. check the $(PROJECT_ROOT)/env.h");
+        xe_log_error("kern.uuid does not match with MACOS_KERNEL_UUID used during build time. check build configuration selected in \"xe/env.h\"");
         xe_abort();
     }
 }
