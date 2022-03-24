@@ -106,8 +106,6 @@ privacy_disable_session_t privacy_disable_session_start(void) {
 
 void privacy_disable_session_kill_process(uintptr_t proc) {
     uint32_t pid = xe_kmem_read_uint32(proc, TYPE_PROC_MEM_P_PID_OFFSET);
-    char kill_cmd[NAME_MAX];
-    snprintf(kill_cmd, sizeof(kill_cmd), "kill -9 %d", pid);
     int error = kill(pid, SIGKILL);
     if (error) {
         xe_log_warn("failed to kill systemstatusd, err: %s", strerror(errno));

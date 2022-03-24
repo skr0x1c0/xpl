@@ -68,16 +68,7 @@ extension CaptureSession {
         let status = AVCaptureDevice.authorizationStatus(for: mediaType)
         var authorized = false
         switch status {
-        case .notDetermined:
-            let sem = DispatchSemaphore(value: 0)
-            AVCaptureDevice.requestAccess(for: mediaType) { ok in
-                authorized = ok
-                sem.signal()
-            }
-            sem.wait()
-        case .restricted:
-            authorized = false
-        case .denied:
+        case .restricted, .denied, .notDetermined:
             authorized = false
         case .authorized:
             authorized = true
@@ -258,6 +249,7 @@ enum CommandError: Error {
 
 func sudoRun(_ util: xe_util_sudo_t, cmd: String, args: [String]) throws {
     var argArray = args.map { UnsafePointer<Int8>(strdup($0)) }
+    defer { argArray.forEach { $0?.deallocate() } }
     
     let res = xe_util_sudo_run(util, cmd, &argArray, argArray.count)
     
@@ -349,6 +341,7 @@ if video == .none && audio == .none {
 let path = CommandLine.arguments[4]
 
 print("[I] initializing kmem")
+xe_init()
 let kmem_socket = CommandLine.arguments[1]
 var kmem_backend = xe_kmem_remote_client_create(kmem_socket)
 xe_kmem_use_backend(kmem_backend!)

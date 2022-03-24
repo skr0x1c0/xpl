@@ -4,6 +4,7 @@
 
 #include <libproc.h>
 
+#include <xe/xe.h>
 #include <xe/memory/kmem.h>
 #include <xe/memory/kmem_remote.h>
 #include <xe/slider/kernel.h>
