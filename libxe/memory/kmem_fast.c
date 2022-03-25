@@ -8,6 +8,7 @@
 #include <limits.h>
 
 #include <sys/fcntl.h>
+#include <sys/mount.h>
 
 #include "memory/kmem_fast.h"
 #include "memory/kmem.h"
@@ -17,6 +18,9 @@
 #include "util/msdosfs.h"
 #include "util/assert.h"
 #include "util/log.h"
+
+
+#define MAX_RW_SIZE 1024
 
 
 ///
@@ -33,17 +37,15 @@
 
 typedef struct xe_memory_kmem_fast {
     xe_util_vnode_t util_vnode;
+    xe_util_msdosfs_t util_msdosfs;
     int bridge_fd;
     uintptr_t bridge_vnode;
-    char bridge_path[PATH_MAX];
 } *xe_memory_kmem_fast_t;
 
 
 void xe_memory_kmem_fast_read(void* ctx, void* dst, uintptr_t src, size_t size) {
     xe_memory_kmem_fast_t kmem = (xe_memory_kmem_fast_t)ctx;
     
-    int res = ftruncate(kmem->bridge_fd, size);
-    xe_assert_errno(res);
     off_t off = lseek(kmem->bridge_fd, 0, SEEK_SET);
     xe_assert_errno(off < 0);
     
@@ -58,8 +60,6 @@ void xe_memory_kmem_fast_read(void* ctx, void* dst, uintptr_t src, size_t size) 
 void xe_memory_kmem_fast_write(void* ctx, uintptr_t dst, const void* src, size_t size) {
     xe_memory_kmem_fast_t kmem = (xe_memory_kmem_fast_t)ctx;
     
-    int res = ftruncate(kmem->bridge_fd, size);
-    xe_assert_errno(res);
     off_t off = lseek(kmem->bridge_fd, 0, SEEK_SET);
     xe_assert_errno(off < 0);
     ssize_t bytes_written = write(kmem->bridge_fd, src, size);
@@ -73,16 +73,34 @@ void xe_memory_kmem_fast_write(void* ctx, uintptr_t dst, const void* src, size_t
 const static struct xe_kmem_ops xe_memory_kmem_fast_ops = {
     .read = xe_memory_kmem_fast_read,
     .write = xe_memory_kmem_fast_write,
-    .max_read_size = 1024,
-    .max_write_size = 1024,
+    .max_read_size = MAX_RW_SIZE,
+    .max_write_size = MAX_RW_SIZE,
 };
 
 
-xe_kmem_backend_t xe_memory_kmem_fast_create(const char* base_img_path) {
-    xe_util_msdosfs_loadkext();
+xe_util_msdosfs_t xe_memory_kmem_setup_vol(int* bridge_fd) {
+    xe_util_msdosfs_t vol = xe_util_msdosfs_mount(64, MNT_DONTBROWSE);
     
-    char bridge_path[] = "/tmp/xe_kmem_fast_bridge.XXXXXXXXX";
-    int fd_bridge = mkostemp(bridge_path, O_EXLOCK);
+    char mount[sizeof(XE_MOUNT_TEMP_DIR)];
+    xe_util_msdosfs_mount_point(vol, mount);
+    
+    char path[sizeof(mount) + 7];
+    snprintf(path, sizeof(path), "%s/bridge", mount);
+    int fd = open(path, O_CREAT | O_RDWR, S_IRWXU);
+    xe_assert_errno(fd < 0);
+    
+    int res = ftruncate(fd, MAX_RW_SIZE);
+    xe_assert_errno(res);
+    
+    *bridge_fd = fd;
+    return vol;
+}
+
+
+xe_kmem_backend_t xe_memory_kmem_fast_create(void) {
+    int fd_bridge;
+    xe_util_msdosfs_t util_msdos = xe_memory_kmem_setup_vol(&fd_bridge);
+    
     xe_assert_errno(fd_bridge < 0);
     uintptr_t vnode_bridge;
     int error = xe_xnu_proc_find_fd_data(xe_xnu_proc_current_proc(), fd_bridge, &vnode_bridge);
@@ -93,7 +111,7 @@ xe_kmem_backend_t xe_memory_kmem_fast_create(const char* base_img_path) {
     kmem->bridge_fd = fd_bridge;
     kmem->bridge_vnode = vnode_bridge;
     kmem->util_vnode = xe_util_vnode_create();
-    strlcpy(kmem->bridge_path, bridge_path, sizeof(kmem->bridge_path));
+    kmem->util_msdosfs = util_msdos;
     
     return xe_kmem_backend_create(&xe_memory_kmem_fast_ops, kmem);
 }
@@ -103,7 +121,7 @@ void xe_memory_kmem_fast_destroy(xe_kmem_backend_t* backend_p) {
     xe_memory_kmem_fast_t kmem = xe_kmem_backend_get_ctx(*backend_p);
     xe_util_vnode_destroy(&kmem->util_vnode);
     close(kmem->bridge_fd);
-    remove(kmem->bridge_path);
+    xe_util_msdosfs_unmount(&kmem->util_msdosfs);
     free(kmem);
     xe_kmem_backend_destroy(backend_p);
 }

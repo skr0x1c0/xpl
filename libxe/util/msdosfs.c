@@ -1,143 +1,179 @@
-#include <string.h>
-#include <unistd.h>
+//
+//  msdosfs_ramfs.c
+//  libxe
+//
+//  Created by sreejith on 3/24/22.
+//
 
-#include <sys/errno.h>
+#include <assert.h>
+#include <string.h>
+
+#include <sys/fcntl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 
 #include <IOKit/kext/KextManager.h>
 
-#include "../external/msdosfs/msdosfs.h"
-
 #include "util/msdosfs.h"
+#include "cmd/cmd.h"
 #include "util/assert.h"
-#include "util/cp.h"
-#include "cmd/hdiutil.h"
 
-#define BASE_IMAGE_NAME "exp_msdosfs_base.dmg"
+#include "../external/msdosfs/msdosfs.h"
 
 
 struct xe_util_msdosfs {
-    char directory[PATH_MAX];
-    char dev[PATH_MAX];
-    int fd_mount;
+    char mount_point[sizeof(XE_MOUNT_TEMP_DIR)];
+    int fd;
+    int disk;
 };
 
 
+typedef struct xe_util_msdosfs* xe_util_msdosfs_t;
+
+
 int xe_util_msdosfs_loadkext(void) {
-    return KextManagerLoadKextWithIdentifier(CFSTR("com.apple.filesystems.msdosfs"), NULL);
+    struct vfsconf conf;
+    int res = getvfsbyname("msdos", &conf);
+    if (res) {
+        return KextManagerLoadKextWithIdentifier(CFSTR("com.apple.filesystems.msdosfs"), NULL);
+    }
+    return 0;
 }
 
 
-int xe_util_msdosfs_mount(const char* base_img_path, const char* label, xe_util_msdosfs_t* mount_out) {
-    char temp_dir[] = "/tmp/exp_msdos.XXXXXXXX";
-    if (!mkdtemp(temp_dir)) {
-        return errno;
-    }
+int xe_util_msdosfs_ramfs(size_t block_size, int* dev) {
+    char name[64];
+    bzero(name, sizeof(name));
     
-    struct stat st;
-    if (stat(temp_dir, &st)) {
-        printf("[ERROR] temp directory problem, err: %d\n", errno);
-        xe_abort();
-    }
-
-    char mount_point[PATH_MAX];
-    snprintf(mount_point, sizeof(mount_point), "%s/mount", temp_dir);
-
-    if (mkdir(mount_point, 0700)) {
-        return errno;
-    }
-
-    int error = 0;
-    char image_path[PATH_MAX];
-    if (snprintf(image_path, sizeof(image_path), "%s/%s", temp_dir, BASE_IMAGE_NAME) >= sizeof(image_path)) {
-        error = E2BIG;
-        goto exit_error;
-    }
+    char url[27];
+    snprintf(url, sizeof(url), "ram://%lu", block_size);
     
-    error = xe_util_cp(base_img_path, image_path);
-    if (error) {
-        goto exit_error;
-    }
-    
-    const char* opts[] = {
+    const char* argv[] = {
+        "/usr/bin/hdiutil",
+        "attach",
         "-nomount",
+        url,
+        NULL
     };
-    char dev_path[PATH_MAX];
-    error = xe_cmd_hdiutil_attach(image_path, opts, 1, dev_path, sizeof(dev_path));
+    
+    int error = xe_cmd_exec_sync("/usr/bin/hdiutil", argv, name, sizeof(name));
     if (error) {
-        goto exit_error;
+        return error;
     }
+    xe_assert_cond(memcmp(name, "/dev/disk", 9), ==, 0);
+    
+    int disk = 0;
+    char* endp;
+    for (endp = &name[9]; endp < &name[sizeof(name) - 1] && *endp >= '0' && *endp <= '9'; endp++) {
+        disk = disk * 10 + (*endp - '0');
+    }
+    xe_assert(*endp == ' ' || *endp == '\0' || *endp == '\n');
+    
+    *dev = disk;
+    return 0;
+}
 
+
+int xe_util_msdosfs_newfs(int disk) {
+    xe_assert_cond(disk, <=, UINT16_MAX);
+    char dev[16];
+    snprintf(dev, sizeof(dev), "/dev/rdisk%d", disk);
+    
+    const char* argv[] = {
+        "/sbin/newfs_msdos",
+        dev,
+        NULL
+    };
+    
+    return xe_cmd_exec_sync("/sbin/newfs_msdos", argv, NULL, 0);
+}
+
+
+xe_util_msdosfs_t xe_util_msdosfs_mount(size_t blocks, int mount_options) {
+    xe_util_msdosfs_loadkext();
+    
+    int disk;
+    int error = xe_util_msdosfs_ramfs(blocks, &disk);
+    xe_assert_err(error);
+    
+    error = xe_util_msdosfs_newfs(disk);
+    xe_assert_err(error);
+    
+    xe_util_msdosfs_t util = malloc(sizeof(struct xe_util_msdosfs));
+    static_assert(sizeof(util->mount_point) == sizeof(XE_MOUNT_TEMP_DIR), "");
+    memcpy(util->mount_point, XE_MOUNT_TEMP_DIR, sizeof(util->mount_point));
+    mkdtemp(util->mount_point);
+    util->disk = disk;
+    
+    int fd = open(util->mount_point, O_RDONLY);
+    xe_assert_cond(fd, >=, 0);
+    util->fd = fd;
+    
     struct msdosfs_args args;
     bzero(&args, sizeof(args));
     
-    if (strlcpy((char*)args.label, label, sizeof(args.label)) >= sizeof(args.label)) {
-        error = E2BIG;
-        goto exit_error;
-    }
-    
-    int fd_mount = open(mount_point, O_RDONLY);
-    xe_assert(fd_mount >= 0);
+    char dev[16];
+    snprintf(dev, sizeof(dev), "/dev/disk%d", disk);
     
     args.mask = ACCESSPERMS;
     args.uid = getuid();
     args.gid = getgid();
     args.magic = MSDOSFS_ARGSMAGIC;
-    args.fspec = dev_path;
-    args.flags = MSDOSFSMNT_LABEL | MNT_UNKNOWNPERMISSIONS;
+    args.fspec = dev;
 
-    if (fmount("msdos", fd_mount, MNT_WAIT | MNT_SYNCHRONOUS | MNT_DONTBROWSE, &args)) {
-        error = errno;
-        goto exit_error;
-    }
-
-    xe_util_msdosfs_t mount = (xe_util_msdosfs_t)malloc(sizeof(struct xe_util_msdosfs));
-    strncpy(mount->directory, temp_dir, sizeof(mount->directory));
-    strncpy(mount->dev, dev_path, sizeof(mount->dev));
-    mount->fd_mount = fd_mount;
-    *mount_out = mount;
-
-    return 0;
-
-exit_error:
-    rmdir(mount_point);
-    unlink(image_path);
-
-    if (rmdir(temp_dir)) {
-        printf("[WARN] failed to remove temporary directory %s, err: %d", temp_dir, errno);
-    }
-
-    return error;
-}
-
-size_t xe_util_msdosfs_get_mountpoint(xe_util_msdosfs_t mount, char* dst, size_t dst_size) {
-    return snprintf(dst, dst_size, "%s/mount", mount->directory);
-}
-
-int xe_util_msdosfs_get_mount_fd(xe_util_msdosfs_t allocator) {
-    return allocator->fd_mount;
-}
-
-int xe_util_msdosfs_unmount(xe_util_msdosfs_t* mount_p) {
-    xe_util_msdosfs_t mount = *mount_p;
-
-    int error = xe_cmd_hdiutil_detach(mount->dev);
-    if (error) {
-        return error;
-    }
+    int res = fmount("msdos", fd, mount_options, &args);
+    xe_assert_errno(res);
     
-    char buffer[PATH_MAX];
-    snprintf(buffer, sizeof(buffer), "%s/mount", mount->directory);
-    rmdir(buffer);
-
-    snprintf(buffer, sizeof(buffer), "%s/%s", mount->directory, BASE_IMAGE_NAME);
-    unlink(buffer);
-
-    rmdir(mount->directory);
-
-    free(mount);
-    *mount_p = NULL;
-    return 0;
+    return util;
 }
 
+
+void xe_util_msdosfs_update(xe_util_msdosfs_t util, int flags) {
+    struct msdosfs_args args;
+    bzero(&args, sizeof(args));
+    
+    char dev[16];
+    snprintf(dev, sizeof(dev), "/dev/disk%d", util->disk);
+    
+    args.mask = ACCESSPERMS;
+    args.uid = getuid();
+    args.gid = getgid();
+    args.magic = MSDOSFS_ARGSMAGIC;
+    args.fspec = dev;
+
+    int res = mount("msdos", util->mount_point, MNT_UPDATE | flags, &args);
+    xe_assert_errno(res);
+}
+
+
+int xe_util_msdosfs_mount_fd(xe_util_msdosfs_t util) {
+    return util->fd;
+}
+
+
+void xe_util_msdosfs_mount_point(xe_util_msdosfs_t util, char buffer[sizeof(XE_MOUNT_TEMP_DIR)]) {
+    static_assert(sizeof(util->mount_point) == sizeof(XE_MOUNT_TEMP_DIR), "");
+    memcpy(buffer, util->mount_point, sizeof(XE_MOUNT_TEMP_DIR));
+}
+
+
+void xe_util_msdosfs_unmount(xe_util_msdosfs_t* util_p) {
+    xe_util_msdosfs_t util = *util_p;
+    char dev[16];
+    snprintf(dev, sizeof(dev), "/dev/disk%d", util->disk);
+    
+    const char* argv[] = {
+        "/usr/bin/hdiutil",
+        "detach",
+        "-force",
+        dev,
+        NULL
+    };
+    
+    int error = xe_cmd_exec_sync("/usr/bin/hdiutil", argv, NULL, 0);
+    xe_assert_err(error);
+    
+    rmdir(util->mount_point);
+    free(util);
+    *util_p = NULL;
+}

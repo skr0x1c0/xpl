@@ -12,11 +12,8 @@
 
 #include "../memory/kmem.h"
 
-#define XE_KMEM_FAST_DEFAULT_IMAGE "Resources/libxe/memory/kmem_fast_img.dmg"
-
 /// Create a fast aribitary kernel memory read / write backend
-/// @param base_img_path path to `kmem_fast_img.dmg`
-xe_kmem_backend_t xe_memory_kmem_fast_create(const char* base_img_path);
+xe_kmem_backend_t xe_memory_kmem_fast_create(void);
 
 /// Release resources
 /// @param backend_p pointer to `xe_kmem_backend_t` created using

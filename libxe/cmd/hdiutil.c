@@ -15,35 +15,8 @@
 #include <sys/errno.h>
 
 #include "cmd/hdiutil.h"
+#include "cmd/cmd.h"
 #include "util/assert.h"
-
-
-int xe_cmd_exec(const char* exec_path, const char* argv[], pid_t* pid, int* std_out) {
-    posix_spawn_file_actions_t file_actions;
-    int res = posix_spawn_file_actions_init(&file_actions);
-    xe_assert_errno(res);
-    
-    int pfds[2];
-    res = pipe(pfds);
-    xe_assert_errno(res);
-    
-    res = posix_spawn_file_actions_addclose(&file_actions, pfds[0]);
-    xe_assert_errno(res);
-    
-    res = posix_spawn_file_actions_adddup2(&file_actions, pfds[1], STDOUT_FILENO);
-    xe_assert_errno(res);
-    
-    int error = posix_spawn(pid, exec_path, &file_actions, NULL, (char**)argv, NULL);
-    if (error) {
-        return error;
-    }
-    
-    res = close(pfds[1]);
-    xe_assert_errno(res);
-    
-    *std_out = pfds[0];
-    return 0;
-}
 
 
 int xe_cmd_hdiutil_attach(const char* image, const char* opts[], size_t num_opts, char* dev_out, size_t dev_size) {
