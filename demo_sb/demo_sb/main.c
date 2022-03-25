@@ -23,14 +23,31 @@
 
 
 int main(int argc, const char * argv[]) {
-    if (argc != 2) {
-        xe_log_error("invalid arguments");
-        xe_log_info("usage: demo_sb <path-to-kmem-socket>");
-        exit(1);
+    const char* kmem_socket = NULL;
+    
+    int ch;
+    while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
+        switch (ch) {
+            case 'k': {
+                kmem_socket = optarg;
+                break;
+            }
+            case '?':
+            default: {
+                xe_log_info("usage: demo_sb [-k kmem_uds]");
+                exit(1);
+            }
+        }
     }
     
     xe_init();
-    xe_kmem_backend_t backend = xe_kmem_remote_client_create(argv[1]);
+    xe_kmem_backend_t backend;
+    int error = xe_kmem_remote_client_create(kmem_socket, &backend);
+    if (error) {
+        xe_log_error("failed to connect to kmem server, err: %s", strerror(error));
+        exit(1);
+    }
+    
     xe_kmem_use_backend(backend);
     xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     

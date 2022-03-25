@@ -19,14 +19,35 @@
 
 
 int main(int argc, const char * argv[]) {
-    xe_assert_cond(argc, >=, 2);
-    const char* path = argv[1];
-    const char* filter = argc > 2 ? argv[2] : "";
+    const char* uds_path = NULL;
+    const char* test_name = NULL;
     
-    xe_kmem_backend_t backend = xe_kmem_remote_client_create(path);
+    int ch;
+    while ((ch = getopt(argc, (char**)argv, "k:t:")) != -1) {
+        switch (ch) {
+            case 'k':
+                uds_path = optarg;
+                break;
+            case 't':
+                test_name = optarg;
+                break;
+            case '?':
+            default:
+                xe_log_info("usage: test_general_remote [-t test_name] [-k kmem_uds]");
+                exit(1);
+        }
+    }
+    
+    xe_kmem_backend_t backend;
+    int error = xe_kmem_remote_client_create(uds_path, &backend);
+    if (error) {
+        xe_log_error("failed to connect to kmem server, err: %s", strerror(error));
+        exit(1);
+    }
+    
     xe_kmem_use_backend(backend);
     xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
-    registry_run_tests(filter);
+    registry_run_tests(test_name);
     return 0;
 }

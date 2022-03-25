@@ -20,13 +20,31 @@
 
 
 int main(int argc, const char * argv[]) {
+    const char* socket_path = NULL;
+    
+    int ch;
+    while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
+        switch (ch) {
+            case 'k':
+                socket_path = optarg;
+                break;
+            case '?':
+            default:
+                xe_log_info("usage: test_kmem_remote [-k kmem_uds]");
+                exit(1);
+        }
+    }
+    
     srandom(1221);
-    
-    xe_assert(argc == 2);
-    const char* socket_path = argv[1];
-    
     xe_init();
-    xe_kmem_backend_t remote_backend = xe_kmem_remote_client_create(socket_path);
+    
+    xe_kmem_backend_t remote_backend;
+    int error = xe_kmem_remote_client_create(socket_path, &remote_backend);
+    if (error) {
+        xe_log_error("failed to connect to kmem server uds, err: %s", strerror(error));
+        exit(1);
+    }
+    
     xe_kmem_use_backend(remote_backend);
     gym_init();
     

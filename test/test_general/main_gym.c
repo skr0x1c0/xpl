@@ -26,11 +26,25 @@
 
 
 int main(int argc, const char * argv[]) {
+    const char* test_name = NULL;
+    
+    int ch;
+    while ((ch = getopt(argc, (char**)argv, "t:")) != -1) {
+        switch (ch) {
+            case 't':
+                test_name = optarg;
+                break;
+            case '?':
+            default:
+                xe_log_info("usage: test_general_gym [-t test_name]");
+                exit(1);
+        }
+    }
+    
     xe_assert_cond(getuid(), ==, 0);
     xe_kmem_use_backend(xe_kmem_gym_create());
     xe_slider_kernel_init(xe_slider_kas_get_mh_execute_header());
     
-    const char* filter = argc > 1 ? argv[1] : "";
-    registry_run_tests(filter);
+    registry_run_tests(test_name);
     return 0;
 }

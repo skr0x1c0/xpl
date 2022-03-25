@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include <dispatch/dispatch.h>
 
@@ -34,6 +35,23 @@ int main(int argc, const char* argv[]) {
     xe_init();
     smb_client_load_kext();
     
+    char* kmem_server_path = NULL;
+    
+    int ch;
+    while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
+        switch (ch) {
+            case 'k': {
+                kmem_server_path = optarg;
+                break;
+            }
+            case '?':
+            default: {
+                xe_log_info("usage: xe_kmem [-k kmem-server-uds]");
+                exit(1);
+            }
+        }
+    }
+    
     // Increase open file limit
     struct rlimit nofile_limit;
     int res = getrlimit(RLIMIT_NOFILE, &nofile_limit);
@@ -55,14 +73,17 @@ int main(int argc, const char* argv[]) {
     uintptr_t meh = kmem_bootstrap_get_mh_execute_header(kmem_slow);
     xe_slider_kernel_init(meh);
     
-    xe_kmem_backend_t kmem_fast = xe_memory_kmem_fast_create(XE_KMEM_FAST_DEFAULT_IMAGE);
+    xe_kmem_backend_t kmem_fast = xe_memory_kmem_fast_create();
     xe_kmem_use_backend(kmem_fast);
     
     kmem_bootstrap_destroy(&kmem_slow);
     
-    struct xe_kmem_remote_server_ctx ctx;
-    ctx.mh_execute_header = meh;
-    xe_kmem_remote_server_start(&ctx);
+    int error = xe_kmem_remote_server_start(meh, kmem_server_path);
+    if (error) {
+        xe_log_error("failed to start remote kmem server, err: %s", strerror(error));
+        xe_memory_kmem_fast_destroy(&kmem_fast);
+        exit(1);
+    }
     
     xe_memory_kmem_fast_destroy(&kmem_fast);
     return 0;

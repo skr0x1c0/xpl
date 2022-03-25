@@ -42,7 +42,7 @@ const struct test_case test_cases[] = {
 void registry_run_tests(const char* filter) {
     for (int i=0; i<xe_array_size(test_cases); i++) {
         const struct test_case* t = &test_cases[i];
-        if (strlen(filter) == 0 || strcmp(filter, t->name) == 0) {
+        if (!filter || strlen(filter) == 0 || strcmp(filter, t->name) == 0) {
             xe_log_info("running test %s", t->name);
             t->test_entry();
             xe_log_info("test %s completed", t->name);

@@ -106,14 +106,31 @@ void mutate_csblob_entilements_der(xe_util_kfunc_t kfunc, uintptr_t cs_blob, uin
 
 
 int main(int argc, const char * argv[]) {
-    if (argc != 2) {
-        xe_log_error("invalid arguments");
-        print_usage();
-        exit(1);
+    const char* kmem_socket = NULL;
+    
+    int ch;
+    while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
+        switch (ch) {
+            case 'k': {
+                kmem_socket = optarg;
+                break;
+            }
+            case '?':
+            default: {
+                xe_log_info("usage: demo_entitlements [-k kmem_uds]");
+                exit(1);
+            }
+        }
     }
     
     xe_init();
-    xe_kmem_backend_t remote = xe_kmem_remote_client_create(argv[1]);
+    xe_kmem_backend_t remote;
+    int error = xe_kmem_remote_client_create(kmem_socket, &remote);
+    if (error) {
+        xe_log_error("cannot connect to kmem unix domain socket, err: %s", strerror(error));
+        exit(1);
+    }
+    
     xe_kmem_use_backend(remote);
     xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(remote));
     

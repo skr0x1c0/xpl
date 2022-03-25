@@ -12,7 +12,8 @@
 
 #include "../memory/kmem.h"
 
-/// Create a fast aribitary kernel memory read / write backend
+/// Create a fast aribitary kernel memory read / write backend. A kmem backend should
+/// already be setup with moderate read capabiility and atleast single write capability
 xe_kmem_backend_t xe_memory_kmem_fast_create(void);
 
 /// Release resources

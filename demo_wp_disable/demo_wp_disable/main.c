@@ -93,14 +93,31 @@ void recursive_patch_storage(xe_slider_kext_t io_storage_slider, uintptr_t stora
 
 
 int main(int argc, const char * argv[]) {
-    if (argc != 2) {
-        xe_log_error("invalid arguments");
-        xe_log_info("usage: demo_wp_disable <path-to-kmem-socket>");
-        exit(1);
+    const char* kmem_socket = NULL;
+    
+    int ch;
+    while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
+        switch (ch) {
+            case 'k': {
+                kmem_socket = optarg;
+                break;
+            }
+            case '?':
+            default: {
+                xe_log_info("usage: demo_wp_disable [-k kmem_uds]");
+                exit(1);
+            }
+        }
     }
     
     xe_init();
-    xe_kmem_backend_t backend = xe_kmem_remote_client_create(argv[1]);
+    xe_kmem_backend_t backend;
+    int error = xe_kmem_remote_client_create(kmem_socket, &backend);
+    if (error) {
+        xe_log_error("cannot connect to kmem unix domain socket, err: %s", strerror(error));
+        exit(1);
+    }
+    
     xe_kmem_use_backend(backend);
     xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
     
@@ -119,7 +136,7 @@ int main(int argc, const char * argv[]) {
     };
     
     uintptr_t sdxc_slot;
-    int error = xe_io_registry_search(xe_io_registry_entry_root(), sdxc_slot_path, xe_array_size(sdxc_slot_path), &sdxc_slot);
+    error = xe_io_registry_search(xe_io_registry_entry_root(), sdxc_slot_path, xe_array_size(sdxc_slot_path), &sdxc_slot);
     if (error) {
         xe_log_error("this computer does not have a supported pcie sdreader");
         exit(1);
