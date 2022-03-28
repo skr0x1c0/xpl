@@ -36,19 +36,18 @@ void hex_dump(const char* data, size_t data_size) {
 
 
 size_t find_nb_name_length(char* data, size_t data_len) {
-    /// Netbios name is composed of segments with each segment prefixed by its
-    /// segment data length. Terminating segment will have data length zero
+    /// Decode NetBIOS name encoded in compressed encoding to uncompressed encoding
     size_t cursor = 0;
     while (1) {
         if (cursor >= data_len) {
             return 0;
         }
         
-        uint8_t segment_len = data[cursor];
-        if (segment_len == 0) {
+        uint8_t label_len = data[cursor];
+        if (label_len == 0) {
             break;
         } else {
-            cursor += segment_len + 1;
+            cursor += label_len + 1;
         }
     }
     return cursor;

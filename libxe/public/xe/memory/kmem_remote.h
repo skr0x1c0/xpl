@@ -9,15 +9,13 @@
 #define xe_kmem_remote_h
 
 #include <stdio.h>
-#include "kmem.h"
+#include "./kmem.h"
 
-struct xe_kmem_remote_server_ctx {
-    uintptr_t mh_execute_header;
-};
+#define XE_DEFAULT_KMEM_SOCKET "/tmp/xe_kmem.sock"
 
-void xe_kmem_remote_server_start(const struct xe_kmem_remote_server_ctx* ctx);
+int xe_kmem_remote_server_start(uintptr_t mh_execute_header, const char* uds_path);
 
-xe_kmem_backend_t xe_kmem_remote_client_create(const char* socket_path);
+int xe_kmem_remote_client_create(const char* socket_path, xe_kmem_backend_t* backend);
 uintptr_t xe_kmem_remote_client_get_mh_execute_header(xe_kmem_backend_t client);
 void xe_kmem_remote_client_destroy(xe_kmem_backend_t* backend_p);
 

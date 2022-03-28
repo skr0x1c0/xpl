@@ -18,13 +18,13 @@
 #define MAX_IPS_PER_NIC 8
 #define MAX_ALLOCS_PER_BACKEND (MAX_NICS_PER_BACKEND * MAX_IPS_PER_NIC)
 
-struct kmem_allocator_prpw {
+struct xe_allocator_prpw {
     smb_nic_allocator* backends;
     size_t backend_count;
     _Atomic size_t alloc_cursor;
 };
 
-kmem_allocator_prpw_t kmem_allocator_prpw_create(const struct sockaddr_in* addr, size_t num_allocs) {
+xe_allocator_prpw_t xe_allocator_prpw_create(const struct sockaddr_in* addr, size_t num_allocs) {
     size_t backends_required = (num_allocs + MAX_ALLOCS_PER_BACKEND - 1) / MAX_ALLOCS_PER_BACKEND;
     smb_nic_allocator* backends = malloc(sizeof(smb_nic_allocator) * backends_required);
     xe_util_dispatch_apply(backends, sizeof(smb_nic_allocator), backends_required, NULL, ^(void* ctx, void* data, size_t index) {
@@ -33,7 +33,7 @@ kmem_allocator_prpw_t kmem_allocator_prpw_create(const struct sockaddr_in* addr,
         return 0;
     });
 
-    kmem_allocator_prpw_t allocator = (kmem_allocator_prpw_t)malloc(sizeof(struct kmem_allocator_prpw));
+    xe_allocator_prpw_t allocator = (xe_allocator_prpw_t)malloc(sizeof(struct xe_allocator_prpw));
     allocator->backends = backends;
     allocator->backend_count = backends_required;
     atomic_init(&allocator->alloc_cursor, 0);
@@ -56,11 +56,11 @@ kmem_allocator_prpw_t kmem_allocator_prpw_create(const struct sockaddr_in* addr,
     return allocator;
 }
 
-size_t kmem_allocator_prpw_get_capacity(kmem_allocator_prpw_t allocator) {
+size_t xe_allocator_prpw_get_capacity(xe_allocator_prpw_t allocator) {
     return allocator->backend_count * MAX_ALLOCS_PER_BACKEND;
 }
 
-int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, uint8_t address_len, sa_family_t address_family, const char* arbitary_data, int arbitary_data_len, int arbitary_data_offset) {
+int xe_allocator_prpw_allocate(xe_allocator_prpw_t allocator, uint8_t address_len, sa_family_t address_family, const char* arbitary_data, int arbitary_data_len, int arbitary_data_offset) {
     size_t index = atomic_fetch_add(&allocator->alloc_cursor, 1);
     size_t backend = index / MAX_ALLOCS_PER_BACKEND;
     
@@ -101,7 +101,7 @@ int kmem_allocator_prpw_allocate(kmem_allocator_prpw_t allocator, uint8_t addres
 }
 
 
-int kmem_allocator_prpw_filter(kmem_allocator_prpw_t allocator, size_t offset, size_t count, kmem_allocator_prpw_data_filter filter, void* filter_ctx, int64_t* found_idx_out) {
+int xe_allocator_prpw_filter(xe_allocator_prpw_t allocator, size_t offset, size_t count, xe_allocator_prpw_data_filter filter, void* filter_ctx, int64_t* found_idx_out) {
     size_t alloc_cursor = allocator->alloc_cursor;
     size_t start_idx = offset;
     size_t end_idx = offset + count - 1;
@@ -153,7 +153,7 @@ int kmem_allocator_prpw_filter(kmem_allocator_prpw_t allocator, size_t offset, s
     return error;
 }
 
-int kmem_allocator_prpw_read(kmem_allocator_prpw_t allocator, size_t alloc_index, sa_family_t* family) {
+int xe_allocator_prpw_read(xe_allocator_prpw_t allocator, size_t alloc_index, sa_family_t* family) {
     size_t alloc_cursor = allocator->alloc_cursor;
     if (alloc_index >= alloc_cursor) {
         return ERANGE;
@@ -180,7 +180,7 @@ int kmem_allocator_prpw_read(kmem_allocator_prpw_t allocator, size_t alloc_index
     return 0;
 }
 
-int kmem_allocator_prpw_trim_backend_count(kmem_allocator_prpw_t allocator, size_t offset, size_t count) {
+int xe_allocator_prpw_trim_backend_count(xe_allocator_prpw_t allocator, size_t offset, size_t count) {
     if ((offset + count) > allocator->backend_count) {
         return ERANGE;
     }
@@ -210,26 +210,26 @@ int kmem_allocator_prpw_trim_backend_count(kmem_allocator_prpw_t allocator, size
     return 0;
 }
 
-int kmem_allocator_prpw_release_containing_backend(kmem_allocator_prpw_t allocator, int64_t alloc_index) {
+int xe_allocator_prpw_release_containing_backend(xe_allocator_prpw_t allocator, int64_t alloc_index) {
     if (alloc_index < 0 || alloc_index >= allocator->alloc_cursor) {
         return EINVAL;
     }
 
-    return kmem_allocator_prpw_trim_backend_count(allocator, alloc_index / MAX_ALLOCS_PER_BACKEND, 1);
+    return xe_allocator_prpw_trim_backend_count(allocator, alloc_index / MAX_ALLOCS_PER_BACKEND, 1);
 }
 
-void kmem_allocator_prpw_iter_backends(kmem_allocator_prpw_t allocator, void(^iterator)(int)) {
+void xe_allocator_prpw_iter_backends(xe_allocator_prpw_t allocator, void(^iterator)(int)) {
     for (int i=0; i<allocator->backend_count; i++) {
         iterator(allocator->backends[i]);
     }
 }
 
-int kmem_allocator_prpw_destroy(kmem_allocator_prpw_t* id) {
+int xe_allocator_prpw_destroy(xe_allocator_prpw_t* id) {
     if (id == NULL) {
         return EINVAL;
     }
 
-    kmem_allocator_prpw_t allocator = *id;
+    xe_allocator_prpw_t allocator = *id;
     int error = xe_util_dispatch_apply(allocator->backends, sizeof(smb_nic_allocator), allocator->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
         return smb_nic_allocator_destroy((smb_nic_allocator*)data);
     });

@@ -19,7 +19,7 @@
 
 
 int main(int argc, const char * argv[]) {
-    const char* uds_path = NULL;
+    const char* uds_path = XE_DEFAULT_KMEM_SOCKET;
     const char* test_name = NULL;
     
     int ch;
@@ -41,7 +41,7 @@ int main(int argc, const char * argv[]) {
     xe_kmem_backend_t backend;
     int error = xe_kmem_remote_client_create(uds_path, &backend);
     if (error) {
-        xe_log_error("failed to connect to kmem server, err: %s", strerror(error));
+        xe_log_error("failed to connect to kmem server unix domain socket, err: %s", uds_path, strerror(error));
         exit(1);
     }
     

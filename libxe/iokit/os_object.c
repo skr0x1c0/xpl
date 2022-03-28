@@ -12,6 +12,7 @@
 #include <macos/kernel.h>
 
 
+/// Decodes the instructions in `getMetaClass` of the object and find its return value
 uintptr_t xe_os_object_get_meta_class(uintptr_t instance) {
     uintptr_t vtable = xe_kmem_read_ptr(instance, 0) - 0x10;
     uintptr_t get_meta_class_method = xe_kmem_read_ptr(vtable, TYPE_VTABLE_MEM_GET_META_CLASS_OFFSET);

@@ -31,14 +31,23 @@ xe_allocator_large_mem_t xe_allocator_large_mem_allocate(size_t size, uintptr_t*
     IOSurfaceRef surface = xe_io_surface_create(&surface_addr);
     
     uintptr_t props_dict = xe_kmem_read_uint64(surface_addr, TYPE_IOSURFACE_MEM_PROPS_OFFSET);
+    
+    /// Capacity of dictionary required to allocate `dictionary` array of required `size`
     size_t expected_capacity = (size + 15) / 16;
     xe_assert_cond(expected_capacity, <=, UINT32_MAX);
+    
+    /// `capacityIncrement` is used in `ensureCapacity` method to calculate the size of
+    /// new `dictionary` array. By setting the `capacityIncrement` to `expected_capacity`,
+    /// we can increase the capacity of dictionary to required value by triggering the
+    /// `ensureCapacity` method once. This method is much faster than growing the `dictionary`
+    /// array by adding values to the dictionary
     xe_kmem_write_uint32(props_dict, TYPE_OS_DICTIONARY_MEM_CAPACITY_INCREMENT_OFFSET, (uint32_t)expected_capacity);
     
     uint32_t capacity = xe_kmem_read_uint32(props_dict, TYPE_OS_DICTIONARY_MEM_CAPACITY_OFFSET);
     uint32_t count = xe_kmem_read_uint32(props_dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET);
     xe_assert_cond(capacity, >=, count);
     
+    /// Trigger the `ensureCapacity` method in dictionary
     for (int i=0; i<(capacity - count + 1); i++) {
         char key[NAME_MAX];
         snprintf(key, sizeof(key), "key_%d", i);

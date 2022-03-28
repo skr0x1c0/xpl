@@ -37,25 +37,5 @@ void test_large_mem(void) {
     xe_assert(addr != 0);
     xe_log_info("large mem allocated address: %p", (void*)addr);
     
-    uintptr_t flags_disabled = (BLOCK_IS_GLOBAL);
-    uintptr_t mask = (BLOCK_REFCOUNT_MASK | BLOCK_DEALLOCATING);
-    uintptr_t flags_enabled = (BLOCK_SMALL_DESCRIPTOR | BLOCK_NEEDS_FREE | BLOCK_HAS_COPY_DISPOSE | 0x2);
-    
-    uintptr_t new_addr = addr & ~flags_disabled;
-    new_addr &= ~mask;
-    new_addr |= flags_enabled;
-    
-    if (new_addr < addr) {
-        new_addr += (1 << 29);
-    }
-    
-    xe_assert_cond(new_addr, >=, addr);
-    xe_assert_cond(new_addr, <, addr + size);
-    xe_assert_cond(new_addr + 900, <, addr + size);
-    xe_assert_cond(new_addr & flags_enabled, ==, flags_enabled);
-    xe_assert_cond(new_addr & flags_disabled, ==, 0);
-    
-    xe_log_info("new addr: %p", (void*)new_addr);
-    
     xe_allocator_large_mem_free(&allocator);
 }

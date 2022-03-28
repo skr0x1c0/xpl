@@ -70,7 +70,7 @@ void bechmark(void) {
 
 int main(int argc, const char* argv[]) {
     _Bool do_benchmark = FALSE;
-    const char* uds_path = NULL;
+    const char* uds_path = XE_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "bk:")) != -1) {
@@ -100,7 +100,12 @@ int main(int argc, const char* argv[]) {
         bechmark();
     }
     
-    xe_kmem_remote_server_start(xe_slider_kas_get_mh_execute_header(), uds_path);
+    int error = xe_kmem_remote_server_start(xe_slider_kas_get_mh_execute_header(), uds_path);
+    if (error) {
+        xe_log_error("failed to start kmem server at socket %s, err: %s", uds_path, strerror(error));
+        xe_memory_kmem_fast_destroy(&kmem_fast);
+        exit(1);
+    }
 
     xe_memory_kmem_fast_destroy(&kmem_fast);
     return 0;

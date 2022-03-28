@@ -105,7 +105,7 @@
 /// has to setup a NetBIOS session before sending any SMB packets over the network to these
 /// servers. To setup a NetBIOS session, a NetBIOS session request is sent to the SMB server.
 /// This session request contains the NetBIOS names of local client machine and the remote
-/// SMB server. To and the NetBIOS name to the raw request data sent to the SMB server,  the
+/// SMB server. To add the NetBIOS name to the raw request data sent to the SMB server,  the
 /// method `nb_pub_name` defined in `smb_trantcp.c` is used.
 ///
 /// The method `nb_put_name` is defined as follows:
@@ -221,7 +221,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
-    /// The size of zone where input socket addresss to method `nb_put_name` are stored.
+    /// The size of zone where input socket addresses to method `nb_put_name` are stored.
     /// These socket addresses are duplicated from `iod->iod_saddr` and `iod->iod_laddr`
     /// using `smb_dup_sockaddr` method and they are allocated on default.64 zone
     const int sockaddr_zone_size = 64;
@@ -230,8 +230,8 @@ int main(int argc, const char * argv[]) {
     /// encounters a segment with 255 data length, the loop in `nb_put_name` will never break.
     /// Since pointers to kernel memory are common in OOB read data, and most of them have
     /// 0xfffffexxxxxxxxxx format, the oob_read_size is adjusted to prevent the header of 2nd
-    /// segment from overlapping with the 0xfffff part of these pointers. This will reduce the
-    /// probability of OOB read attempts getting stuck in infinite loop
+    /// label of NetBIOS name from overlapping with the 0xffff part of these pointers. This will
+    /// reduce the probability of OOB read attempts getting stuck in infinite loop
     const int oob_read_size = 129;
     
     /// Account for data inside memory allocated for the socket address in default.64 zone

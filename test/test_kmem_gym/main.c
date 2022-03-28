@@ -18,7 +18,7 @@
 
 
 int main(int argc, const char * argv[]) {
-    const char* kmem_uds_path = NULL;
+    const char* kmem_uds_path = XE_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -41,7 +41,7 @@ int main(int argc, const char * argv[]) {
     
     int error = xe_kmem_remote_server_start(xe_slider_kas_get_mh_execute_header(), kmem_uds_path);
     if (error) {
-        xe_log_error("failed to start remote kmem server, err: %s", strerror(error));
+        xe_log_error("failed to start kmem server at socket %s, err: %s", kmem_uds_path, strerror(error));
         exit(1);
     }
     

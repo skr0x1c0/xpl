@@ -23,7 +23,7 @@
 #define DEFAULT_SSN_ALLOCATOR_DOMAIN_SIZE 16
 
 
-struct kmem_allocator_rw {
+struct xe_allocator_rw {
     struct sockaddr_in addr;
     smb_ssn_allocator* backends;
     int backend_count;
@@ -31,7 +31,7 @@ struct kmem_allocator_rw {
 };
 
 
-kmem_allocator_rw_t kmem_allocator_rw_create(const struct sockaddr_in* addr, int count) {
+xe_allocator_rw_t xe_allocator_rw_create(const struct sockaddr_in* addr, int count) {
     xe_assert(count <= MAX_BACKEND_COUNT);
 
     smb_ssn_allocator* backends = malloc(sizeof(smb_ssn_allocator) * count);
@@ -42,7 +42,7 @@ kmem_allocator_rw_t kmem_allocator_rw_create(const struct sockaddr_in* addr, int
     });
     xe_assert_err(error);
 
-    kmem_allocator_rw_t allocator = malloc(sizeof(struct kmem_allocator_rw));
+    xe_allocator_rw_t allocator = malloc(sizeof(struct xe_allocator_rw));
     memcpy(&allocator->addr, addr, xe_min(sizeof(struct sockaddr_in), addr->sin_len));
     allocator->backends = backends;
     allocator->backend_count = count;
@@ -50,7 +50,7 @@ kmem_allocator_rw_t kmem_allocator_rw_create(const struct sockaddr_in* addr, int
     return allocator;
 }
 
-int kmem_allocator_rw_allocate(kmem_allocator_rw_t allocator, int count, kmem_allocator_rw_data_reader data_reader, void* reader_ctx) {
+int xe_allocator_rw_allocate(xe_allocator_rw_t allocator, int count, xe_allocator_rw_data_reader data_reader, void* reader_ctx) {
     if (count == -1) {
         count = allocator->backend_count;
     }
@@ -81,7 +81,7 @@ int kmem_allocator_rw_allocate(kmem_allocator_rw_t allocator, int count, kmem_al
     return error;
 }
 
-int kmem_allocator_rw_filter(kmem_allocator_rw_t allocator, int offset, int count, uint32_t data1_size, uint32_t data2_size, kmem_allocator_rw_data_filter filter, void* filter_ctx, int* found_idx_out) {
+int xe_allocator_rw_filter(xe_allocator_rw_t allocator, int offset, int count, uint32_t data1_size, uint32_t data2_size, xe_allocator_rw_data_filter filter, void* filter_ctx, int* found_idx_out) {
     if ((offset + count) > allocator->write_index) {
         return ERANGE;
     }
@@ -116,14 +116,14 @@ int kmem_allocator_rw_filter(kmem_allocator_rw_t allocator, int offset, int coun
     return 0;
 }
 
-int kmem_allocator_rw_read(kmem_allocator_rw_t allocator, int index, char* data1_out, uint32_t data1_size, char* data2_out, uint32_t data2_size) {
+int xe_allocator_rw_read(xe_allocator_rw_t allocator, int index, char* data1_out, uint32_t data1_size, char* data2_out, uint32_t data2_size) {
     if (index >= allocator->write_index) {
         return ERANGE;
     }
     return smb_ssn_allocator_read(allocator->backends[index], data1_out, data1_size, data2_out, data2_size);
 }
 
-int kmem_allocator_rw_release_backends(kmem_allocator_rw_t allocator, int offset, int count) {
+int xe_allocator_rw_release_backends(xe_allocator_rw_t allocator, int offset, int count) {
     if (offset < 0 || count < 0) {
         return EINVAL;
     }
@@ -148,7 +148,7 @@ int kmem_allocator_rw_release_backends(kmem_allocator_rw_t allocator, int offset
     return 0;
 }
 
-int kmem_allocator_rw_disown_backend(kmem_allocator_rw_t allocator, int index) {
+int xe_allocator_rw_disown_backend(xe_allocator_rw_t allocator, int index) {
     xe_assert(index < allocator->backend_count);
     int fd = allocator->backends[index];
     memcpy(&allocator->backends[index], &allocator->backends[index + 1], sizeof(allocator->backends[0]) * (allocator->backend_count - index - 1));
@@ -156,7 +156,7 @@ int kmem_allocator_rw_disown_backend(kmem_allocator_rw_t allocator, int index) {
     return fd;
 }
 
-int kmem_allocator_rw_grow_backend_count(kmem_allocator_rw_t allocator, int count) {
+int xe_allocator_rw_grow_backend_count(xe_allocator_rw_t allocator, int count) {
     smb_ssn_allocator* backends = (smb_ssn_allocator*)malloc(sizeof(smb_ssn_allocator) * (allocator->backend_count + count));
     if (!backends) {
         return ENOMEM;
@@ -180,12 +180,12 @@ int kmem_allocator_rw_grow_backend_count(kmem_allocator_rw_t allocator, int coun
     return 0;
 }
 
-int kmem_allocator_rw_get_backend_count(kmem_allocator_rw_t allocator) {
+int xe_allocator_rw_get_backend_count(xe_allocator_rw_t allocator) {
     return allocator->backend_count;
 }
 
-int kmem_allocator_rw_destroy(kmem_allocator_rw_t* allocator) {
-    kmem_allocator_rw_t arg = *allocator;
+int xe_allocator_rw_destroy(xe_allocator_rw_t* allocator) {
+    xe_allocator_rw_t arg = *allocator;
     int error = xe_util_dispatch_apply(arg->backends, sizeof(smb_ssn_allocator), arg->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
         return smb_ssn_allocator_destroy((smb_ssn_allocator*)data);
     });

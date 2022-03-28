@@ -44,6 +44,7 @@ uintptr_t find_systemstatusd(void) {
     uintptr_t* found = alloca(sizeof(uintptr_t));
     *found = 0;
     xe_xnu_proc_iter_pids_with_binary(SYSTEMSTATUSD_BINARY_PATH, ^_Bool(pid_t pid) {
+        /// Make sure only one systemstatusd process is running in the system
         xe_assert(*found == 0);
         int error = xe_xnu_proc_find(pid, found);
         xe_assert_err(error);

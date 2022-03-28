@@ -86,7 +86,7 @@ xe_util_msdosfs_t xe_memory_kmem_setup_vol(int* bridge_fd) {
     
     char path[sizeof(mount) + 7];
     snprintf(path, sizeof(path), "%s/bridge", mount);
-    int fd = open(path, O_CREAT | O_RDWR, S_IRWXU);
+    int fd = open(path, O_CREAT | O_RDWR | O_EXLOCK, S_IRWXU);
     xe_assert_errno(fd < 0);
     
     int res = ftruncate(fd, MAX_RW_SIZE);

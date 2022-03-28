@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 
-struct oob_reader_base_args {
+struct xe_oob_reader_base_args {
     //  SMB server IPV4 socket address
     struct sockaddr_in smb_addr;
     
@@ -56,6 +56,6 @@ struct oob_reader_base_args {
 /// @param server_nb_name_size size of `server_nb_name` buffer
 /// @param local_nb_name buffer for storing the local netbios name received by xe_smbx server
 /// @param local_nb_name_size size of `local_nb_name` buffer
-void oob_reader_base_read(const struct oob_reader_base_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
+void xe_oob_reader_base_read(const struct xe_oob_reader_base_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
 
 #endif /* zkext_neighbor_reader_xs_h */

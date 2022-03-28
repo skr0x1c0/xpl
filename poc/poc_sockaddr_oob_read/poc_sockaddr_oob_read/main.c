@@ -31,18 +31,18 @@
 ///     ...
 ///     // Size of sockaddr pointed by saddr user pointer
 ///     int32_t     ioc_saddr_len;
-///     // Size of sockaddr pointer by laddr user pointer
+///     // Size of sockaddr pointed by laddr user pointer
 ///     int32_t     ioc_laddr_len;
 ///     ...
 ///     // Socket address of SMB server
 ///     SMB_IOC_POINTER(struct sockaddr *, saddr);
-///     // Local netbios socket address (Only used when saddr is of family AF_NETBIOS)
+///     // Local NetBIOS socket address (Only used when saddr is of family AF_NETBIOS)
 ///     SMB_IOC_POINTER(struct sockaddr *, laddr);
 ///     ...
 /// }
 ///
 /// The pointers `saddr` and `laddr` are pointers to memory in user land containing the socket
-/// address of SMB server and local netbios address respectively. The type `struct sockaddr`
+/// address of SMB server and local NetBIOS address respectively. The type `struct sockaddr`
 /// is of the following format:
 ///
 /// struct sockaddr {
@@ -131,8 +131,7 @@
 ///
 /// As noted in the code snippet, the copied in `saddr` and `laddr` values may have `sa_len`
 /// field value greater than the copied in memory size `ioc_saddr_len` and `ioc_laddr_len`
-/// respectively. Subsequent use of these copied in socket address values may lead to out
-/// of bound read.
+/// respectively. Subsequent use of these socket address may lead to out of bound read.
 ///
 /// The `smb_sm_negotiate` method calls `smb_session_create` to create a new smb session
 /// (of type `struct smb_session`), which assigns the copied in `saddr` and `laddr` to
@@ -180,14 +179,15 @@
 /// }
 ///
 /// Now that we know socket address in `session->session_iod->iod_saddr`,
-/// `session->session_iod->iod_laddr` and `sessionp->session_saddr` may have `sa_len`
-/// value greater than their allocated memory size, all we need is a way to read any of
-/// these socket addresses back to user land.
+/// `session->session_iod->iod_laddr` and `sessionp->session_saddr` may have `sa_len` value
+/// greater than their allocated memory size, all we need is a way to read any of these socket
+/// addresses back to user land.
 ///
-/// One way to achieve this is by executing `fcntl` syscall with cmd type `smbfsGetSessionSockaddrFSCTL`
-/// or `smbfsGetSessionSockaddrFSCTL2` on any file inside the SMB mount point. This sysctl
-/// is handled by `smbfs_vnop_ioctl` method defined in `smbfs_vnops.c` file and it indirectly copies out
-/// kernel memory of size `sessionp->session_saddr.sa_len` from `sessionp->session_saddr` to user land.
+/// One way to achieve this is by executing `fcntl` syscall with cmd type
+/// `smbfsGetSessionSockaddrFSCTL` or `smbfsGetSessionSockaddrFSCTL2` on any file inside
+/// the SMB mount point. This sysctl is handled by `smbfs_vnop_ioctl` method defined in
+/// `smbfs_vnops.c` file and it indirectly copies out kernel memory of size
+/// `sessionp->session_saddr.sa_len` from `sessionp->session_saddr` to user land.
 ///
 /// static int32_t smbfs_vnop_ioctl(struct vnop_ioctl_args *ap)
 /// {
@@ -214,7 +214,7 @@
 /// will require user interaction because files in network shares are protected by TCC.
 ///
 /// This resctriction is bypassed in `xe_kmem/memory/zkext_neighbor_reader.c` by using
-/// netbios name OOB read vulnerability in default.64 zone to read zone elements from zones
+/// NetBIOS name OOB read vulnerability in default.64 zone to read zone elements from zones
 /// with element size less than 128 bytes without any user interaction.
 ///
 

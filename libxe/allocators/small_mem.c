@@ -40,6 +40,8 @@ xe_allocator_small_mem_t xe_allocator_small_mem_allocate(size_t size, uintptr_t*
     
     char* temp = malloc(size);
     bzero(temp, size);
+    
+    /// Increase the size of allocated pipe buffer to required size
     ssize_t bytes = write(fds[1], temp, size);
     xe_assert_cond(bytes, ==, size);
     free(temp);

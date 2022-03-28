@@ -32,8 +32,8 @@ void xe_verify_kernel_uuid(void) {
     xe_assert_errno(res);
     
     if (strncmp(buffer, MACOS_KERNEL_UUID, sizeof(buffer)) != 0) {
-        xe_log_error("kern.uuid does not match with MACOS_KERNEL_UUID used during build time. check build configuration selected in \"xe/env.h\"");
-        xe_abort();
+        xe_log_error("kern.uuid does not match with MACOS_KERNEL_UUID used during build time. if you are building from within xcode, check build configuration selected in \"xe/env.h\". if you are using build.sh script, make sure correct build configuration was used");
+        exit(1);
     }
 }
 
@@ -41,5 +41,4 @@ void xe_verify_kernel_uuid(void) {
 void xe_init(void) {
     xe_dump_build_configuration();
     xe_verify_kernel_uuid();
-    xe_util_msdosfs_loadkext();
 }

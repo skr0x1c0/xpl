@@ -53,13 +53,13 @@ int xe_util_dispatch_apply(void* data, size_t element_size, size_t element_count
     ctx.map_fn = map_fn;
     ctx.map_fn_ctx = map_fn_ctx;
     atomic_init(&ctx.error, 0);
-    dispatch_apply_f(element_count, DISPATCH_APPLY_AUTO, &ctx, map_apply);
+    dispatch_apply_f(element_count, xe_dispatch_queue(), &ctx, map_apply);
     return ctx.error;
 }
 
 dispatch_queue_t xe_dispatch_queue(void) {
     if (!s_xe_dispatch_queue) {
-        s_xe_dispatch_queue = dispatch_queue_create("xe_dispatch_queue", DISPATCH_QUEUE_CONCURRENT);
+        s_xe_dispatch_queue = dispatch_queue_create("xe_dispatch_queue", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, DISPATCH_QUEUE_PRIORITY_HIGH));
     }
     return s_xe_dispatch_queue;
 }

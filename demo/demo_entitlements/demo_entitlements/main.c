@@ -92,9 +92,9 @@ void mutate_csblob_entilements_der(xe_util_kfunc_t kfunc, uintptr_t cs_blob, uin
     
     uint64_t args[8];
     bzero(args, sizeof(args));
-    args[0] = 8;
+    args[0] = 8;  /// zone index
     args[1] = cs_blob;
-    args[2] = 0;
+    args[2] = 0; /// offset
     args[3] = temp_buffer;
     args[4] = TYPE_CS_BLOB_SIZE;
     

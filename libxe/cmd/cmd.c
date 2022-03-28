@@ -70,7 +70,7 @@ int xe_cmd_exec_sync(const char* exec_path, const char* argv[], char* buffer, si
     }
     
 waitpid:
-    while (0) {};
+    {};
     
     int stat_loc = 0;
     int res;

@@ -26,8 +26,8 @@
 struct xe_kheap_alloc_entry {
     /// Address of allocated socket address
     uintptr_t address;
-    /// `kmem_allocator_prpw` used for allocating the socket address
-    kmem_allocator_prpw_t element_allocator;
+    /// `xe_allocator_prpw` used for allocating the socket address
+    xe_allocator_prpw_t element_allocator;
 };
 
 /// Allocate the provided data on a zone in `KHEAP_KEXT` (determined by `alloc_size`)

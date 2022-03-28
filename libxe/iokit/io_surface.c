@@ -27,7 +27,7 @@
 #include <macos/kernel.h>
 
 
-UInt32 xe_io_surface_get_index(IOSurfaceRef surface) {
+uint32_t xe_io_surface_get_index(IOSurfaceRef surface) {
     uintptr_t surface_client = *((uintptr_t*)((uintptr_t)surface + 8));
     uint32_t* index = (uint32_t*)(surface_client + 0x78);
     return *index;

@@ -12,26 +12,26 @@
 #include "../smb/client.h"
 
 
-struct kmem_allocator_nrnw {
+struct xe_allocator_nrnw {
     int fd;
     _Atomic uint32_t keygen;
 };
 
-kmem_allocator_nrnw_t kmem_allocator_nrnw_create(const struct sockaddr_in* smb_addr) {
+xe_allocator_nrnw_t xe_allocator_nrnw_create(const struct sockaddr_in* smb_addr) {
     int fd = smb_client_open_dev();
     xe_assert(fd >= 0);
     
     int error = smb_client_ioc_negotiate(fd, smb_addr, sizeof(*smb_addr), TRUE);
     xe_assert_err(error);
     
-    struct kmem_allocator_nrnw* allocator = malloc(sizeof(struct kmem_allocator_nrnw));
+    struct xe_allocator_nrnw* allocator = malloc(sizeof(struct xe_allocator_nrnw));
     allocator->fd = fd;
     allocator->keygen = 0;
     
     return allocator;
 }
 
-void kmem_allocator_nrnw_allocate(kmem_allocator_nrnw_t allocator, size_t alloc_size, size_t num_allocs) {
+void xe_allocator_nrnw_allocate(xe_allocator_nrnw_t allocator, size_t alloc_size, size_t num_allocs) {
     xe_assert_cond(alloc_size, <=, 256);
     xe_assert_cond(num_allocs, <=, UINT32_MAX);
     
@@ -71,8 +71,8 @@ void kmem_allocator_nrnw_allocate(kmem_allocator_nrnw_t allocator, size_t alloc_
     free(infos);
 }
 
-void kmem_allocator_nrnw_destroy(kmem_allocator_nrnw_t* allocator_p) {
-    kmem_allocator_nrnw_t allocator = *allocator_p;
+void xe_allocator_nrnw_destroy(xe_allocator_nrnw_t* allocator_p) {
+    xe_allocator_nrnw_t allocator = *allocator_p;
     close(allocator->fd);
     free(allocator);
     *allocator_p = NULL;

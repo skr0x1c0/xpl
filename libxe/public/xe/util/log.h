@@ -18,8 +18,8 @@
 
 #define xe_log_debug(...) printf("[D] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
 #define xe_log_info(...) printf("[I] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
-#define xe_log_warn(...) printf("[W] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
-#define xe_log_error(...) printf("[E] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n");
+#define xe_log_warn(...) fprintf(stderr, "[W] %s: ", __FUNCTION__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+#define xe_log_error(...) fprintf(stderr, "[E] %s: ", __FUNCTION__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");
 #define xe_log_debug_hexdump(blob, size, ...) printf("[D] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n"); xe_util_binary_hex_dump((char*)blob, size)
 
 void xe_log_print_backtrace(void);

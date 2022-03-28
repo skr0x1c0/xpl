@@ -111,7 +111,7 @@ int main(int argc, const char * argv[]) {
     smb_addr.sin_port = htons(XE_SMBX_PORT);
     inet_aton(XE_SMBX_HOST, &smb_addr.sin_addr);
     
-    /// STEP 2: Setup a new session
+    /// STEP 2: Setup a new SMB session
     struct smbioc_negotiate negotiate_req;
     bzero(&negotiate_req, sizeof(negotiate_req));
     negotiate_req.ioc_version = SMB_IOC_STRUCT_VERSION;
@@ -129,11 +129,11 @@ int main(int argc, const char * argv[]) {
     
     if (negotiate_req.ioc_errno) {
         printf("[ERROR] SMBIOC_NEGOTIATE returned non zero ioc_errno %d\n", negotiate_req.ioc_errno);
-        printf("[ERROR] Make sure that xe_smbx server is running\n");
+        printf("[ERROR] Make sure that the xe_smbx server is running\n");
         exit(1);
     }
     
-    /// STEP 3: Setup a new share
+    /// STEP 3: Setup a new SMB share
     struct smbioc_share tcon_req;
     bzero(&tcon_req, sizeof(tcon_req));
     tcon_req.ioc_version = SMB_IOC_STRUCT_VERSION;

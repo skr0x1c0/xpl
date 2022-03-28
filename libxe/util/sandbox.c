@@ -209,6 +209,10 @@ void xe_util_sandbox_disable_fs_restrictions(xe_util_sandbox_t util) {
     xe_kmem_write_uint64(util->fake_mpo, TYPE_MAC_POLICY_OPS_MEM_MPO_MOUNT_CHECK_SNAPSHOT_DELETE, 0);
 }
 
+void xe_util_sandbox_disable_signal_check(xe_util_sandbox_t util) {
+    xe_kmem_write_uint64(util->fake_mpo, TYPE_MAC_POLICY_OPS_MEM_MPO_PROC_CHECK_SIGNAL, 0);
+}
+
 void xe_util_sandbox_destroy(xe_util_sandbox_t* util_p) {
     xe_util_sandbox_t util = *util_p;
     

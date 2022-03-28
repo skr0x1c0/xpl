@@ -30,18 +30,6 @@ uintptr_t xe_io_registry_entry_property_table(uintptr_t entry) {
     return xe_kmem_read_uint64(entry, TYPE_IO_REGISTRY_ENTRY_MEM_F_PROPERTY_TABLE_OFFSET);
 }
 
-size_t xe_io_registry_entry_location(uintptr_t entry, char* location, size_t location_length) {
-    uintptr_t registry_table = xe_io_registry_entry_registry_table(entry);
-    xe_os_dictionary_print_keys(registry_table);
-    uintptr_t prop;
-    int error = xe_os_dictionary_find_value(registry_table, "IOLocation", &prop, NULL);
-    if (error) {
-        location[0] = '\0';
-        return 0;
-    }
-    return xe_os_string_read(location, prop, location_length);
-}
-
 int xe_io_registry_filter_dict(uintptr_t dict, const struct xe_io_registry_filter* filter) {
     uintptr_t value;
     int error = xe_os_dictionary_find_value(dict, filter->key, &value, NULL);

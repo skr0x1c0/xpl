@@ -30,7 +30,6 @@ kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr)
 /// @param session kmem_read_session_t created using method `kmem_read_session_create`
 uintptr_t kmem_read_session_get_addr(kmem_read_session_t session);
 
-
 /// Reads data from arbitary location in kernel memory
 /// @param session kmem_read_session_t created using method `kmem_read_session_create`
 /// @param smb_dev_fd file descriptor of smb_dev having `smb_dev->sd_session = fake_session`

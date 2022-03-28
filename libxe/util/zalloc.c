@@ -143,7 +143,7 @@ uintptr_t xe_util_zalloc_find_victim_zone(int required_chunk_pages, int required
 }
 
 uint32_t xe_util_zalloc_steal_pageq(int required_chunk_pages, int required_bitmap_capacity, uintptr_t* victim_zone_out) {
-    uintptr_t victim_zone = xe_util_zalloc_find_victim_zone(required_chunk_pages, required_bitmap_capacity, 2);
+    uintptr_t victim_zone = xe_util_zalloc_find_victim_zone(required_chunk_pages, required_bitmap_capacity, 3);
     uint16_t chunk_pages = xe_kmem_read_uint16(victim_zone, TYPE_ZONE_MEM_Z_CHUNK_PAGES_OFFSET);
     uint32_t pageq_empty = xe_kmem_read_uint32(victim_zone, TYPE_ZONE_MEM_Z_PAGEQ_EMPTY_OFFSET);
     xe_assert(pageq_empty != 0);
