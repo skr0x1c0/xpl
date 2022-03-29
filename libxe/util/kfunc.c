@@ -52,7 +52,7 @@
 /// `x0`, `x4` and `sp` from memory pointed by register `x0` and then it branches using `eret`
 /// instruction to the address in `x20` register. Link 0 will be setting the value of registers
 /// `x20 = entry point to Link 2`, `x21 = 0x40008` before calling Link 1. The reason for not using
-/// this link to directly call target function is because we only have partial controll over data in
+/// this link to directly call target function is because we only have partial control over data in
 /// memory pointed by x0 (The memory pointed by x0 is shared between `struct Block_layout`
 /// and `struct arm_context`). Even though registers `x0 - x29`, `sp` and `q0-q31` are loaded from
 /// memory pointed by `x0`, not all of these values can be controlled due to overlap with the
@@ -583,7 +583,7 @@ void xe_util_kfunc_link0_destroy(link0_t link0) {
 /// x4 = target function address and x0 = address of `struct arm_context` with fully controlled data
 ///
 ///
-//  kernel.release.t6000(21E230)`arm64_thread_exception_return:
+//  kernel.release.t6000(21E230)`exception_return_unint_tpidr_x3_dont_trash_x18:
 //  0xfffffe0007253be8      mov    x0, sp
 //  ...
 //  0xfffffe0007253c1c      bl     ml_check_signed_state

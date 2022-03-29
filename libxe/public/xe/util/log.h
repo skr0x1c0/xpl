@@ -16,7 +16,12 @@
 #define xe_log_verbose(...)
 #endif
 
+#if DEBUG
 #define xe_log_debug(...) printf("[D] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
+#else
+#define xe_log_debug(...) 
+#endif
+
 #define xe_log_info(...) printf("[I] %s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n")
 #define xe_log_warn(...) fprintf(stderr, "[W] %s: ", __FUNCTION__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
 #define xe_log_error(...) fprintf(stderr, "[E] %s: ", __FUNCTION__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");

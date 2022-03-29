@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <xe/xnu/proc.h>
 #include <xe/util/pacda.h>
@@ -22,15 +23,22 @@ void test_pacda(void) {
     xe_log_info("pid: %d", getpid());
     xe_log_info("proc: %p", (void*)proc);
     
-    for (int i=0; i<3; i++) {
-        uintptr_t ctx = 0xabcdef;
-        
-        uintptr_t addr;
-        xe_allocator_large_mem_t allocator = xe_allocator_large_mem_allocate(16384 * 4, &addr);
-        
+    uint64_t elapsed = 0;
+    int num_samples = 100;
+    
+    xe_log_info("PACDA test begin, num samples: %d", num_samples);
+    
+    for (int i=0; i<num_samples; i++) {
+        uintptr_t addr = random();
+        uintptr_t ctx = random();
+    
+        uint64_t start = clock_gettime_nsec_np(CLOCK_MONOTONIC);
         uintptr_t signed_ptr = xe_util_pacda_sign(addr, ctx);
-        
-        xe_log_info("signed ptr: %p", (void*)signed_ptr);
-        xe_allocator_large_mem_free(&allocator);
+        elapsed += clock_gettime_nsec_np(CLOCK_MONOTONIC) - start;
+        xe_log_debug("signed pointer %p with context %p using PACDA, res: %p", (void*)addr, (void*)ctx, (void*)signed_ptr);        
     }
+    
+    double samples_per_second = (double)num_samples / ((double)elapsed / 1e9);
+    
+    xe_log_info("PACDA signing OK, num samples: %d, total time: %llu ns, samples / second: %.2f", num_samples, elapsed, samples_per_second);
 }

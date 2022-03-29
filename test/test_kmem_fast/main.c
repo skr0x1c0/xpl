@@ -63,7 +63,7 @@ void bechmark(void) {
         double* res = test_results[i];
         int* limit = test_limits[i];
 
-        xe_log_info("Min size: %d bytes, Max size: %d bytes, read: %.2f kB/s, write: %.2f kB/s\n", limit[0], limit[1], res[0] / 1024, res[1] / 1024);
+        xe_log_info("Min size: %d bytes, Max size: %d bytes, read: %.2f kB/s, write: %.2f kB/s", limit[0], limit[1], res[0] / 1024, res[1] / 1024);
     }
 }
 
