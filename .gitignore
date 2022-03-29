@@ -1,2 +1,4 @@
 DerivedData/
-**/*.xcodeproj/xcuserdata/
+**/*.xcodeproj/xcuserdata
+build/
+todo/
