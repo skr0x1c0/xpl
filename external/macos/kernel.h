@@ -10,7 +10,7 @@
 
 #if !defined(MACOS_21E230_T6000_RELEASE)
 #if !defined(MACOS_21E230_T8101_RELEASE)
-/// Use default build configuration from `xe/env.h` in none provided
+/// Use default build configuration from `xpl/env.h` in none provided
 #include "../../env.h"
 #endif /* !MACOS_21E230_T6000_RELEASE */
 #endif /* !MACOS_21E230_T8101_RELEASE */

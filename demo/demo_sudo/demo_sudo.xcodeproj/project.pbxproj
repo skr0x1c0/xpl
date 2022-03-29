@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E8F817327F2DD5D00D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F817227F2DD5D00D150E8 /* libxploit.a */; };
 		5EC01D3227DBD7E10022F1F8 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EC01D3127DBD7E10022F1F8 /* main.c */; };
-		5EC01D3A27DBD7F60022F1F8 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EC01D3927DBD7F60022F1F8 /* libxe.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,9 +24,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E8F817227F2DD5D00D150E8 /* libxploit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxploit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EC01D2E27DBD7E10022F1F8 /* demo_sudo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo_sudo; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EC01D3127DBD7E10022F1F8 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		5EC01D3927DBD7F60022F1F8 /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,7 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5EC01D3A27DBD7F60022F1F8 /* libxe.a in Frameworks */,
+				5E8F817327F2DD5D00D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,7 +69,7 @@
 		5EC01D3827DBD7F60022F1F8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				5EC01D3927DBD7F60022F1F8 /* libxe.a */,
+				5E8F817227F2DD5D00D150E8 /* libxploit.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -255,7 +255,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../libxe/public,
+					$SOURCE_ROOT/../../libxploit/public,
 				);
 				INSTALL_PATH = /demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -268,7 +268,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../libxe/public,
+					$SOURCE_ROOT/../../libxploit/public,
 				);
 				INSTALL_PATH = /demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";

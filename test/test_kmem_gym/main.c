@@ -7,18 +7,18 @@
 
 #include <stdio.h>
 
-#include <xe/xe.h>
-#include <xe/memory/kmem.h>
-#include <xe/memory/kmem_remote.h>
-#include <xe/slider/kernel.h>
-#include <xe/util/assert.h>
+#include <xpl/xpl.h>
+#include <xpl/memory/kmem.h>
+#include <xpl/memory/kmem_remote.h>
+#include <xpl/slider/kernel.h>
+#include <xpl/util/assert.h>
 
-#include <xe_dev/memory/gym.h>
-#include <xe_dev/slider/kas.h>
+#include <xpl_dev/memory/gym.h>
+#include <xpl_dev/slider/kas.h>
 
 
 int main(int argc, const char * argv[]) {
-    const char* kmem_uds_path = XE_DEFAULT_KMEM_SOCKET;
+    const char* kmem_uds_path = xpl_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -28,20 +28,20 @@ int main(int argc, const char * argv[]) {
                 break;
             case '?':
             default:
-                xe_log_info("usage: kmem_remote_gym [-k kmem_uds]");
+                xpl_log_info("usage: kmem_remote_gym [-k kmem_uds]");
                 exit(1);
         }
     }
     
     
-    xe_init();
-    xe_kmem_backend_t gym_backend = xe_kmem_gym_create();
-    xe_kmem_use_backend(gym_backend);
-    xe_slider_kernel_init(xe_slider_kas_get_mh_execute_header());
+    xpl_init();
+    xpl_kmem_backend_t gym_backend = xpl_kmem_gym_create();
+    xpl_kmem_use_backend(gym_backend);
+    xpl_slider_kernel_init(xpl_slider_kas_get_mh_execute_header());
     
-    int error = xe_kmem_remote_server_start(xe_slider_kas_get_mh_execute_header(), kmem_uds_path);
+    int error = xpl_kmem_remote_server_start(xpl_slider_kas_get_mh_execute_header(), kmem_uds_path);
     if (error) {
-        xe_log_error("failed to start kmem server at socket %s, err: %s", kmem_uds_path, strerror(error));
+        xpl_log_error("failed to start kmem server at socket %s, err: %s", kmem_uds_path, strerror(error));
         exit(1);
     }
     

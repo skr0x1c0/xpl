@@ -10,31 +10,31 @@
 
 #include <sys/fcntl.h>
 
-#include <xe/memory/kmem.h>
-#include <xe/util/vnode.h>
-#include <xe/util/log.h>
-#include <xe/util/assert.h>
-#include <xe/xnu/proc.h>
-#include <xe/util/msdosfs.h>
+#include <xpl/memory/kmem.h>
+#include <xpl/util/vnode.h>
+#include <xpl/util/log.h>
+#include <xpl/util/assert.h>
+#include <xpl/xnu/proc.h>
+#include <xpl/util/msdosfs.h>
 
 #include "test_vnode.h"
 
 
 void test_vnode() {
-    xe_util_msdosfs_loadkext();
+    xpl_util_msdosfs_loadkext();
     
     char directory[] = "/tmp/test_vnode.XXXXXXX";
-    xe_assert(mkdtemp(directory) != NULL);
+    xpl_assert(mkdtemp(directory) != NULL);
     
     char path[PATH_MAX];
     snprintf(path, sizeof(path), "%s/file", directory);
     int file = open(path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    xe_assert(file >= 0);
+    xpl_assert(file >= 0);
     
-    uintptr_t proc = xe_xnu_proc_current_proc();
+    uintptr_t proc = xpl_xnu_proc_current_proc();
     uintptr_t vnode;
-    int error = xe_xnu_proc_find_fd_data(proc, file, &vnode);
-    xe_assert_err(error);
+    int error = xpl_xnu_proc_find_fd_data(proc, file, &vnode);
+    xpl_assert_err(error);
     
     char data[32];
     for (int i=0; i<sizeof(data); i++) {
@@ -42,23 +42,23 @@ void test_vnode() {
     }
     
     int res = ftruncate(file, sizeof(data));
-    xe_assert_errno(res);
-    xe_util_vnode_t util = xe_util_vnode_create();
-    xe_util_vnode_write_user(util, vnode, data, sizeof(data));
+    xpl_assert_errno(res);
+    xpl_util_vnode_t util = xpl_util_vnode_create();
+    xpl_util_vnode_write_user(util, vnode, data, sizeof(data));
     
     char buffer[sizeof(data)];
     bzero(buffer, sizeof(buffer));
     ssize_t read_bytes = read(file, buffer, sizeof(buffer));
-    xe_assert_cond(read_bytes, ==, sizeof(buffer));
+    xpl_assert_cond(read_bytes, ==, sizeof(buffer));
     res = memcmp(data, buffer, sizeof(data));
-    xe_assert(res == 0);
+    xpl_assert(res == 0);
     
     bzero(buffer, sizeof(buffer));
-    xe_util_vnode_read_user(util, vnode, buffer, sizeof(buffer));
+    xpl_util_vnode_read_user(util, vnode, buffer, sizeof(buffer));
     res = memcmp(data, buffer, sizeof(data));
-    xe_assert(res == 0);
+    xpl_assert(res == 0);
     
-    xe_util_vnode_destroy(&util);
+    xpl_util_vnode_destroy(&util);
     close(file);
     unlink(path);
     rmdir(directory);

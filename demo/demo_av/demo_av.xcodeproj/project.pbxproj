@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		5E047FA427D8F727004BCF56 /* privacy.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E047FA227D8F727004BCF56 /* privacy.c */; };
+		5E8F816D27F2DD1300D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816C27F2DD1300D150E8 /* libxploit.a */; };
 		5EA343E527D7632200612BA2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EA343E427D7631E00612BA2 /* libsqlite3.tbd */; platformFilter = maccatalyst; };
 		5EC1028C27CF4234002985B6 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC1028B27CF4234002985B6 /* main.swift */; };
-		5EC1029827CF4260002985B6 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EC1029727CF4260002985B6 /* libxe.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,10 +29,10 @@
 		5E047F9E27D8F717004BCF56 /* demo_av-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "demo_av-Bridging-Header.h"; sourceTree = "<group>"; };
 		5E047FA227D8F727004BCF56 /* privacy.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = privacy.c; sourceTree = "<group>"; };
 		5E047FA327D8F727004BCF56 /* privacy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = privacy.h; sourceTree = "<group>"; };
+		5E8F816C27F2DD1300D150E8 /* libxploit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxploit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EA343E427D7631E00612BA2 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		5EC1028827CF4234002985B6 /* demo_av */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo_av; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EC1028B27CF4234002985B6 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		5EC1029727CF4260002985B6 /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +41,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5EA343E527D7632200612BA2 /* libsqlite3.tbd in Frameworks */,
-				5EC1029827CF4260002985B6 /* libxe.a in Frameworks */,
+				5E8F816D27F2DD1300D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,8 +79,8 @@
 		5EC1029627CF4260002985B6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5E8F816C27F2DD1300D150E8 /* libxploit.a */,
 				5EA343E427D7631E00612BA2 /* libsqlite3.tbd */,
-				5EC1029727CF4260002985B6 /* libxe.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -274,7 +274,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../libxe/public,
+					$SOURCE_ROOT/../../libxploit/public,
 				);
 				INSTALL_PATH = /demo;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -296,7 +296,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../libxe/public,
+					$SOURCE_ROOT/../../libxploit/public,
 				);
 				INSTALL_PATH = /demo;
 				LD_RUNPATH_SEARCH_PATHS = (

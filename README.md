@@ -112,7 +112,7 @@ cd ./build/${TARGET_CONFIGURATION}/poc
 ./poc_double_free
 ```
 
-The vulnerability triggered by this PoC is exploited in `xe_kmem` project to achive arbitary kernel memory read write. See `xe_kmem/smb_dev_rw.c` for more details 
+The vulnerability triggered by this PoC is exploited in `xpl_kmem` project to achive arbitary kernel memory read write. See `xpl_kmem/smb_dev_rw.c` for more details 
 
 
 ### 2: `poc_sockaddr_oob_read` - Out of bound read in `smb_sm_negotiate`
@@ -123,13 +123,13 @@ This PoC provides a minimal program required to demonstrate this vulnerability i
 
 #### Steps for running
 
-##### Start the `xe_smbx` server
+##### Start the `xpl_smbx` server
 
-To start `xe_smbx` server from Xcode, use the scheme `xe_smbx`. To start from command line,
+To start `xpl_smbx` server from Xcode, use the scheme `xpl_smbx`. To start from command line,
 
 ```bash
 cd build/${TARGET_CONFIGURATION}
-./xe_smbx
+./xpl_smbx
 ```
 
 Keep this server running
@@ -143,9 +143,9 @@ cd build/${TARGET_CONFIGURATION}/poc
 ./poc_sockaddr_oob_read
 ```
 
-The vulnerability demonstrated in this PoC is used in `xe_kmem` to leak critical information from kernel memory required for exploting the double free vulnerability demonstrated in poc 1. See `xe_kmem/memory/xe_oob_reader_base.c` for more details
+The vulnerability demonstrated in this PoC is used in `xpl_kmem` to leak critical information from kernel memory required for exploting the double free vulnerability demonstrated in poc 1. See `xpl_kmem/memory/xpl_oob_reader_base.c` for more details
 
->>> NOTE: The technique used in the PoC to read the OOB read data back to user land requires user intraction (TCC prompt approval from kTCCServiceSystemPolicyNetworkVolumes service). This limitation is not present in the technique used in `xe_kmem` project which combines this vulnerability with another OOB read vulnerability to bypass this restriction
+>>> NOTE: The technique used in the PoC to read the OOB read data back to user land requires user intraction (TCC prompt approval from kTCCServiceSystemPolicyNetworkVolumes service). This limitation is not present in the technique used in `xpl_kmem` project which combines this vulnerability with another OOB read vulnerability to bypass this restriction
 
 
 ### 3: `poc_oob_write` - Out of bound write in `smb_dup_sockaddr`
@@ -165,7 +165,7 @@ cd build/${TARGET_CONFIGURATION}/poc
 ./poc_oob_write
 ```
 
-The vulnerability triggered by this PoC is exploited in `xe_kmem` project to leak critical information from kernel memory required for exploiting the double free vulnerability triggered in poc 1. See `xe_kmem/memory/xe_oob_reader_ovf.c` for more details 
+The vulnerability triggered by this PoC is exploited in `xpl_kmem` project to leak critical information from kernel memory required for exploiting the double free vulnerability triggered in poc 1. See `xpl_kmem/memory/xpl_oob_reader_ovf.c` for more details 
 
 
 ### 4: `poc_snb_name_oob_read` - Out of bound read in `nb_put_name`
@@ -198,7 +198,7 @@ cd build/${TARGET_CONFIGURATION}/poc
 
 The OOB read data will be displayed in the console output of fake SMB server
 
-The vulnerability demonstrated in this PoC is used in `xe_kmem` project to leak to leak critical information required for exploiting the double free vulnerability triggered in poc 1. See `xe_kmem/xe_oob_reader_base.c` for more details
+The vulnerability demonstrated in this PoC is used in `xpl_kmem` project to leak to leak critical information required for exploiting the double free vulnerability triggered in poc 1. See `xpl_kmem/xpl_oob_reader_base.c` for more details
 
 
 ### 5: `poc_info_disclosure` - Information disclosure in `smbfs_vnop_ioctl`
@@ -209,13 +209,13 @@ This PoC project minimal program required for demonstrating this this vulnerabil
 
 #### Steps for running
 
-##### Start the `xe_smbx` server
+##### Start the `xpl_smbx` server
 
-To start `xe_smbx` server from Xcode, use the scheme `xe_smbx`. To start from command line,
+To start `xpl_smbx` server from Xcode, use the scheme `xpl_smbx`. To start from command line,
 
 ```bash
 cd build/${TARGET_CONFIGURATION}
-./xe_smbx
+./xpl_smbx
 ```
 
 ##### Run the PoC
@@ -236,37 +236,37 @@ The vulnerability demonstrated in this PoC is not used in any of the exploits de
 
 #### Start the arbitary kernel memory read / write server
 
-The project `xe_kmem` exploits the vulnerabilities demonstrated / triggered in poc 1, 2, 3 and 4 to achieve arbitary kernel memory read write. This project provides the kernel memory read / write capability from the below demo projects by listening on a unix domain socket (By default `/tmp/xe_kmem.sock`. Can be changed using -k option). Run this project before running any of the below demo projects
+The project `xpl_kmem` exploits the vulnerabilities demonstrated / triggered in poc 1, 2, 3 and 4 to achieve arbitary kernel memory read write. This project provides the kernel memory read / write capability from the below demo projects by listening on a unix domain socket (By default `/tmp/xpl_kmem.sock`. Can be changed using -k option). Run this project before running any of the below demo projects
 
-##### Steps to run `xe_kmem`
+##### Steps to run `xpl_kmem`
 
-###### Start the `xe_smbx` server
+###### Start the `xpl_smbx` server
 
-To start `xe_smbx` server from Xcode, use the scheme `xe_smbx`. To start from command line,
+To start `xpl_smbx` server from Xcode, use the scheme `xpl_smbx`. To start from command line,
 
 ```bash
 cd build/${TARGET_CONFIGURATION}
-./xe_smbx
+./xpl_smbx
 ```
 
 Keep this server running
 
-###### Run the `xe_kmem` project
+###### Run the `xpl_kmem` project
 
-The recommended method to run this project is by using the release build of `xe_kmem` generated using `build.sh` script. To start `xe_kmem` release build from command line,
+The recommended method to run this project is by using the release build of `xpl_kmem` generated using `build.sh` script. To start `xpl_kmem` release build from command line,
 
 **NOTE: The system may crash while executing next command**
 
 ```bash
 cd build/${TARGET_CONFIGURATION}
-./xe_kmem
+./xpl_kmem
 ```
 
-Keep the `xe_kmem` server running while running the below demo programs
+Keep the `xpl_kmem` server running while running the below demo programs
 
 ##### Troubleshooting
 
-If you are unable to start the `xe_kmem` server within three attempts, then there may be a process running in your system which may be affecting critical system parameters that is not handled by `xe_kmem`. In this case, it is recommended to try using one of the following tested setup configurations (Based on trial runs, all the configurations mentioned below have success rate greater than 90%):-
+If you are unable to start the `xpl_kmem` server within three attempts, then there may be a process running in your system which may be affecting critical system parameters that is not handled by `xpl_kmem`. In this case, it is recommended to try using one of the following tested setup configurations (Based on trial runs, all the configurations mentioned below have success rate greater than 90%):-
 
 ###### Setup 1
 
@@ -276,7 +276,7 @@ If you are unable to start the `xe_kmem` server within three attempts, then ther
 - Not signed in to iCloud
 - Battery above 90%
 - Connected to charger
-- Started `xe_smbx` and `xe_kmem` immediately after system boot
+- Started `xpl_smbx` and `xpl_kmem` immediately after system boot
 
 ###### Setup 2
 
@@ -284,10 +284,10 @@ If you are unable to start the `xe_kmem` server within three attempts, then ther
 - New OS installation (No additional Apps installed)
 - WiFi and Bluetooth turned off
 - Not signed in to iCloud
-- Started `xe_smbx` and `xe_kmem` immediately after system boot
+- Started `xpl_smbx` and `xpl_kmem` immediately after system boot
 
 
-**NOTE: **: The `xe_kmem` server do start without any problems (9 out of 10 times) while programs like Xcode and Ghidra is open and while spotlight is indexing in the background. It is unlikely that you will have to use one of the above setup configuration to get it started.
+**NOTE: **: The `xpl_kmem` server do start without any problems (9 out of 10 times) while programs like Xcode and Ghidra is open and while spotlight is indexing in the background. It is unlikely that you will have to use one of the above setup configuration to get it started.
 
 
 ### Demo 1: `demo_sudo` - Running commands with root privilege
@@ -413,5 +413,5 @@ The mechanism used by `msdosfs.kext` for caching the most recently used FAT bloc
 
 A quick scan of kernel binary using Ghidra showed multiple occasions where callee-saved general purpose registers were used as operands for PACDA instruction. By developing a method to acquire / release arbitary read write locks in kernel memory, we were able to exploit one of those occasions to sign arbitary values with arbitary modifiers using PACDA. With arbitary PACDA signing, we were able to assign fake small block descriptors to Blocks, which allowed us to develop a three link chain to execute arbitary kernel functions with fully controlled arguments. 
 
-The PACDA exploit allows signing ~27 pointers per second and the kernel function calling exploit allows making ~32 arbitary function calls per second (Tested on Apple M1 MacBook Pro with kernel memory read / write provided by `xe_kmem`. Kernel function calls per second were measured by calling `vn_default_error` function, since it has only two instructions). Eventhough the arbitary kernel memory read write exploit will work only on macOS platforms, I beleive the techniques used for PACDA and kernel function exploits can be used on other platforms like iOS and iPadOS also.
+The PACDA exploit allows signing ~27 pointers per second and the kernel function calling exploit allows making ~32 arbitary function calls per second (Tested on Apple M1 MacBook Pro with kernel memory read / write provided by `xpl_kmem`. Kernel function calls per second were measured by calling `vn_default_error` function, since it has only two instructions). Eventhough the arbitary kernel memory read write exploit will work only on macOS platforms, I beleive the techniques used for PACDA and kernel function exploits can be used on other platforms like iOS and iPadOS also.
 

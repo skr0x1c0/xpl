@@ -4,16 +4,16 @@
 
 #include <libproc.h>
 
-#include <xe/xe.h>
-#include <xe/memory/kmem.h>
-#include <xe/memory/kmem_remote.h>
-#include <xe/slider/kernel.h>
-#include <xe/util/sandbox.h>
-#include <xe/util/sudo.h>
-#include <xe/util/tcc.h>
-#include <xe/xnu/proc.h>
-#include <xe/util/cp.h>
-#include <xe/util/msdosfs.h>
+#include <xpl/xpl.h>
+#include <xpl/memory/kmem.h>
+#include <xpl/memory/kmem_remote.h>
+#include <xpl/slider/kernel.h>
+#include <xpl/util/sandbox.h>
+#include <xpl/util/sudo.h>
+#include <xpl/util/tcc.h>
+#include <xpl/xnu/proc.h>
+#include <xpl/util/cp.h>
+#include <xpl/util/msdosfs.h>
 
 #include <macos/kernel.h>
 

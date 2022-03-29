@@ -8,8 +8,8 @@
 #include <limits.h>
 #include <string.h>
 
-#include <xe/util/misc.h>
-#include <xe/util/log.h>
+#include <xpl/util/misc.h>
+#include <xpl/util/log.h>
 
 #include "registry.h"
 
@@ -40,12 +40,12 @@ const struct test_case test_cases[] = {
 
 
 void registry_run_tests(const char* filter) {
-    for (int i=0; i<xe_array_size(test_cases); i++) {
+    for (int i=0; i<xpl_array_size(test_cases); i++) {
         const struct test_case* t = &test_cases[i];
         if (!filter || strlen(filter) == 0 || strcmp(filter, t->name) == 0) {
-            xe_log_info("running test %s", t->name);
+            xpl_log_info("running test %s", t->name);
             t->test_entry();
-            xe_log_info("test %s completed", t->name);
+            xpl_log_info("test %s completed", t->name);
         }
     }
 }

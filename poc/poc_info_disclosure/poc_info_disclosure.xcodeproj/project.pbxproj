@@ -241,7 +241,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../xe_smbx/xe_smbx/public,
+					$SOURCE_ROOT/../../xpl_smbx/xpl_smbx/public,
 				);
 				INSTALL_PATH = /poc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -255,7 +255,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../xe_smbx/xe_smbx/public,
+					$SOURCE_ROOT/../../xpl_smbx/xpl_smbx/public,
 				);
 				INSTALL_PATH = /poc;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -5,9 +5,9 @@
 //  Created by admin on 2/15/22.
 //
 
-#include <xe/allocator/large_mem.h>
-#include <xe/util/assert.h>
-#include <xe/util/log.h>
+#include <xpl/allocator/large_mem.h>
+#include <xpl/util/assert.h>
+#include <xpl/util/log.h>
 
 #include "test_large_mem.h"
 
@@ -33,9 +33,9 @@ void test_large_mem(void) {
     uintptr_t addr;
     
     size_t size = (1 << 30);
-    xe_allocator_large_mem_t allocator = xe_allocator_large_mem_allocate(size, &addr);
-    xe_assert(addr != 0);
-    xe_log_info("large mem allocated address: %p", (void*)addr);
+    xpl_allocator_large_mem_t allocator = xpl_allocator_large_mem_allocate(size, &addr);
+    xpl_assert(addr != 0);
+    xpl_log_info("large mem allocated address: %p", (void*)addr);
     
-    xe_allocator_large_mem_free(&allocator);
+    xpl_allocator_large_mem_free(&allocator);
 }

@@ -21,7 +21,7 @@
 #include <smbfs/smbclient_internal.h>
 #include <smbfs/netbios.h>
 
-#include <xe_smbx/smbx_conf.h>
+#include <xpl_smbx/smbx_conf.h>
 
 #include "config.h"
 

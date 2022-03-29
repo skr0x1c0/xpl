@@ -13,19 +13,23 @@
 		5E26C0C227DAFFF30011C5AD /* test_sudo.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E26C0C127DAFFF30011C5AD /* test_sudo.c */; };
 		5E26C0C327DAFFF30011C5AD /* test_sudo.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E26C0C127DAFFF30011C5AD /* test_sudo.c */; };
 		5E26C0C427DAFFFC0011C5AD /* test_vnode.c in Sources */ = {isa = PBXBuildFile; fileRef = 5E21C65E27DAE679005E543F /* test_vnode.c */; };
+		5E8F816227F2DCC200D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816027F2DCC200D150E8 /* libxploit.a */; };
+		5E8F816327F2DCC200D150E8 /* libxploit_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816127F2DCC200D150E8 /* libxploit_dev.a */; };
+		5E8F816427F2DCCA00D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816027F2DCC200D150E8 /* libxploit.a */; };
+		5E8F816627F2DCD900D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816027F2DCC200D150E8 /* libxploit.a */; };
+		5E8F816827F2DCE600D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816027F2DCC200D150E8 /* libxploit.a */; };
+		5E8F816A27F2DCF400D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816027F2DCC200D150E8 /* libxploit.a */; };
+		5E8F817627F2DF0100D150E8 /* libxploit_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F816127F2DCC200D150E8 /* libxploit_dev.a */; };
+		5E8F817827F2DF0D00D150E8 /* libxploit_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F817727F2DF0D00D150E8 /* libxploit_dev.a */; };
+		5E8F817927F2DF2500D150E8 /* libxploit_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F817727F2DF0D00D150E8 /* libxploit_dev.a */; };
 		8403C45F27BCE5F8003FAFE8 /* test_large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */; };
 		8403C46027BCE5F8003FAFE8 /* test_large_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */; };
 		8415898927B1E62100729788 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8415898827B1E62100729788 /* main.c */; };
-		8415898D27B1E62A00729788 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
-		8415898F27B1E62E00729788 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8415898E27B1E62E00729788 /* libxe_dev.a */; };
 		8415899027B1E74300729788 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D14278E43D800334806 /* libgym_client.dylib */; };
 		84184D09278E439F00334806 /* main_gym.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D08278E439F00334806 /* main_gym.c */; };
-		84184D11278E43BA00334806 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
-		84184D13278E43BE00334806 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D12278E43BE00334806 /* libxe_dev.a */; };
 		84184D15278E43D800334806 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D14278E43D800334806 /* libgym_client.dylib */; };
 		84184D1A278E489500334806 /* test_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D19278E489500334806 /* test_lck_rw.c */; };
 		84184D1D278E49C300334806 /* registry.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D1C278E49C300334806 /* registry.c */; };
-		84184D29278E4A2C00334806 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
 		84184D2A278E4A6C00334806 /* test_lck_rw.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D19278E489500334806 /* test_lck_rw.c */; };
 		84184D2B278E4A6E00334806 /* registry.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D1C278E49C300334806 /* registry.c */; };
 		84184D2D278E4A8000334806 /* main_remote.c in Sources */ = {isa = PBXBuildFile; fileRef = 84184D2C278E4A8000334806 /* main_remote.c */; };
@@ -34,12 +38,8 @@
 		84263D2027BE474500BFC4EA /* test_zalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84263D1F27BE474500BFC4EA /* test_zalloc.c */; };
 		84263D2127BE474500BFC4EA /* test_zalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 84263D1F27BE474500BFC4EA /* test_zalloc.c */; };
 		848579FC278F25D000180F48 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 848579FB278F25D000180F48 /* main.c */; };
-		84857A00278F263B00180F48 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
-		84857A01278F263F00180F48 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D12278E43BE00334806 /* libxe_dev.a */; };
 		84857A02278F265200180F48 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D14278E43D800334806 /* libgym_client.dylib */; };
 		84857A0C278F26A100180F48 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 84857A0B278F26A100180F48 /* main.c */; };
-		84857A10278F26A800180F48 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D10278E43BA00334806 /* libxe.a */; };
-		84857A11278F26AB00180F48 /* libxe_dev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D12278E43BE00334806 /* libxe_dev.a */; };
 		84857A12278F26B000180F48 /* libgym_client.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 84184D14278E43D800334806 /* libgym_client.dylib */; };
 /* End PBXBuildFile section */
 
@@ -98,15 +98,15 @@
 		5E21C65E27DAE679005E543F /* test_vnode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_vnode.c; sourceTree = "<group>"; };
 		5E26C0C027DAFFF30011C5AD /* test_sudo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_sudo.h; sourceTree = "<group>"; };
 		5E26C0C127DAFFF30011C5AD /* test_sudo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_sudo.c; sourceTree = "<group>"; };
+		5E8F816027F2DCC200D150E8 /* libxploit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxploit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E8F816127F2DCC200D150E8 /* libxploit_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxploit_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E8F817727F2DF0D00D150E8 /* libxploit_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxploit_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8403C45D27BCE5F8003FAFE8 /* test_large_mem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_large_mem.h; sourceTree = "<group>"; };
 		8403C45E27BCE5F8003FAFE8 /* test_large_mem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_large_mem.c; sourceTree = "<group>"; };
 		8415898627B1E62100729788 /* test_kmem_gym */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_gym; sourceTree = BUILT_PRODUCTS_DIR; };
 		8415898827B1E62100729788 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		8415898E27B1E62E00729788 /* libxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		84184D05278E439F00334806 /* test_general_gym */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_general_gym; sourceTree = BUILT_PRODUCTS_DIR; };
 		84184D08278E439F00334806 /* main_gym.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main_gym.c; sourceTree = "<group>"; };
-		84184D10278E43BA00334806 /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		84184D12278E43BE00334806 /* libxe_dev.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe_dev.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		84184D14278E43D800334806 /* libgym_client.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgym_client.dylib; path = ../../../../../usr/local/lib/libgym_client.dylib; sourceTree = "<group>"; };
 		84184D18278E489500334806 /* test_lck_rw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_lck_rw.h; sourceTree = "<group>"; };
 		84184D19278E489500334806 /* test_lck_rw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_lck_rw.c; sourceTree = "<group>"; };
@@ -129,9 +129,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8415898F27B1E62E00729788 /* libxe_dev.a in Frameworks */,
-				8415898D27B1E62A00729788 /* libxe.a in Frameworks */,
 				8415899027B1E74300729788 /* libgym_client.dylib in Frameworks */,
+				5E8F817627F2DF0100D150E8 /* libxploit_dev.a in Frameworks */,
+				5E8F816A27F2DCF400D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,9 +139,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84184D13278E43BE00334806 /* libxe_dev.a in Frameworks */,
-				84184D11278E43BA00334806 /* libxe.a in Frameworks */,
 				84184D15278E43D800334806 /* libgym_client.dylib in Frameworks */,
+				5E8F816327F2DCC200D150E8 /* libxploit_dev.a in Frameworks */,
+				5E8F816227F2DCC200D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,7 +149,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84184D29278E4A2C00334806 /* libxe.a in Frameworks */,
+				5E8F816427F2DCCA00D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,9 +157,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84857A01278F263F00180F48 /* libxe_dev.a in Frameworks */,
-				84857A00278F263B00180F48 /* libxe.a in Frameworks */,
 				84857A02278F265200180F48 /* libgym_client.dylib in Frameworks */,
+				5E8F817827F2DF0D00D150E8 /* libxploit_dev.a in Frameworks */,
+				5E8F816627F2DCD900D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,9 +167,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84857A11278F26AB00180F48 /* libxe_dev.a in Frameworks */,
-				84857A10278F26A800180F48 /* libxe.a in Frameworks */,
 				84857A12278F26B000180F48 /* libgym_client.dylib in Frameworks */,
+				5E8F817927F2DF2500D150E8 /* libxploit_dev.a in Frameworks */,
+				5E8F816827F2DCE600D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,10 +236,10 @@
 		84184D0F278E43BA00334806 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				8415898E27B1E62E00729788 /* libxe_dev.a */,
+				5E8F817727F2DF0D00D150E8 /* libxploit_dev.a */,
+				5E8F816027F2DCC200D150E8 /* libxploit.a */,
+				5E8F816127F2DCC200D150E8 /* libxploit_dev.a */,
 				84184D14278E43D800334806 /* libgym_client.dylib */,
-				84184D12278E43BE00334806 /* libxe_dev.a */,
-				84184D10278E43BA00334806 /* libxe.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -461,8 +461,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					$SOURCE_ROOT/../external,
 				);
 				INSTALL_PATH = /;
@@ -477,8 +477,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					$SOURCE_ROOT/../external,
 				);
 				INSTALL_PATH = /;
@@ -605,8 +605,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../external,
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					/usr/local/include,
 				);
 				INSTALL_PATH = /;
@@ -621,8 +621,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../external,
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					/usr/local/include,
 				);
 				INSTALL_PATH = /;
@@ -637,7 +637,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../external,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit/public,
 				);
 				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -650,7 +650,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../external,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit/public,
 				);
 				INSTALL_PATH = /;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -662,8 +662,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					$SOURCE_ROOT/../external,
 					/usr/local/include,
 				);
@@ -678,8 +678,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					$SOURCE_ROOT/../external,
 					/usr/local/include,
 				);
@@ -695,8 +695,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../external,
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					/usr/local/include,
 				);
 				INSTALL_PATH = /;
@@ -711,8 +711,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../external,
-					$SOURCE_ROOT/../libxe_dev/public,
-					$SOURCE_ROOT/../libxe/public,
+					$SOURCE_ROOT/../libxploit_dev/public,
+					$SOURCE_ROOT/../libxploit/public,
 					/usr/local/include,
 				);
 				INSTALL_PATH = /;

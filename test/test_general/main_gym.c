@@ -11,15 +11,15 @@
 #include <string.h>
 #include <limits.h>
 
-#include <xe/memory/kmem.h>
-#include <xe/memory/kmem_remote.h>
-#include <xe/slider/kernel.h>
-#include <xe/util/log.h>
-#include <xe/util/assert.h>
-#include <xe/util/misc.h>
+#include <xpl/memory/kmem.h>
+#include <xpl/memory/kmem_remote.h>
+#include <xpl/slider/kernel.h>
+#include <xpl/util/log.h>
+#include <xpl/util/assert.h>
+#include <xpl/util/misc.h>
 
-#include <xe_dev/memory/gym.h>
-#include <xe_dev/slider/kas.h>
+#include <xpl_dev/memory/gym.h>
+#include <xpl_dev/slider/kas.h>
 
 
 #include "registry.h"
@@ -36,14 +36,14 @@ int main(int argc, const char * argv[]) {
                 break;
             case '?':
             default:
-                xe_log_info("usage: test_general_gym [-t test_name]");
+                xpl_log_info("usage: test_general_gym [-t test_name]");
                 exit(1);
         }
     }
     
-    xe_assert_cond(getuid(), ==, 0);
-    xe_kmem_use_backend(xe_kmem_gym_create());
-    xe_slider_kernel_init(xe_slider_kas_get_mh_execute_header());
+    xpl_assert_cond(getuid(), ==, 0);
+    xpl_kmem_use_backend(xpl_kmem_gym_create());
+    xpl_slider_kernel_init(xpl_slider_kas_get_mh_execute_header());
     
     registry_run_tests(test_name);
     return 0;

@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		5E06142327D11C27009352EF /* entitlements.plist in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5E10EF1E27D1099000025E93 /* entitlements.plist */; };
 		5E44769F27D208450073AF3C /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8448D82F27C0AF3B00234961 /* main.c */; };
+		5E8F817127F2DD4500D150E8 /* libxploit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E8F817027F2DD4500D150E8 /* libxploit.a */; };
 		5E945FA327D1883400D9D8C0 /* libCoreEntitlements.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E945FA227D1882E00D9D8C0 /* libCoreEntitlements.tbd */; };
-		8448D83827C0AF5E00234961 /* libxe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8448D83727C0AF5E00234961 /* libxe.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,10 +30,10 @@
 		5E10EF1E27D1099000025E93 /* entitlements.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = entitlements.plist; sourceTree = "<group>"; };
 		5E4476A127D217950073AF3C /* core_entitlements.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core_entitlements.h; sourceTree = "<group>"; };
 		5E4476A227D21A430073AF3C /* Kernel.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Kernel.framework; path = System/Library/Frameworks/Kernel.framework; sourceTree = SDKROOT; };
+		5E8F817027F2DD4500D150E8 /* libxploit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxploit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E945FA227D1882E00D9D8C0 /* libCoreEntitlements.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libCoreEntitlements.tbd; path = usr/lib/libCoreEntitlements.tbd; sourceTree = SDKROOT; };
 		8448D82C27C0AF3B00234961 /* demo_entitlements */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo_entitlements; sourceTree = BUILT_PRODUCTS_DIR; };
 		8448D82F27C0AF3B00234961 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		8448D83727C0AF5E00234961 /* libxe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libxe.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,8 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8448D83827C0AF5E00234961 /* libxe.a in Frameworks */,
 				5E945FA327D1883400D9D8C0 /* libCoreEntitlements.tbd in Frameworks */,
+				5E8F817127F2DD4500D150E8 /* libxploit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,9 +79,9 @@
 		8448D83627C0AF5E00234961 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5E8F817027F2DD4500D150E8 /* libxploit.a */,
 				5E4476A227D21A430073AF3C /* Kernel.framework */,
 				5E945FA227D1882E00D9D8C0 /* libCoreEntitlements.tbd */,
-				8448D83727C0AF5E00234961 /* libxe.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -268,7 +268,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../libxe/public,
+					$SOURCE_ROOT/../../libxploit/public,
 				);
 				INSTALL_PATH = /demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -282,7 +282,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../../external,
-					$SOURCE_ROOT/../../libxe/public,
+					$SOURCE_ROOT/../../libxploit/public,
 				);
 				INSTALL_PATH = /demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";

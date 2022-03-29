@@ -10,17 +10,17 @@
 #include <stdio.h>
 #include <gym_client.h>
 
-#include <xe_dev/memory/tester.h>
+#include <xpl_dev/memory/tester.h>
 
-#include <xe/xe.h>
-#include <xe/memory/kmem.h>
-#include <xe/memory/kmem_remote.h>
-#include <xe/util/assert.h>
-#include <xe/util/misc.h>
+#include <xpl/xpl.h>
+#include <xpl/memory/kmem.h>
+#include <xpl/memory/kmem_remote.h>
+#include <xpl/util/assert.h>
+#include <xpl/util/misc.h>
 
 
 int main(int argc, const char * argv[]) {
-    const char* socket_path = XE_DEFAULT_KMEM_SOCKET;
+    const char* socket_path = xpl_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -30,22 +30,22 @@ int main(int argc, const char * argv[]) {
                 break;
             case '?':
             default:
-                xe_log_info("usage: test_kmem_remote [-k kmem_uds]");
+                xpl_log_info("usage: test_kmem_remote [-k kmem_uds]");
                 exit(1);
         }
     }
     
     srandom(1221);
-    xe_init();
+    xpl_init();
     
-    xe_kmem_backend_t remote_backend;
-    int error = xe_kmem_remote_client_create(socket_path, &remote_backend);
+    xpl_kmem_backend_t remote_backend;
+    int error = xpl_kmem_remote_client_create(socket_path, &remote_backend);
     if (error) {
-        xe_log_error("failed to connect to kmem server unix domain socket %s, err: %s", socket_path, strerror(error));
+        xpl_log_error("failed to connect to kmem server unix domain socket %s, err: %s", socket_path, strerror(error));
         exit(1);
     }
     
-    xe_kmem_use_backend(remote_backend);
+    xpl_kmem_use_backend(remote_backend);
     gym_init();
     
     int test_limits[][2] = {
@@ -63,20 +63,20 @@ int main(int argc, const char * argv[]) {
         { 16384, 32768 },
     };
     
-    double test_results[xe_array_size(test_limits)][2];
-    for (int i=0; i<xe_array_size(test_limits); i++) {
+    double test_results[xpl_array_size(test_limits)][2];
+    for (int i=0; i<xpl_array_size(test_limits); i++) {
         double* res = test_results[i];
         int* limit = test_limits[i];
-        xe_kmem_tester_run(10000, limit[0], limit[1], &res[0], &res[1]);
+        xpl_kmem_tester_run(10000, limit[0], limit[1], &res[0], &res[1]);
     }
     
-    for (int i=0; i<xe_array_size(test_limits); i++) {
+    for (int i=0; i<xpl_array_size(test_limits); i++) {
         double* res = test_results[i];
         int* limit = test_limits[i];
         
         printf("Min size: %d bytes, Max size: %d bytes, read: %.2f kB/s, write: %.2f kB/s\n", limit[0], limit[1], res[0] / 1024, res[1] / 1024);
     }
     
-    xe_kmem_remote_client_destroy(&remote_backend);
+    xpl_kmem_remote_client_destroy(&remote_backend);
     return 0;
 }

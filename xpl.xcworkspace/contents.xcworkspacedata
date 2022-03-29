@@ -1,0 +1,1896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:README.md">
+   </FileRef>
+   <FileRef
+      location = "group:env.h">
+   </FileRef>
+   <FileRef
+      location = "group:build.sh">
+   </FileRef>
+   <Group
+      location = "container:"
+      name = "poc">
+      <FileRef
+         location = "group:poc/poc_info_disclosure/poc_info_disclosure.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:poc/poc_snb_name_oob_read/poc_snb_name_oob_read.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:poc/poc_sockaddr_oob_read/poc_sockaddr_oob_read.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:poc/poc_oob_write/poc_oob_write.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:poc/poc_double_free/poc_double_free.xcodeproj">
+      </FileRef>
+   </Group>
+   <FileRef
+      location = "group:external">
+   </FileRef>
+   <FileRef
+      location = "group:libxploit/libxploit.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:libxploit_dev/libxploit_dev.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:xpl_kmem/xpl_kmem.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:xpl_smbx/xpl_smbx.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:test/test.xcodeproj">
+   </FileRef>
+   <Group
+      location = "container:demo"
+      name = "demo">
+      <FileRef
+         location = "group:demo_av/demo_av.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:demo_wp_disable/demo_wp_disable.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:demo_entitlements/demo_entitlements.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:demo_sudo/demo_sudo.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:demo_sb/demo_sb.xcodeproj">
+      </FileRef>
+   </Group>
+   <Group
+      location = "group:libs"
+      name = "libs">
+      <Group
+         location = "group:swift-nio"
+         name = "swift-nio">
+         <Group
+            location = "group:Tests"
+            name = "Tests">
+            <Group
+               location = "group:NIOPosixTests"
+               name = "NIOPosixTests">
+               <FileRef
+                  location = "group:GetAddrInfoResolverTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelNotificationTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:RecvByteBufAllocatorTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOAnyDebugTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CustomChannelTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOThreadPoolTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CircularBufferTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IdleStateHandlerTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IOErrorTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:UniversalBootstrapSupportTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectorTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CustomChannelTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BlockingIOThreadPoolTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PipeChannelTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NonBlockingFileIOTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NonBlockingFileIOTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerBitPackingTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:DatagramChannelTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IdleStateHandlerTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOThreadPoolTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SyscallAbstractionLayer.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BlockingIOThreadPoolTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketOptionProviderTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:UtilitiesTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerTypesTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TypeAssistedChannelHandlerTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:UniversalBootstrapSupportTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:DispatchQueue+WithFutureTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IOErrorTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOCloseOnErrorHandlerTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SystemTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOAnyDebugTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:MulticastTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketAddressTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PendingDatagramWritesManagerTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:AcceptBackoffHandlerTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:LinuxTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SALEventLoopTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SingleStepByteToMessageDecoderTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HappyEyeballsTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SystemCallWrapperHelpers.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketOptionProviderTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelOptionStorageTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PipeChannelTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:GetAddrInfoResolverTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ControlMessageTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:StreamChannelsTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketAddressTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BootstrapTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SALChannelTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ThreadTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CodecTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:DispatchQueue+WithFutureTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:RecvByteBufAllocatorTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SystemTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:DatagramChannelTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:StreamChannelsTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EchoServerClientTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:AcceptBackoffHandlerTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketChannelTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TimeAmountTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:MarkedCircularBufferTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferLengthPrefixTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BaseObjectsTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EventLoopFutureTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketChannelTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EchoServerClientTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOCloseOnErrorHandlerTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ThreadTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:MarkedCircularBufferTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PendingDatagramWritesManagerTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EventLoopFutureTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HappyEyeballsTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:FileRegionTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelOptionStorageTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelPipelineTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelPipelineTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SALEventLoopTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CodecTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BootstrapTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TestUtils.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:FileRegionTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BaseObjectsTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:UtilitiesTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TimeAmountTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TypeAssistedChannelHandlerTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:MulticastTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:LinuxTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SALChannelTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerBitPackingTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EventLoopTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EventLoopTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferLengthPrefixTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelNotificationTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CircularBufferTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SingleStepByteToMessageDecoderTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectorTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerTypesTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ControlMessageTests+XCTest.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOTLSTests"
+               name = "NIOTLSTests">
+               <FileRef
+                  location = "group:SNIHandlerTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SNIHandlerTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ApplicationProtocolNegotiationHandlerTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ApplicationProtocolNegotiationHandlerTests+XCTest.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOWebSocketTests"
+               name = "NIOWebSocketTests">
+               <FileRef
+                  location = "group:WebSocketFrameEncoderTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOWebSocketClientUpgraderTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketFrameEncoderTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketFrameDecoderTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketClientEndToEndTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOWebSocketFrameAggregatorTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketMaskingKeyTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOWebSocketClientUpgraderTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketServerEndToEndTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketServerEndToEndTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketMaskingKeyTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketClientEndToEndTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOWebSocketFrameAggregatorTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Base64Test.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Base64Test+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketFrameDecoderTest+XCTest.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOTestUtilsTests"
+               name = "NIOTestUtilsTests">
+               <FileRef
+                  location = "group:EventCounterHandlerTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOHTTP1TestServerTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EventCounterHandlerTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteToMessageDecoderVerifierTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOHTTP1TestServerTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteToMessageDecoderVerifierTest.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIODataStructuresTests"
+               name = "NIODataStructuresTests">
+               <FileRef
+                  location = "group:PriorityQueueTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HeapTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HeapTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PriorityQueueTests+XCTest.swift">
+               </FileRef>
+            </Group>
+            <FileRef
+               location = "group:LinuxMain.swift">
+            </FileRef>
+            <Group
+               location = "group:NIOConcurrencyHelpersTests"
+               name = "NIOConcurrencyHelpersTests">
+               <FileRef
+                  location = "group:NIOConcurrencyHelpersTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOConcurrencyHelpersTests.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOFoundationCompatTests"
+               name = "NIOFoundationCompatTests">
+               <FileRef
+                  location = "group:JSONSerialization+ByteBufferTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferDataProtocolTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Codable+ByteBufferTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferDataProtocolTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferView+MutableDataProtocolTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferView+MutableDataProtocolTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:JSONSerialization+ByteBufferTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Codable+ByteBufferTest.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOTests"
+               name = "NIOTests">
+               <FileRef
+                  location = "group:NIOTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOTests+XCTest.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOEmbeddedTests"
+               name = "NIOEmbeddedTests">
+               <FileRef
+                  location = "group:EmbeddedEventLoopTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EmbeddedChannelTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EmbeddedEventLoopTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TestUtils.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EmbeddedChannelTest+XCTest.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOHTTP1Tests"
+               name = "NIOHTTP1Tests">
+               <FileRef
+                  location = "group:NIOHTTPObjectAggregatorTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPRequestEncoderTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerProtocolErrorHandlerTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPRequestEncoderTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerUpgradeTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferUtilsTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerUpgradeTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPClientUpgradeTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerPipelineHandlerTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerClientTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPDecoderTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerProtocolErrorHandlerTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPDecoderLengthTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPClientUpgradeTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPHeadersTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferUtilsTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPDecoderLengthTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOHTTPObjectAggregatorTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerPipelineHandlerTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPHeadersTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPResponseStatusTests.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPDecoderTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPTypesTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerClientTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPResponseEncoderTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TestUtils.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPResponseEncoderTest+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPResponseStatusTests+XCTest.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPTypesTest.swift">
+               </FileRef>
+            </Group>
+         </Group>
+         <FileRef
+            location = "group:Package.swift">
+         </FileRef>
+         <Group
+            location = "group:docker"
+            name = "docker">
+            <FileRef
+               location = "group:Dockerfile">
+            </FileRef>
+            <FileRef
+               location = "group:docker-compose.yaml">
+            </FileRef>
+            <FileRef
+               location = "group:docker-compose.1604.53.yaml">
+            </FileRef>
+            <FileRef
+               location = "group:docker-compose.2004.main.yaml">
+            </FileRef>
+            <FileRef
+               location = "group:docker-compose.1804.52.yaml">
+            </FileRef>
+            <FileRef
+               location = "group:docker-compose.2004.55.yaml">
+            </FileRef>
+            <FileRef
+               location = "group:docker-compose.2004.54.yaml">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:LICENSE.txt">
+         </FileRef>
+         <Group
+            location = "group:docs"
+            name = "docs">
+            <FileRef
+               location = "group:public-api.md">
+            </FileRef>
+            <FileRef
+               location = "group:workarounds.md">
+            </FileRef>
+            <FileRef
+               location = "group:advanced-performance-analysis.md">
+            </FileRef>
+            <FileRef
+               location = "group:debugging-allocations.md">
+            </FileRef>
+            <FileRef
+               location = "group:optimization-tips.md">
+            </FileRef>
+            <FileRef
+               location = "group:migration-guide-NIO1-to-NIO2.md">
+            </FileRef>
+            <FileRef
+               location = "group:io_uring.md">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:IntegrationTests"
+            name = "IntegrationTests">
+            <Group
+               location = "group:tests_01_http"
+               name = "tests_01_http">
+               <FileRef
+                  location = "group:test_09_curl_happy_with_trailers.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_02_get_random_bytes.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_04_keep_alive_works.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_08_survive_signals.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_05_repeated_reqs_work.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_13_http_pipelining.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_20_connection_drop_while_waiting_for_response_tcp.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_17_serve_massive_sparse_file.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_24_http_over_stdio.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_11_res_body_streaming.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_23_repeated_reqs_with_half_closure.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:defines.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_22_http_1.0_keep_alive.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_19_connection_drop_while_waiting_for_response_uds.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_16_tcp_client_ip.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_21_connection_reset_tcp.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_18_close_with_no_keepalive.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_15_post_in_chunked_encoding.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_03_post_random_bytes.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_14_strict_mode_assertion.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_01_get_file.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_06_http_1.0.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_10_connection_drop_in_body_ok.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_07_headers_work.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_12_headers_too_large.sh">
+               </FileRef>
+            </Group>
+            <FileRef
+               location = "group:test_functions.sh">
+            </FileRef>
+            <FileRef
+               location = "group:run-tests.sh">
+            </FileRef>
+            <Group
+               location = "group:tests_05_assertions"
+               name = "tests_05_assertions">
+               <FileRef
+                  location = "group:defines.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_01_syscall_wrapper_fast.sh">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:tests_04_performance"
+               name = "tests_04_performance">
+               <FileRef
+                  location = "group:defines.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_01_allocation_counts.sh">
+               </FileRef>
+               <Group
+                  location = "group:test_01_resources"
+                  name = "test_01_resources">
+                  <FileRef
+                     location = "group:test_get_100000_headers_canonical_form.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_tcpbootstraps.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_udp_reqs.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1_reqs_1000_conn.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_tcpconnections.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_scheduling_10000_executions.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:shared.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_read_10000_chunks_from_file.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:run-nio-alloc-counter-tests.sh">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_future_lots_of_callbacks.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_getHandlers.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_udp_1_reqs_1000_conn.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_creating_10000_headers.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_autoReadGetAndSet_sync.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_schedule_10000_tasks.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_reqs_1_conn.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_decode_1000_ws_frames.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_udpconnections.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_modifying_byte_buffer_view.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:README.md">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_future_erase_result.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_ping_pong_1000_reqs_1_conn.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_addHandlers_sync.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_addRemoveHandlers.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_encode_1000_ws_frames.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_autoReadGetAndSet.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_getHandlers_sync.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_udpbootstraps.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_modifying_1000_circular_buffer_elements.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_udp_1000_reqs_1_conn.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_bytebuffer_lots_of_rw.swift">
+                  </FileRef>
+                  <FileRef
+                     location = "group:test_1000_addHandlers.swift">
+                  </FileRef>
+               </Group>
+            </Group>
+            <FileRef
+               location = "group:plugin_junit_xml.sh">
+            </FileRef>
+            <Group
+               location = "group:tests_02_syscall_wrappers"
+               name = "tests_02_syscall_wrappers">
+               <FileRef
+                  location = "group:defines.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_02_unacceptable_errnos.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_01_syscall_wrapper_fast.sh">
+               </FileRef>
+            </Group>
+            <FileRef
+               location = "group:plugin_echo.sh">
+            </FileRef>
+            <Group
+               location = "group:tests_03_debug_binary_checks"
+               name = "tests_03_debug_binary_checks">
+               <FileRef
+                  location = "group:defines.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_01_check_we_do_not_link_Foundation.sh">
+               </FileRef>
+               <FileRef
+                  location = "group:test_02_expected_crashes_work.sh">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:allocation-counter-tests-framework"
+               name = "allocation-counter-tests-framework">
+               <FileRef
+                  location = "group:run-allocation-counter.sh">
+               </FileRef>
+               <Group
+                  location = "group:template"
+                  name = "template">
+                  <FileRef
+                     location = "group:scaffolding.swift">
+                  </FileRef>
+                  <Group
+                     location = "group:AtomicCounter"
+                     name = "AtomicCounter">
+                     <FileRef
+                        location = "group:Package.swift">
+                     </FileRef>
+                     <Group
+                        location = "group:Sources"
+                        name = "Sources">
+                        <Group
+                           location = "group:AtomicCounter"
+                           name = "AtomicCounter">
+                           <Group
+                              location = "group:include"
+                              name = "include">
+                              <FileRef
+                                 location = "group:atomic-counter.h">
+                              </FileRef>
+                           </Group>
+                           <Group
+                              location = "group:src"
+                              name = "src">
+                              <FileRef
+                                 location = "group:atomic-counter.c">
+                              </FileRef>
+                           </Group>
+                        </Group>
+                     </Group>
+                  </Group>
+                  <Group
+                     location = "group:Sources"
+                     name = "Sources">
+                     <Group
+                        location = "group:bootstrapDoNotHook"
+                        name = "bootstrapDoNotHook">
+                        <FileRef
+                           location = "group:main.c">
+                        </FileRef>
+                     </Group>
+                     <Group
+                        location = "group:bootstrapDoHook"
+                        name = "bootstrapDoHook">
+                        <FileRef
+                           location = "group:main.c">
+                        </FileRef>
+                     </Group>
+                  </Group>
+                  <Group
+                     location = "group:HookedFunctionsDoNotHook"
+                     name = "HookedFunctionsDoNotHook">
+                     <FileRef
+                        location = "group:Package.swift">
+                     </FileRef>
+                     <Group
+                        location = "group:Sources"
+                        name = "Sources">
+                        <Group
+                           location = "group:HookedFunctions"
+                           name = "HookedFunctions">
+                           <Group
+                              location = "group:include"
+                              name = "include">
+                              <FileRef
+                                 location = "group:hooked-functions.h">
+                              </FileRef>
+                           </Group>
+                           <Group
+                              location = "group:src"
+                              name = "src">
+                              <FileRef
+                                 location = "group:hooked-functions.c">
+                              </FileRef>
+                           </Group>
+                        </Group>
+                     </Group>
+                  </Group>
+                  <Group
+                     location = "group:HookedFunctionsDoHook"
+                     name = "HookedFunctionsDoHook">
+                     <FileRef
+                        location = "group:Package.swift">
+                     </FileRef>
+                     <Group
+                        location = "group:Sources"
+                        name = "Sources">
+                        <Group
+                           location = "group:HookedFunctions"
+                           name = "HookedFunctions">
+                           <Group
+                              location = "group:include"
+                              name = "include">
+                              <FileRef
+                                 location = "group:hooked-functions.h">
+                              </FileRef>
+                           </Group>
+                           <Group
+                              location = "group:src"
+                              name = "src">
+                              <FileRef
+                                 location = "group:hooked-functions-darwin.c">
+                              </FileRef>
+                              <FileRef
+                                 location = "group:hooked-functions-unix.c">
+                              </FileRef>
+                           </Group>
+                        </Group>
+                     </Group>
+                  </Group>
+               </Group>
+            </Group>
+            <FileRef
+               location = "group:run-single-test.sh">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:SECURITY.md">
+         </FileRef>
+         <FileRef
+            location = "group:CODE_OF_CONDUCT.md">
+         </FileRef>
+         <FileRef
+            location = "group:CONTRIBUTING.md">
+         </FileRef>
+         <FileRef
+            location = "group:CONTRIBUTORS.txt">
+         </FileRef>
+         <FileRef
+            location = "group:README.md">
+         </FileRef>
+         <Group
+            location = "group:Sources"
+            name = "Sources">
+            <Group
+               location = "group:_NIOConcurrency"
+               name = "_NIOConcurrency">
+               <FileRef
+                  location = "group:Empty.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOEchoServer"
+               name = "NIOEchoServer">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOCrashTester"
+               name = "NIOCrashTester">
+               <FileRef
+                  location = "group:CrashTestSuites.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CrashTests+System.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CrashTests+EventLoop.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:OutputGrepper.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CrashTests+ByteBuffer.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CrashTests+HTTP.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:CNIOLinux"
+               name = "CNIOLinux">
+               <Group
+                  location = "group:include"
+                  name = "include">
+                  <FileRef
+                     location = "group:liburing_nio.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:CNIOLinux.h">
+                  </FileRef>
+               </Group>
+               <FileRef
+                  location = "group:shim.c">
+               </FileRef>
+               <FileRef
+                  location = "group:liburing_shims.c">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOUDPEchoServer"
+               name = "NIOUDPEchoServer">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOChatClient"
+               name = "NIOChatClient">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOFoundationCompat"
+               name = "NIOFoundationCompat">
+               <FileRef
+                  location = "group:ByteBuffer-foundation.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:JSONSerialization+ByteBuffer.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Codable+ByteBuffer.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOWebSocketClient"
+               name = "NIOWebSocketClient">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:CNIOHTTPParser"
+               name = "CNIOHTTPParser">
+               <Group
+                  location = "group:include"
+                  name = "include">
+                  <FileRef
+                     location = "group:CNIOHTTPParser.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:c_nio_http_parser.h">
+                  </FileRef>
+               </Group>
+               <FileRef
+                  location = "group:c_nio_http_parser.c">
+               </FileRef>
+               <FileRef
+                  location = "group:AUTHORS">
+               </FileRef>
+               <FileRef
+                  location = "group:LICENSE-MIT">
+               </FileRef>
+               <FileRef
+                  location = "group:update_and_patch_http_parser.sh">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:CNIODarwin"
+               name = "CNIODarwin">
+               <Group
+                  location = "group:include"
+                  name = "include">
+                  <FileRef
+                     location = "group:CNIODarwin.h">
+                  </FileRef>
+               </Group>
+               <FileRef
+                  location = "group:shim.c">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:CNIOAtomics"
+               name = "CNIOAtomics">
+               <Group
+                  location = "group:include"
+                  name = "include">
+                  <FileRef
+                     location = "group:CNIOAtomics.h">
+                  </FileRef>
+               </Group>
+               <Group
+                  location = "group:src"
+                  name = "src">
+                  <FileRef
+                     location = "group:c-atomics.c">
+                  </FileRef>
+                  <FileRef
+                     location = "group:cpp_magic.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:c-nioatomics.c">
+                  </FileRef>
+               </Group>
+            </Group>
+            <Group
+               location = "group:NIOHTTP1Client"
+               name = "NIOHTTP1Client">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOConcurrencyHelpers"
+               name = "NIOConcurrencyHelpers">
+               <FileRef
+                  location = "group:NIOAtomic.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:atomics.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:lock.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:_NIODataStructures"
+               name = "_NIODataStructures">
+               <FileRef
+                  location = "group:Heap.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PriorityQueue.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOAsyncAwaitDemo"
+               name = "NIOAsyncAwaitDemo">
+               <FileRef
+                  location = "group:FullRequestResponse.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:AsyncChannelIO.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIO"
+               name = "NIO">
+               <FileRef
+                  location = "group:Exports.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOHTTP1"
+               name = "NIOHTTP1">
+               <FileRef
+                  location = "group:ByteCollectionUtils.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerUpgradeHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPDecoder.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPTypes.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOHTTPObjectAggregator.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPEncoder.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOHTTPClientUpgradeHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerPipelineHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPServerProtocolErrorHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HTTPPipelineSetup.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOEchoClient"
+               name = "NIOEchoClient">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOCore"
+               name = "NIOCore">
+               <FileRef
+                  location = "group:FileHandle.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBuffer-lengthPrefix.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:DeadChannel.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBuffer-conversions.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketOptionProvider.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PointerHelpers.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerTypes.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelPipeline.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:MulticastChannel.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOCloseOnErrorHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BSDSocketAPI.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:MarkedCircularBuffer.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Linux.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelInvoker.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBuffer-views.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:AsyncAwaitSupport.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOAny.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ConvenienceOptionSupport.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:DispatchQueue+WithFuture.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:FileRegion.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelOption.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerBitPacking.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBuffer-aux.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Codec.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IOData.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EventLoopFuture.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Interfaces.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SingleStepByteToMessageDecoder.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:UniversalBootstrapSupport.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:EventLoop.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SystemCallHelpers.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TypeAssistedChannelHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ChannelHandlers.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBuffer-core.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Utilities.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketAddresses.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:FileDescriptor.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CircularBuffer.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IO.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:AddressedEnvelope.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:RecvByteBufferAllocator.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBuffer-int.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Channel.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOUDPEchoClient"
+               name = "NIOUDPEchoClient">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOWebSocket"
+               name = "NIOWebSocket">
+               <FileRef
+                  location = "group:WebSocketFrameEncoder.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketErrorCodes.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOWebSocketServerUpgrader.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SHA1.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketFrameDecoder.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOWebSocketFrameAggregator.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketOpcode.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketFrame.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOWebSocketClientUpgrader.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketProtocolErrorHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Base64.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOChatServer"
+               name = "NIOChatServer">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOWebSocketServer"
+               name = "NIOWebSocketServer">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOPerformanceTester"
+               name = "NIOPerformanceTester">
+               <FileRef
+                  location = "group:ChannelPipelineBenchmark.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketFrameDecoderBenchmark.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:WebSocketFrameEncoderBenchmark.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteToMessageDecoderDecodeManySmallsBenchmark.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:CircularBufferIntoByteBufferBenchmark.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:resources.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteBufferViewIteratorBenchmark.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Benchmark.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOEmbedded"
+               name = "NIOEmbedded">
+               <FileRef
+                  location = "group:Embedded.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:CNIOWindows"
+               name = "CNIOWindows">
+               <Group
+                  location = "group:include"
+                  name = "include">
+                  <FileRef
+                     location = "group:CNIOWindows.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:module.modulemap">
+                  </FileRef>
+               </Group>
+               <FileRef
+                  location = "group:shim.c">
+               </FileRef>
+               <FileRef
+                  location = "group:WSAStartup.c">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:CNIOSHA1"
+               name = "CNIOSHA1">
+               <FileRef
+                  location = "group:update_and_patch_sha1.sh">
+               </FileRef>
+               <Group
+                  location = "group:include"
+                  name = "include">
+                  <FileRef
+                     location = "group:CNIOSHA1.h">
+                  </FileRef>
+               </Group>
+               <FileRef
+                  location = "group:c_nio_sha1.c">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOHTTP1Server"
+               name = "NIOHTTP1Server">
+               <FileRef
+                  location = "group:README.md">
+               </FileRef>
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOPosix"
+               name = "NIOPosix">
+               <FileRef
+                  location = "group:BSDSocketAPICommon.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PipeChannel.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOThreadPool.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PipePair.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ControlMessage.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Thread.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:GetaddrinfoResolver.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PointerHelpers.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BSDSocketAPIWindows.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerTypes.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:MultiThreadedEventLoopGroup.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PendingWritesManager.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketProtocols.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:HappyEyeballs.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Linux.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ThreadPosix.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BaseStreamSocketChannel.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BaseSocketChannel+SocketOptionProvider.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Bootstrap.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectorKqueue.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IntegerBitPacking.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ServerSocket.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:LinuxUring.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:DatagramVectorReadManager.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectorUring.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:PendingDatagramWritesManager.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Selectable.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BaseSocketChannel.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectorGeneric.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Socket.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:LinuxCPUSet.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectableEventLoop.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BSDSocketAPIPosix.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:System.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NonBlockingFileIO.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectorEpoll.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ThreadWindows.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Utilities.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:FileDescriptor.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SelectableChannel.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:Resolver.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:BaseSocket.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:SocketChannel.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:IO.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOTLS"
+               name = "NIOTLS">
+               <FileRef
+                  location = "group:SNIHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:TLSEvents.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ApplicationProtocolNegotiationHandler.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOTestUtils"
+               name = "NIOTestUtils">
+               <FileRef
+                  location = "group:EventCounterHandler.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:ByteToMessageDecoderVerifier.swift">
+               </FileRef>
+               <FileRef
+                  location = "group:NIOHTTP1TestServer.swift">
+               </FileRef>
+            </Group>
+            <Group
+               location = "group:NIOMulticastChat"
+               name = "NIOMulticastChat">
+               <FileRef
+                  location = "group:main.swift">
+               </FileRef>
+            </Group>
+         </Group>
+         <Group
+            location = "group:scripts"
+            name = "scripts">
+            <FileRef
+               location = "group:integration_tests.sh">
+            </FileRef>
+            <FileRef
+               location = "group:analyze_performance_results.rb">
+            </FileRef>
+            <FileRef
+               location = "group:generate_linux_tests.rb">
+            </FileRef>
+            <FileRef
+               location = "group:soundness.sh">
+            </FileRef>
+            <FileRef
+               location = "group:check_no_api_breakages.sh">
+            </FileRef>
+            <FileRef
+               location = "group:generate_docs.sh">
+            </FileRef>
+            <FileRef
+               location = "group:build_podspecs.sh">
+            </FileRef>
+            <FileRef
+               location = "group:list_topsorted_dependencies.sh">
+            </FileRef>
+            <FileRef
+               location = "group:generate_contributors_list.sh">
+            </FileRef>
+            <FileRef
+               location = "group:compare_perf_of_swift_versions.sh">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:dev"
+            name = "dev">
+            <FileRef
+               location = "group:make-single-file-spm">
+            </FileRef>
+            <FileRef
+               location = "group:stackdiff-dtrace.py">
+            </FileRef>
+            <FileRef
+               location = "group:update-alloc-limits-to-last-completed-ci-build">
+            </FileRef>
+            <FileRef
+               location = "group:malloc-aggregation.d">
+            </FileRef>
+            <FileRef
+               location = "group:lldb-smoker">
+            </FileRef>
+            <FileRef
+               location = "group:git.commit.template">
+            </FileRef>
+            <FileRef
+               location = "group:boxed-existentials.d">
+            </FileRef>
+            <FileRef
+               location = "group:alloc-limits-from-test-output">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:NOTICE.txt">
+         </FileRef>
+      </Group>
+   </Group>
+</Workspace>

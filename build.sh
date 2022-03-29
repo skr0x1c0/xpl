@@ -27,10 +27,10 @@ SCHEMES=(poc_snb_name_oob_read_server poc_snb_name_oob_read_client poc_sockaddr_
 # Demos
 SCHEMES+=(demo_sb demo_entitlements demo_wp_disable demo_av demo_sudo)
 # SMB
-SCHEMES+=(xe_smbx xe_kmem)
+SCHEMES+=(xpl_smbx xpl_kmem)
 # Test
 SCHEMES+=(test_general_remote)
 
 for SCHEME in ${SCHEMES[@]}; do
-    xcodebuild -workspace xe.xcworkspace -scheme $SCHEME -configuration Release install DSTROOT=$BUILD_DIR GCC_PREPROCESSOR_DEFINITIONS="$CPP_DEFINITIONS" || exit 1
+    xcodebuild -workspace xpl.xcworkspace -scheme $SCHEME -configuration Release install DSTROOT=$BUILD_DIR GCC_PREPROCESSOR_DEFINITIONS="$CPP_DEFINITIONS" || exit 1
 done
