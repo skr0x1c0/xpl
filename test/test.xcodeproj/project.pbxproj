@@ -118,7 +118,7 @@
 		84184D2F278E4CBE00334806 /* test_pacda.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_pacda.c; sourceTree = "<group>"; };
 		84263D1E27BE474500BFC4EA /* test_zalloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_zalloc.h; sourceTree = "<group>"; };
 		84263D1F27BE474500BFC4EA /* test_zalloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_zalloc.c; sourceTree = "<group>"; };
-		848579F9278F25D000180F48 /* test_kmem_msdosfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_msdosfs; sourceTree = BUILT_PRODUCTS_DIR; };
+		848579F9278F25D000180F48 /* test_kmem_fast */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_fast; sourceTree = BUILT_PRODUCTS_DIR; };
 		848579FB278F25D000180F48 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		84857A09278F26A100180F48 /* test_kmem_remote */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_kmem_remote; sourceTree = BUILT_PRODUCTS_DIR; };
 		84857A0B278F26A100180F48 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
@@ -188,7 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				84184D07278E439F00334806 /* test_general */,
-				848579FA278F25D000180F48 /* test_kmem_msdosfs */,
+				848579FA278F25D000180F48 /* test_kmem_fast */,
 				84857A0A278F26A100180F48 /* test_kmem_remote */,
 				8415898727B1E62100729788 /* test_kmem_gym */,
 				84184D06278E439F00334806 /* Products */,
@@ -201,7 +201,7 @@
 			children = (
 				84184D05278E439F00334806 /* test_general_gym */,
 				84184D22278E4A2300334806 /* test_general_remote */,
-				848579F9278F25D000180F48 /* test_kmem_msdosfs */,
+				848579F9278F25D000180F48 /* test_kmem_fast */,
 				84857A09278F26A100180F48 /* test_kmem_remote */,
 				8415898627B1E62100729788 /* test_kmem_gym */,
 			);
@@ -244,12 +244,12 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		848579FA278F25D000180F48 /* test_kmem_msdosfs */ = {
+		848579FA278F25D000180F48 /* test_kmem_fast */ = {
 			isa = PBXGroup;
 			children = (
 				848579FB278F25D000180F48 /* main.c */,
 			);
-			path = test_kmem_msdosfs;
+			path = test_kmem_fast;
 			sourceTree = "<group>";
 		};
 		84857A0A278F26A100180F48 /* test_kmem_remote */ = {
@@ -314,9 +314,9 @@
 			productReference = 84184D22278E4A2300334806 /* test_general_remote */;
 			productType = "com.apple.product-type.tool";
 		};
-		848579F8278F25D000180F48 /* test_kmem_msdosfs */ = {
+		848579F8278F25D000180F48 /* test_kmem_fast */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 848579FD278F25D000180F48 /* Build configuration list for PBXNativeTarget "test_kmem_msdosfs" */;
+			buildConfigurationList = 848579FD278F25D000180F48 /* Build configuration list for PBXNativeTarget "test_kmem_fast" */;
 			buildPhases = (
 				848579F5278F25D000180F48 /* Sources */,
 				848579F6278F25D000180F48 /* Frameworks */,
@@ -326,9 +326,9 @@
 			);
 			dependencies = (
 			);
-			name = test_kmem_msdosfs;
+			name = test_kmem_fast;
 			productName = test_kmem_msdosfs;
-			productReference = 848579F9278F25D000180F48 /* test_kmem_msdosfs */;
+			productReference = 848579F9278F25D000180F48 /* test_kmem_fast */;
 			productType = "com.apple.product-type.tool";
 		};
 		84857A08278F26A100180F48 /* test_kmem_remote */ = {
@@ -389,7 +389,7 @@
 			targets = (
 				84184D04278E439F00334806 /* test_general_gym */,
 				84184D21278E4A2300334806 /* test_general_remote */,
-				848579F8278F25D000180F48 /* test_kmem_msdosfs */,
+				848579F8278F25D000180F48 /* test_kmem_fast */,
 				84857A08278F26A100180F48 /* test_kmem_remote */,
 				8415898527B1E62100729788 /* test_kmem_gym */,
 			);
@@ -463,7 +463,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 				);
 				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
@@ -479,7 +479,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 				);
 				INSTALL_PATH = /;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
@@ -604,7 +604,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
@@ -620,7 +620,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
@@ -636,7 +636,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe/public,
 				);
 				INSTALL_PATH = /;
@@ -649,7 +649,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe/public,
 				);
 				INSTALL_PATH = /;
@@ -664,7 +664,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					/usr/local/include,
 				);
 				INSTALL_PATH = /;
@@ -680,7 +680,7 @@
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					/usr/local/include,
 				);
 				INSTALL_PATH = /;
@@ -694,7 +694,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
@@ -710,7 +710,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
-					$SOURCE_ROOT/../macos,
+					$SOURCE_ROOT/../external,
 					$SOURCE_ROOT/../libxe_dev/public,
 					$SOURCE_ROOT/../libxe/public,
 					/usr/local/include,
@@ -760,7 +760,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		848579FD278F25D000180F48 /* Build configuration list for PBXNativeTarget "test_kmem_msdosfs" */ = {
+		848579FD278F25D000180F48 /* Build configuration list for PBXNativeTarget "test_kmem_fast" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				848579FE278F25D000180F48 /* Debug */,
