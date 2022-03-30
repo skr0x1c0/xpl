@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 
-/*
+/**
  * Allocator with read write capability
  * -- Reading of allocated memory can be done anytime
  * -- Writing to memory can only be done initially during allocation

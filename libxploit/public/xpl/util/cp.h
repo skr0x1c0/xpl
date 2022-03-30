@@ -10,6 +10,9 @@
 
 #include <stdio.h>
 
-int xpl_util_cp(const char* src, const char* dst);
+/// Copy file from path `src` to `dst`. File in path `dst` should not exist
+/// @param src source file
+/// @param dst destination file
+int xpl_cp(const char* src, const char* dst);
 
 #endif /* cp_h */

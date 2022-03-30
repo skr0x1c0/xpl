@@ -34,7 +34,7 @@
 
 
 void bechmark(void) {
-    uint32_t magic = xpl_kmem_read_uint32(xpl_slider_kernel_slide(xpl_IMAGE_SEGMENT_TEXT_BASE), 0);
+    uint32_t magic = xpl_kmem_read_uint32(xpl_slider_kernel_slide(XPL_IMAGE_SEGMENT_TEXT_BASE), 0);
     xpl_assert_cond(magic, ==, 0xfeedfacf);
 
     int test_limits[][2] = {
@@ -70,7 +70,7 @@ void bechmark(void) {
 
 int main(int argc, const char* argv[]) {
     _Bool do_benchmark = FALSE;
-    const char* uds_path = xpl_DEFAULT_KMEM_SOCKET;
+    const char* uds_path = XPL_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "bk:")) != -1) {

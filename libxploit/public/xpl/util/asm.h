@@ -10,6 +10,9 @@
 
 #include <stdio.h>
 
-uint32_t xpl_util_asm_build_bl_instr(uintptr_t to, uintptr_t from);
+/// Constructs aarch64 bl instruction
+/// @param to address to branch to
+/// @param from address of instruction
+uint32_t xpl_asm_build_bl_instr(uintptr_t to, uintptr_t from);
 
 #endif /* assembly_h */

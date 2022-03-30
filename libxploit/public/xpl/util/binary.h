@@ -10,6 +10,9 @@
 
 #include <stdio.h>
 
-int xpl_util_binary_hex_dump(const char* data, size_t data_size);
+/// Print the hexdump of source data
+/// @param data source data
+/// @param data_size size of source data
+int xpl_binary_hex_dump(const void* data, size_t data_size);
 
 #endif /* xpl_util_binary_h */

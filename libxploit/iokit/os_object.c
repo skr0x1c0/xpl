@@ -17,10 +17,10 @@ uintptr_t xpl_os_object_get_meta_class(uintptr_t instance) {
     uintptr_t vtable = xpl_kmem_read_ptr(instance, 0) - 0x10;
     uintptr_t get_meta_class_method = xpl_kmem_read_ptr(vtable, TYPE_VTABLE_MEM_GET_META_CLASS_OFFSET);
     
-    // Expecting instructions of the form
-    // adrp x0, #imm
-    // add x0, x0, #imm
-    // ret
+    /// Expecting instructions of the form
+    /// adrp x0, #imm
+    /// add x0, x0, #imm
+    /// ret
     uint32_t adrp_instr = xpl_kmem_read_uint32(get_meta_class_method, 0);
     uint32_t add_instr = xpl_kmem_read_uint32(get_meta_class_method, 4);
     uint32_t ret_instr = xpl_kmem_read_uint32(get_meta_class_method, 8);

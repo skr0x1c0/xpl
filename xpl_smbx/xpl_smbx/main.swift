@@ -85,9 +85,9 @@ extension RequestHandler {
             status = handleCmdTransaction2(request: &request, response: &response)
         case SMB_COM_NT_CREATE_ANDX:
             status = handleCmdNTCreateAndX(request: &request, response: &response)
-        case xpl_SMBX_SMB_CMD_GET_LAST_NB_SSN_REQUEST:
+        case XPL_SMBX_SMB_CMD_GET_LAST_NB_SSN_REQUEST:
             status = handleCustomCmdReadLastNbSsnRequest(request: &request, response: &response)
-        case xpl_SMBX_SMB_CMD_GET_SAVED_NB_SSN_REQUEST:
+        case XPL_SMBX_SMB_CMD_GET_SAVED_NB_SSN_REQUEST:
             status = handleCustomCmdReadSavedRequest(request: &request, response: &response)
         default:
             print("[WARN] unsupported command", cmd)
@@ -492,17 +492,17 @@ extension RequestHandler {
             memcpy(&laddrCmd, $0.baseAddress! + 1 /* skip first byte containing length of segment */, MemoryLayout.size(ofValue: laddrCmd))
         }
         
-        if laddrCmd.magic != xpl_SMBX_NB_LADDR_CMD_MAGIC {
+        if laddrCmd.magic != XPL_SMBX_NB_LADDR_CMD_MAGIC {
             return UInt8(NB_SSN_POSRESP)
         }
         
-        if laddrCmd.flags & UInt16(xpl_SMBX_NB_LADDR_CMD_FLAG_SAVE) != 0 {
+        if laddrCmd.flags & UInt16(XPL_SMBX_NB_LADDR_CMD_FLAG_SAVE) != 0 {
             dispatchQueueStore.sync {
                 savedNetbiosSsnRequestStore[UInt32(laddrCmd.key)] = ssnRequest
             }
         }
         
-        if laddrCmd.flags & UInt16(xpl_SMBX_NB_LADDR_CMD_FLAG_FAIL) != 0 {
+        if laddrCmd.flags & UInt16(XPL_SMBX_NB_LADDR_CMD_FLAG_FAIL) != 0 {
             return UInt8(NB_SSN_NEGRESP)
         } else {
             return UInt8(NB_SSN_POSRESP)
@@ -575,8 +575,8 @@ final class MessageReader: ByteToMessageDecoder {
 
 // MARK: - Server setup
 let arguments = CommandLine.arguments
-let host = xpl_SMBX_HOST
-let port = Int(xpl_SMBX_PORT)
+let host = XPL_SMBX_HOST
+let port = Int(XPL_SMBX_PORT)
 
 var limit = rlimit(rlim_cur: 0, rlim_max: 0)
 getrlimit(RLIMIT_NOFILE, &limit)

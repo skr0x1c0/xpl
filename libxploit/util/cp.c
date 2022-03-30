@@ -15,7 +15,7 @@
 #include "cp.h"
 
 
-int xpl_util_cp(const char* src, const char* dst) {
+int xpl_cp(const char* src, const char* dst) {
     int fd_src = open(src, O_RDONLY);
     if (fd_src < 0) {
         return errno;

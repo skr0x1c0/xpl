@@ -13,16 +13,16 @@
 typedef struct xpl_slider_kext* xpl_slider_kext_t;
 
 enum xpl_kext_collection_type {
-    xpl_KC_BOOT,
-    xpl_KC_AUX
+    XPL_KC_BOOT,
+    XPL_KC_AUX
 };
 
 enum xpl_kext_segment {
-    xpl_KEXT_SEGMENT_TEXT,
-    xpl_KEXT_SEGMENT_TEXT_EXEC,
-    xpl_KEXT_SEGMENT_DATA,
-    xpl_KEXT_SEGMENT_DATA_CONST,
-    xpl_KEXT_SEGMENT_LINK_EDIT
+    XPL_KEXT_SEGMENT_TEXT,
+    XPL_KEXT_SEGMENT_TEXT_EXEC,
+    XPL_KEXT_SEGMENT_DATA,
+    XPL_KEXT_SEGMENT_DATA_CONST,
+    XPL_KEXT_SEGMENT_LINK_EDIT
 };
 
 

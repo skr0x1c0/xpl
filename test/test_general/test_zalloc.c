@@ -31,8 +31,8 @@ void test_zalloc(void) {
         uintptr_t zone = xpl_kmem_read_uint64(xpl_slider_kernel_slide(kalloc_type_views[i]), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET);
 
         xpl_log_info("testing zalloc for zone %p", (void*)zone);
-        xpl_util_zalloc_t util = xpl_util_zalloc_create(zone, 1);
-        uintptr_t ptr = xpl_util_zalloc_alloc(util, 0);
+        xpl_zalloc_t util = xpl_zalloc_create(zone, 1);
+        uintptr_t ptr = xpl_zalloc_alloc(util, 0);
         xpl_log_debug("allocated %p from zone %p", (void*)ptr, (void*)zone);
         xpl_log_info("zalloc test for zone %p is ok", (void*)zone);
     }
@@ -42,11 +42,11 @@ void test_zalloc(void) {
     };
     
     for (int i=0; i<xpl_array_size(kheap_zones); i++) {
-        uintptr_t zone = xpl_util_kh_find_zone_for_size(xpl_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), kheap_zones[i]);
+        uintptr_t zone = xpl_kheap_find_zone_for_size(xpl_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), kheap_zones[i]);
         
         xpl_log_info("testing zalloc for zone %p", (void*)zone);
-        xpl_util_zalloc_t util = xpl_util_zalloc_create(zone, 1);
-        uintptr_t ptr = xpl_util_zalloc_alloc(util, 0);
+        xpl_zalloc_t util = xpl_zalloc_create(zone, 1);
+        uintptr_t ptr = xpl_zalloc_alloc(util, 0);
         xpl_log_debug("allocated %p from zone %p", (void*)ptr, (void*)zone);
         xpl_log_info("zalloc test for zone %p is ok", (void*)zone);
     }

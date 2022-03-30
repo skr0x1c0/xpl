@@ -56,7 +56,7 @@ void xpl_kmem_validate_addr_range(uintptr_t base, size_t size) {
         return;
     }
     
-    xpl_log_error("address range [%p, %p) not in kernel map [%p, %p)", (void*)base, (void*)end, (void*)xpl_VM_MIN_KERNEL_ADDRESS, (void*)xpl_VM_MAX_KERNEL_ADDRESS);
+    xpl_log_error("address range [%p, %p) not in valid kernel address range [%p, %p)", (void*)base, (void*)end, (void*)XPL_VM_MIN_KERNEL_ADDRESS, (void*)XPL_VM_MAX_KERNEL_ADDRESS);
     xpl_assert(0);
 }
 
@@ -113,7 +113,7 @@ uintptr_t xpl_kmem_read_ptr(uintptr_t base, ssize_t off) {
     if (!value) {
         return 0;
     }
-    uintptr_t ptr = value | xpl_PTRAUTH_MASK;
+    uintptr_t ptr = value | XPL_PTRAUTH_MASK;
     xpl_assert_kaddr(ptr);
     return ptr;
 }

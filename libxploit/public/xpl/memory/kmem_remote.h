@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include "./kmem.h"
 
-#define xpl_DEFAULT_KMEM_SOCKET "/tmp/xpl_kmem.sock"
+#define XPL_DEFAULT_KMEM_SOCKET "/tmp/xpl_kmem.sock"
 
 int xpl_kmem_remote_server_start(uintptr_t mh_execute_header, const char* uds_path);
 

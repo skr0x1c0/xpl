@@ -38,7 +38,7 @@ xpl_allocator_large_mem_t xpl_allocator_large_mem_allocate(size_t size, uintptr_
     
     /// `capacityIncrement` is used in `ensureCapacity` method to calculate the size of
     /// new `dictionary` array. By setting the `capacityIncrement` to `expected_capacity`,
-    /// we can increase the capacity of dictionary to required value by triggering the
+    /// we can quickly increase the capacity of dictionary to required value by triggering the
     /// `ensureCapacity` method once. This method is much faster than growing the `dictionary`
     /// array by adding values to the dictionary
     xpl_kmem_write_uint32(props_dict, TYPE_OS_DICTIONARY_MEM_CAPACITY_INCREMENT_OFFSET, (uint32_t)expected_capacity);

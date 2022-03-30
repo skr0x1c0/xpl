@@ -21,17 +21,17 @@
 #include "../external/msdosfs/msdosfs.h"
 
 
-struct xpl_util_msdosfs {
-    char mount_point[sizeof(xpl_MOUNT_TEMP_DIR)];
+struct xpl_msdosfs {
+    char mount_point[sizeof(XPL_MOUNT_TEMP_DIR)];
     int fd;
     int disk;
 };
 
 
-typedef struct xpl_util_msdosfs* xpl_util_msdosfs_t;
+typedef struct xpl_msdosfs* xpl_msdosfs_t;
 
 
-int xpl_util_msdosfs_loadkext(void) {
+int xpl_msdosfs_loadkext(void) {
     struct vfsconf conf;
     int res = getvfsbyname("msdos", &conf);
     if (res) {
@@ -41,7 +41,7 @@ int xpl_util_msdosfs_loadkext(void) {
 }
 
 
-int xpl_util_msdosfs_ramfs(size_t block_size, int* dev) {
+int xpl_msdosfs_ramfs(size_t block_size, int* dev) {
     char name[64];
     bzero(name, sizeof(name));
     
@@ -74,7 +74,7 @@ int xpl_util_msdosfs_ramfs(size_t block_size, int* dev) {
 }
 
 
-int xpl_util_msdosfs_newfs(int disk) {
+int xpl_msdosfs_newfs(int disk) {
     xpl_assert_cond(disk, <=, UINT16_MAX);
     char dev[16];
     snprintf(dev, sizeof(dev), "/dev/rdisk%d", disk);
@@ -89,19 +89,19 @@ int xpl_util_msdosfs_newfs(int disk) {
 }
 
 
-xpl_util_msdosfs_t xpl_util_msdosfs_mount(size_t blocks, int mount_options) {
-    xpl_util_msdosfs_loadkext();
+xpl_msdosfs_t xpl_msdosfs_mount(size_t blocks, int mount_options) {
+    xpl_msdosfs_loadkext();
     
     int disk;
-    int error = xpl_util_msdosfs_ramfs(blocks, &disk);
+    int error = xpl_msdosfs_ramfs(blocks, &disk);
     xpl_assert_err(error);
     
-    error = xpl_util_msdosfs_newfs(disk);
+    error = xpl_msdosfs_newfs(disk);
     xpl_assert_err(error);
     
-    xpl_util_msdosfs_t util = malloc(sizeof(struct xpl_util_msdosfs));
-    static_assert(sizeof(util->mount_point) == sizeof(xpl_MOUNT_TEMP_DIR), "");
-    memcpy(util->mount_point, xpl_MOUNT_TEMP_DIR, sizeof(util->mount_point));
+    xpl_msdosfs_t util = malloc(sizeof(struct xpl_msdosfs));
+    static_assert(sizeof(util->mount_point) == sizeof(XPL_MOUNT_TEMP_DIR), "");
+    memcpy(util->mount_point, XPL_MOUNT_TEMP_DIR, sizeof(util->mount_point));
     mkdtemp(util->mount_point);
     util->disk = disk;
     
@@ -128,7 +128,7 @@ xpl_util_msdosfs_t xpl_util_msdosfs_mount(size_t blocks, int mount_options) {
 }
 
 
-void xpl_util_msdosfs_update(xpl_util_msdosfs_t util, int flags) {
+void xpl_msdosfs_update(xpl_msdosfs_t util, int flags) {
     struct msdosfs_args args;
     bzero(&args, sizeof(args));
     
@@ -146,19 +146,19 @@ void xpl_util_msdosfs_update(xpl_util_msdosfs_t util, int flags) {
 }
 
 
-int xpl_util_msdosfs_mount_fd(xpl_util_msdosfs_t util) {
+int xpl_msdosfs_mount_fd(xpl_msdosfs_t util) {
     return util->fd;
 }
 
 
-void xpl_util_msdosfs_mount_point(xpl_util_msdosfs_t util, char buffer[sizeof(xpl_MOUNT_TEMP_DIR)]) {
-    static_assert(sizeof(util->mount_point) == sizeof(xpl_MOUNT_TEMP_DIR), "");
-    memcpy(buffer, util->mount_point, sizeof(xpl_MOUNT_TEMP_DIR));
+void xpl_msdosfs_mount_point(xpl_msdosfs_t util, char buffer[sizeof(XPL_MOUNT_TEMP_DIR)]) {
+    static_assert(sizeof(util->mount_point) == sizeof(XPL_MOUNT_TEMP_DIR), "");
+    memcpy(buffer, util->mount_point, sizeof(XPL_MOUNT_TEMP_DIR));
 }
 
 
-void xpl_util_msdosfs_unmount(xpl_util_msdosfs_t* util_p) {
-    xpl_util_msdosfs_t util = *util_p;
+void xpl_msdosfs_unmount(xpl_msdosfs_t* util_p) {
+    xpl_msdosfs_t util = *util_p;
     char dev[16];
     snprintf(dev, sizeof(dev), "/dev/disk%d", util->disk);
     

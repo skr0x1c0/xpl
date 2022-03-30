@@ -18,7 +18,7 @@
 
 
 int main(int argc, const char * argv[]) {
-    const char* kmem_uds_path = xpl_DEFAULT_KMEM_SOCKET;
+    const char* kmem_uds_path = XPL_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {

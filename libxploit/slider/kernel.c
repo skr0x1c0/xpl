@@ -40,7 +40,7 @@ struct xpl_slider_segment_infos {
     segment_info_t boot_data;
 };
 
-#define SEGMENT_INFO(seg) { xpl_IMAGE_SEGMENT_##seg##_BASE, xpl_IMAGE_SEGMENT_##seg##_SIZE }
+#define SEGMENT_INFO(seg) { XPL_IMAGE_SEGMENT_##seg##_BASE, XPL_IMAGE_SEGMENT_##seg##_SIZE }
 
 static struct xpl_slider_segment_infos xpl_slider_segment_infos_image = {
     .text = SEGMENT_INFO(TEXT),

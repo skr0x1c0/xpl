@@ -19,12 +19,11 @@
 #define xpl_bitfield_mask(off, size) (((1ULL << (size)) - 1) << (off))
 
 
-static inline int xpl_sleep_ms(uint64_t ms) {
+static inline void xpl_sleep_ms(uint64_t ms) {
     struct timespec rqp;
     rqp.tv_sec = ms / 1000;
     rqp.tv_nsec = (ms - (rqp.tv_sec * 1000)) * 1000 * 1000;
     nanosleep(&rqp, NULL);
-    return 0;
 }
 
 

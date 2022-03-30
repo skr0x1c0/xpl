@@ -64,7 +64,7 @@ extern int __telemetry(uint64_t cmd, uint64_t deadline, uint64_t interval, uint6
 /// buffer. This buffer is used for storing the thread name which can be written using "kern.threadname"
 /// sysctl. The member,`ith_voucher_name` in `struct thread` can be controlled using the `telemetry`
 /// syscall. The `struct thread` and `struct uthread` of a thread is allocated from the same element
-/// of threads zone. By aligning the member `sessionp->session_flags` with `thread->ith_voucher_name`,
+/// of `threads` zone. By aligning the member `sessionp->session_flags` with `thread->ith_voucher_name`,
 /// the member `uthread->pth_name` will be writable by writing to `sessionp->session_ntwrk_sid`.
 /// Using this principle, we can build a general purpose arbitary kernel memory writer. The
 /// `SMBV_NETWORK_SID` ioctl command can be used to set the value of pointer `uthread->pth_name`.

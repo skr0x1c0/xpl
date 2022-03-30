@@ -48,16 +48,16 @@
 ///
 
 
-struct xpl_util_sudo {
-    xpl_util_vnode_t util_vnode;
+struct xpl_sudo {
+    xpl_vnode_t util_vnode;
     uintptr_t vnode_sudoers;
 };
 
 
-static xpl_util_sudo_t xpl_util_sudo_nop = (xpl_util_sudo_t)UINT64_MAX;
+static xpl_sudo_t xpl_sudo_nop = (xpl_sudo_t)UINT64_MAX;
 
 
-int xpl_util_sudo_find_sudoers_vnode(uintptr_t proc, uintptr_t* sudoers_vnode) {
+int xpl_sudo_find_sudoers_vnode(uintptr_t proc, uintptr_t* sudoers_vnode) {
     uint32_t num_ofiles;
     xpl_xnu_proc_read_fdesc_ofiles(proc, &num_ofiles);
     
@@ -88,7 +88,7 @@ int xpl_util_sudo_find_sudoers_vnode(uintptr_t proc, uintptr_t* sudoers_vnode) {
 }
 
 
-_Bool xpl_util_sudo_check_is_privileged(void) {
+_Bool xpl_sudo_check_is_privileged(void) {
     /// Running the sudo command with `non-interactive` flag will fail if the current user
     /// cannot execute root command without interaction
     const char* argv[] = {
@@ -126,12 +126,12 @@ _Bool xpl_util_sudo_check_is_privileged(void) {
 }
 
 
-xpl_util_sudo_t xpl_util_sudo_create(void) {
-    if (xpl_util_sudo_check_is_privileged()) {
+xpl_sudo_t xpl_sudo_create(void) {
+    if (xpl_sudo_check_is_privileged()) {
         /// Current user already can run root commands without user intraction, we don't
         /// have to modify the sudoers file to execute commands with root privilege.
         xpl_log_debug("user %d can already run sudo without user interation, returning sudo_nop", getuid());
-        return xpl_util_sudo_nop;
+        return xpl_sudo_nop;
     }
     
     /// Run sudo with `login` and `stdin` flag set. This will make sudo wait for password input
@@ -172,7 +172,7 @@ xpl_util_sudo_t xpl_util_sudo_create(void) {
     int max_tries = 5 * 1000 / 10;
     do {
         xpl_sleep_ms(10);
-        error = xpl_util_sudo_find_sudoers_vnode(sudo_proc, &sudoers_vnode);
+        error = xpl_sudo_find_sudoers_vnode(sudo_proc, &sudoers_vnode);
     } while (error == ENOENT && --max_tries > 0);
     xpl_assert_err(error);
     
@@ -184,14 +184,14 @@ xpl_util_sudo_t xpl_util_sudo_create(void) {
     close(pfds[1]);
     close(fd_null);
     
-    xpl_util_sudo_t util = malloc(sizeof(struct xpl_util_sudo));
-    util->util_vnode = xpl_util_vnode_create();
+    xpl_sudo_t util = malloc(sizeof(struct xpl_sudo));
+    util->util_vnode = xpl_vnode_create();
     util->vnode_sudoers = sudoers_vnode;
     return util;
 }
 
 
-static const char xpl_util_sudo_sudoers_file_format[] = "\
+static const char xpl_sudo_sudoers_file_format[] = "\
 Defaults env_reset\n\
 Defaults env_keep += \"CHARSET LANG LANGUAGE LC_ALL HOME\"\n\
 Defaults lecture_file = \"/etc/sudo_lecture\"\n\
@@ -202,19 +202,19 @@ root ALL = (ALL) ALL\n\
 ";
 
 
-void xpl_util_sudo_modify_sudoers(xpl_util_sudo_t util, size_t sudoers_size) {
+void xpl_sudo_modify_sudoers(xpl_sudo_t util, size_t sudoers_size) {
     char* buffer = malloc(sudoers_size);
-    size_t len = snprintf(buffer, sudoers_size, xpl_util_sudo_sudoers_file_format, getuid());
+    size_t len = snprintf(buffer, sudoers_size, xpl_sudo_sudoers_file_format, getuid());
     xpl_assert_cond(len, <, sudoers_size);
-    /// `xpl_util_vnode_write` will not truncate the file to size of data. So we fill the buffer with
+    /// `xpl_vnode_write` will not truncate the file to size of data. So we fill the buffer with
     /// '\n' character to match the write data size with sudoers file size
     memset(&buffer[len], '\n', sudoers_size - len);
-    xpl_util_vnode_write_user(util->util_vnode, util->vnode_sudoers, buffer, sudoers_size);
+    xpl_vnode_write_user(util->util_vnode, util->vnode_sudoers, buffer, sudoers_size);
     free(buffer);
 }
 
 
-int xpl_util_sudo_run_cmd(const char* cmd, const char* argv[], size_t argc) {
+int xpl_sudo_run_cmd(const char* cmd, const char* argv[], size_t argc) {
     const char* cmd_args[argc + 3];
     cmd_args[0] = "/usr/bin/sudo";
     cmd_args[1] = "-n";
@@ -239,10 +239,10 @@ int xpl_util_sudo_run_cmd(const char* cmd, const char* argv[], size_t argc) {
 }
 
 
-int xpl_util_sudo_run(xpl_util_sudo_t util, const char* cmd, const char* argv[], size_t argc) {
-    if (util == xpl_util_sudo_nop) {
-        xpl_assert(xpl_util_sudo_check_is_privileged());
-        return xpl_util_sudo_run_cmd(cmd, argv, argc);
+int xpl_sudo_run(xpl_sudo_t util, const char* cmd, const char* argv[], size_t argc) {
+    if (util == xpl_sudo_nop) {
+        xpl_assert(xpl_sudo_check_is_privileged());
+        return xpl_sudo_run_cmd(cmd, argv, argc);
     }
     
     struct stat sudoers_stat;
@@ -251,26 +251,26 @@ int xpl_util_sudo_run(xpl_util_sudo_t util, const char* cmd, const char* argv[],
 
     /// Backup sudoers file
     char* sudoers_backup = malloc(sudoers_stat.st_size);
-    xpl_util_vnode_read_user(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
+    xpl_vnode_read_user(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
     
     /// Allow current user to run root commands without user interaction
-    xpl_util_sudo_modify_sudoers(util, sudoers_stat.st_size);
+    xpl_sudo_modify_sudoers(util, sudoers_stat.st_size);
     
     /// Run the command
-    int exit_status = xpl_util_sudo_run_cmd(cmd, argv, argc);
+    int exit_status = xpl_sudo_run_cmd(cmd, argv, argc);
     
     /// Restore sudoers file
-    xpl_util_vnode_write_user(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
+    xpl_vnode_write_user(util->util_vnode, util->vnode_sudoers, sudoers_backup, sudoers_stat.st_size);
     free(sudoers_backup);
     
     return exit_status;
 }
 
 
-void xpl_util_sudo_destroy(xpl_util_sudo_t* util_p) {
-    xpl_util_sudo_t util = *util_p;
-    if (util != xpl_util_sudo_nop) {
-        xpl_util_vnode_destroy(&util->util_vnode);
+void xpl_sudo_destroy(xpl_sudo_t* util_p) {
+    xpl_sudo_t util = *util_p;
+    if (util != xpl_sudo_nop) {
+        xpl_vnode_destroy(&util->util_vnode);
         uint32_t v_usecount = xpl_kmem_read_uint32(util->vnode_sudoers, TYPE_VNODE_MEM_V_USECOUNT_OFFSET);
         xpl_assert_cond(v_usecount, >=, 2);
         free(util);

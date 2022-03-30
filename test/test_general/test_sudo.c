@@ -29,8 +29,8 @@ void test_sudo(void) {
         return;
     }
         
-    xpl_util_msdosfs_loadkext();
-    xpl_util_sudo_t util = xpl_util_sudo_create();
+    xpl_msdosfs_loadkext();
+    xpl_sudo_t util = xpl_sudo_create();
     
     char test_directory[] = "/tmp/test_sudo_XXXXXX";
     xpl_assert(mkdtemp(test_directory) != NULL);
@@ -46,7 +46,7 @@ void test_sudo(void) {
         "root:admin",
         test_file
     };
-    int result = xpl_util_sudo_run(util, "/usr/sbin/chown", argv, xpl_array_size(argv));
+    int result = xpl_sudo_run(util, "/usr/sbin/chown", argv, xpl_array_size(argv));
     xpl_assert_cond(result, ==, 0);
 
     struct stat test_file_stat;
@@ -54,7 +54,7 @@ void test_sudo(void) {
     xpl_assert_errno(res);
     xpl_assert_cond(test_file_stat.st_uid, ==, 0);
 
-    xpl_util_sudo_destroy(&util);
+    xpl_sudo_destroy(&util);
     unlink(test_file);
     rmdir(test_directory);
 }

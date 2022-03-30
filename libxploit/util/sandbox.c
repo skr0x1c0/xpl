@@ -20,7 +20,7 @@
 #include "util/sandbox.h"
 
 
-struct xpl_util_sandbox {
+struct xpl_sandbox {
     xpl_allocator_small_mem_t fake_mpc_allocator;
     xpl_allocator_small_mem_t fake_mpo_allocator;
     
@@ -55,7 +55,7 @@ int xpl_sandbox_find_mac_policy_conf(char* mpc_name, uintptr_t* out, int* index_
 }
 
 
-xpl_util_sandbox_t xpl_util_sandbox_create(void) {
+xpl_sandbox_t xpl_sandbox_create(void) {
     uintptr_t fake_mpc;
     xpl_allocator_small_mem_t fake_mpc_allocator = xpl_allocator_small_mem_allocate(TYPE_MAC_POLICY_CONF_SIZE, &fake_mpc);
 
@@ -76,7 +76,7 @@ xpl_util_sandbox_t xpl_util_sandbox_create(void) {
     xpl_kmem_write_uint64(fake_mpc, TYPE_MAC_POLICY_CONF_MEM_MPC_OPS_OFFSET, fake_mpo);
     xpl_kmem_write_uint64(mac_policy_entries, sizeof(uintptr_t) * sandbox_mpc_index, fake_mpc);
     
-    xpl_util_sandbox_t util = malloc(sizeof(struct xpl_util_sandbox));
+    xpl_sandbox_t util = malloc(sizeof(struct xpl_sandbox));
     util->fake_mpc_allocator = fake_mpc_allocator;
     util->fake_mpo_allocator = fake_mpo_allocator;
     util->fake_mpc = fake_mpc;
@@ -86,7 +86,7 @@ xpl_util_sandbox_t xpl_util_sandbox_create(void) {
 }
 
 
-void xpl_util_sandbox_disable_fs_restrictions(xpl_util_sandbox_t util) {
+void xpl_sandbox_disable_fs_restrictions(xpl_sandbox_t util) {
     xpl_kmem_write_uint64(util->fake_mpo, TYPE_MAC_POLICY_OPS_MEM_MPO_FILE_CHECK_CHANGE_OFFSET, 0);
     xpl_kmem_write_uint64(util->fake_mpo, TYPE_MAC_POLICY_OPS_MEM_MPO_FILE_CHECK_CREATE, 0);
     xpl_kmem_write_uint64(util->fake_mpo, TYPE_MAC_POLICY_OPS_MEM_MPO_FILE_CHECK_DUP, 0);
@@ -209,12 +209,12 @@ void xpl_util_sandbox_disable_fs_restrictions(xpl_util_sandbox_t util) {
     xpl_kmem_write_uint64(util->fake_mpo, TYPE_MAC_POLICY_OPS_MEM_MPO_MOUNT_CHECK_SNAPSHOT_DELETE, 0);
 }
 
-void xpl_util_sandbox_disable_signal_check(xpl_util_sandbox_t util) {
+void xpl_sandbox_disable_signal_check(xpl_sandbox_t util) {
     xpl_kmem_write_uint64(util->fake_mpo, TYPE_MAC_POLICY_OPS_MEM_MPO_PROC_CHECK_SIGNAL, 0);
 }
 
-void xpl_util_sandbox_destroy(xpl_util_sandbox_t* util_p) {
-    xpl_util_sandbox_t util = *util_p;
+void xpl_sandbox_destroy(xpl_sandbox_t* util_p) {
+    xpl_sandbox_t util = *util_p;
     
     uintptr_t sandbox_mpc;
     int sandbox_mpc_index;

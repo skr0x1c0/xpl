@@ -36,7 +36,7 @@ void hex_dump(const char* data, size_t data_size) {
 
 
 size_t find_nb_name_length(char* data, size_t data_len) {
-    /// Decode NetBIOS name encoded in compressed encoding to uncompressed encoding
+    /// Find the total size of NetBIOS name in compressed encoding format
     size_t cursor = 0;
     while (1) {
         if (cursor >= data_len) {

@@ -56,8 +56,8 @@ int make_dev_mount_writable(const char* dev) {
 
 
 void recursive_patch_storage(xpl_slider_kext_t io_storage_slider, uintptr_t storage) {
-    uintptr_t io_storage_meta_class = xpl_slider_kext_slide(io_storage_slider, xpl_KEXT_SEGMENT_DATA, VAR_IO_STORAGE_META_CLASS_DATA_OFFSET);
-    uintptr_t io_media_meta_class = xpl_slider_kext_slide(io_storage_slider, xpl_KEXT_SEGMENT_DATA, VAR_IO_MEDIA_META_CLASS_DATA_OFFSET);
+    uintptr_t io_storage_meta_class = xpl_slider_kext_slide(io_storage_slider, XPL_KEXT_SEGMENT_DATA, VAR_IO_STORAGE_META_CLASS_DATA_OFFSET);
+    uintptr_t io_media_meta_class = xpl_slider_kext_slide(io_storage_slider, XPL_KEXT_SEGMENT_DATA, VAR_IO_MEDIA_META_CLASS_DATA_OFFSET);
     xpl_assert(xpl_os_object_is_instance_of(storage, io_storage_meta_class));
     
     uintptr_t children = xpl_io_registry_get_children(storage);
@@ -93,7 +93,7 @@ void recursive_patch_storage(xpl_slider_kext_t io_storage_slider, uintptr_t stor
 
 
 int main(int argc, const char * argv[]) {
-    const char* kmem_socket = xpl_DEFAULT_KMEM_SOCKET;
+    const char* kmem_socket = XPL_DEFAULT_KMEM_SOCKET;
     
     int ch;
     while ((ch = getopt(argc, (char**)argv, "k:")) != -1) {
@@ -165,7 +165,7 @@ int main(int argc, const char * argv[]) {
     } else {
         xpl_log_info("disabling write protection");
         xpl_kmem_write_uint8(storage_driver, TYPE_IO_BLOCK_STORAGE_DRIVER_MEM_WRITE_PROTECTED_OFFSET, 0);
-        xpl_slider_kext_t io_storage_family_slider = xpl_slider_kext_create("com.apple.iokit.IOStorageFamily", xpl_KC_BOOT);
+        xpl_slider_kext_t io_storage_family_slider = xpl_slider_kext_create("com.apple.iokit.IOStorageFamily", XPL_KC_BOOT);
         xpl_log_info("updating mounts with write capability");
         recursive_patch_storage(io_storage_family_slider, storage_driver);
         xpl_slider_kext_destroy(&io_storage_family_slider);

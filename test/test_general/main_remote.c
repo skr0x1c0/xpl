@@ -19,7 +19,7 @@
 
 
 int main(int argc, const char * argv[]) {
-    const char* uds_path = xpl_DEFAULT_KMEM_SOCKET;
+    const char* uds_path = XPL_DEFAULT_KMEM_SOCKET;
     const char* test_name = NULL;
     
     int ch;

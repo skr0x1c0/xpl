@@ -243,11 +243,11 @@ enum CommandError: Error {
     case error(Int)
 }
 
-func sudoRun(_ util: xpl_util_sudo_t, cmd: String, args: [String]) throws {
+func sudoRun(_ util: xpl_sudo_t, cmd: String, args: [String]) throws {
     var argArray = args.map { UnsafePointer<Int8>(strdup($0)) }
     defer { argArray.forEach { $0?.deallocate() } }
     
-    let res = xpl_util_sudo_run(util, cmd, &argArray, argArray.count)
+    let res = xpl_sudo_run(util, cmd, &argArray, argArray.count)
     
     if res != 0 {
         throw CommandError.status(Int(res))
@@ -258,9 +258,9 @@ func sudoRun(_ util: xpl_util_sudo_t, cmd: String, args: [String]) throws {
 func fixBinaryPrivilege() throws {
     let binary = Bundle.main.executablePath!
     
-    xpl_util_msdosfs_loadkext()
-    var sudo = xpl_util_sudo_create()
-    defer { xpl_util_sudo_destroy(&sudo) }
+    xpl_msdosfs_loadkext()
+    var sudo = xpl_sudo_create()
+    defer { xpl_sudo_destroy(&sudo) }
     
     print("[I] changing owner to root")
     try sudoRun(sudo!, cmd: "/usr/sbin/chown", args: ["-n", "0:0", binary])
@@ -322,7 +322,7 @@ func printUsage() {
     print("[I] example usage: demo_av -v camera -a mic capture.mov")
 }
 
-var kmemSocket: String = xpl_DEFAULT_KMEM_SOCKET
+var kmemSocket: String = XPL_DEFAULT_KMEM_SOCKET
 var video = "screen"
 var audio = "mic"
 var overwrite = false
@@ -432,46 +432,46 @@ print("[I] using user TCC database at", user_tcc_database)
 print("[I] using system TCC database at", system_tcc_database)
 
 print("[I] intializing sandbox utility")
-var util_sandbox = xpl_util_sandbox_create()
+var util_sandbox = xpl_sandbox_create()
 
 print("[I] disabling sandbox FS restrictions")
-xpl_util_sandbox_disable_fs_restrictions(util_sandbox!)
+xpl_sandbox_disable_fs_restrictions(util_sandbox!)
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceMicrophone")
-error = xpl_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
+error = xpl_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceMicrophone")
 if error != 0 {
     print("[E] cannot send authorization to TCC.db, err:", error)
-    xpl_util_sandbox_destroy(&util_sandbox)
+    xpl_sandbox_destroy(&util_sandbox)
     abort()
 }
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceCamera")
-error = xpl_util_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceCamera")
+error = xpl_tcc_authorize(user_tcc_database, "com.apple.Terminal", "kTCCServiceCamera")
 if error != 0 {
     print("[E] cannot send authorization to TCC.db, err:", error)
-    xpl_util_sandbox_destroy(&util_sandbox)
+    xpl_sandbox_destroy(&util_sandbox)
     abort()
 }
 
 print("[I] authorizing com.apple.Terminal to use kTCCServiceScreenCapture")
-error = xpl_util_tcc_authorize(system_tcc_database, "com.apple.Terminal", "kTCCServiceScreenCapture")
+error = xpl_tcc_authorize(system_tcc_database, "com.apple.Terminal", "kTCCServiceScreenCapture")
 if error != 0 {
     print("[E] cannot send authorization to system TCC.db, err:", error)
-    xpl_util_sandbox_destroy(&util_sandbox)
+    xpl_sandbox_destroy(&util_sandbox)
     abort()
 }
 
 print("[I] restoring sandbox FS restrictions")
-xpl_util_sandbox_destroy(&util_sandbox)
+xpl_sandbox_destroy(&util_sandbox)
 
 print("[I] disabling privacy indicators")
 var privacy_disable_session = privacy_disable_session_start()
 defer {
-    var sb = xpl_util_sandbox_create()
-    xpl_util_sandbox_disable_signal_check(sb)
+    var sb = xpl_sandbox_create()
+    xpl_sandbox_disable_signal_check(sb)
     print("[I] restoring privacy indicators")
     privacy_disable_session_stop(&privacy_disable_session)
-    xpl_util_sandbox_destroy(&sb)
+    xpl_sandbox_destroy(&sb)
 }
 
 let stopSem = DispatchSemaphore(value: 0)

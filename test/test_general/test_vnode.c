@@ -21,7 +21,7 @@
 
 
 void test_vnode() {
-    xpl_util_msdosfs_loadkext();
+    xpl_msdosfs_loadkext();
     
     char directory[] = "/tmp/test_vnode.XXXXXXX";
     xpl_assert(mkdtemp(directory) != NULL);
@@ -43,8 +43,8 @@ void test_vnode() {
     
     int res = ftruncate(file, sizeof(data));
     xpl_assert_errno(res);
-    xpl_util_vnode_t util = xpl_util_vnode_create();
-    xpl_util_vnode_write_user(util, vnode, data, sizeof(data));
+    xpl_vnode_t util = xpl_vnode_create();
+    xpl_vnode_write_user(util, vnode, data, sizeof(data));
     
     char buffer[sizeof(data)];
     bzero(buffer, sizeof(buffer));
@@ -54,11 +54,11 @@ void test_vnode() {
     xpl_assert(res == 0);
     
     bzero(buffer, sizeof(buffer));
-    xpl_util_vnode_read_user(util, vnode, buffer, sizeof(buffer));
+    xpl_vnode_read_user(util, vnode, buffer, sizeof(buffer));
     res = memcmp(data, buffer, sizeof(data));
     xpl_assert(res == 0);
     
-    xpl_util_vnode_destroy(&util);
+    xpl_vnode_destroy(&util);
     close(file);
     unlink(path);
     rmdir(directory);

@@ -112,12 +112,12 @@ cd ./build/${TARGET_CONFIGURATION}/poc
 ./poc_double_free
 ```
 
-The vulnerability triggered by this PoC is exploited in `xpl_kmem` project to achive arbitary kernel memory read write. See `xpl_kmem/smb_dev_rw.c` for more details 
+The vulnerability triggered by this PoC is exploited in `xpl_kmem` project to achieve arbitary kernel memory read write. See `xpl_kmem/smb_dev_rw.c` for more details 
 
 
 ### 2: `poc_sockaddr_oob_read` - Out of bound read in `smb_sm_negotiate`
 
-The `SMBIOC_NEGOTIATE` ioctl command in `smbfs.kext` is used to setup a new session with a SMB server. An malicious application may provide crafted data with this ioctl command to trigger out of bound (OOB) read in kernel memory. The OOB read data will be stored in a location in kernel memory which can later be retrieved by the malicious application using `smbfsGetSessionSockaddrFSCTL` fsctl command. 
+The `SMBIOC_NEGOTIATE` ioctl command in `smbfs.kext` is used to setup a new session with a SMB server. An malicious application may provide crafted data with this ioctl command to trigger out of bound (OOB) read in kernel memory. The OOB read data will be stored in a location in kernel memory which can later be retrieved by the malicious application using `smbfsGetSessionSockaddrFSCTL` fcntl command. 
 
 This PoC provides a minimal program required to demonstrate this vulnerability in `smbfs.kext`. 
 
@@ -145,8 +145,7 @@ cd build/${TARGET_CONFIGURATION}/poc
 
 The OOB read data will be printed on the console output. If all of the OOB data printed on console is zero, try running this PoC immediatly after rebooting the system. 
 
-
-The vulnerability demonstrated in this PoC is used in `xpl_kmem` to leak critical information from kernel memory required for exploting the double free vulnerability demonstrated in poc 1. See `xpl_kmem/memory/xpl_oob_reader_base.c` for more details.
+The vulnerability demonstrated in this PoC is used in `xpl_kmem` to leak critical information from kernel memory required for exploting the double free vulnerability demonstrated in poc 1. See `xpl_kmem/memory/oob_reader_base.c` for more details.
 
 >>> NOTE: The technique used in the PoC to read the OOB read data back to user land requires user intraction (TCC prompt approval from kTCCServiceSystemPolicyNetworkVolumes service). This limitation is not present in the technique used in `xpl_kmem` project which combines this vulnerability with another OOB read vulnerability to bypass this restriction.
 
@@ -168,7 +167,7 @@ cd build/${TARGET_CONFIGURATION}/poc
 ./poc_oob_write
 ```
 
-The vulnerability triggered by this PoC is exploited in `xpl_kmem` project to leak critical information from kernel memory required for exploiting the double free vulnerability triggered in poc 1. See `xpl_kmem/memory/xpl_oob_reader_ovf.c` for more details 
+The vulnerability triggered by this PoC is exploited in `xpl_kmem` project to leak critical information from kernel memory required for exploiting the double free vulnerability triggered in poc 1. See `xpl_kmem/memory/oob_reader_ovf.c` for more details 
 
 
 ### 4: `poc_snb_name_oob_read` - Out of bound read in `nb_put_name`
@@ -201,7 +200,7 @@ cd build/${TARGET_CONFIGURATION}/poc
 
 The OOB read data will be displayed in the console output of fake SMB server. If all the OOB read data printed on console is zero, try running this PoC immediatly after reboot.
 
-The vulnerability demonstrated in this PoC is used in `xpl_kmem` project to leak to leak critical information required for exploiting the double free vulnerability triggered in poc 1. See `xpl_kmem/xpl_oob_reader_base.c` for more details
+The vulnerability demonstrated in this PoC is used in `xpl_kmem` project to leak to leak critical information required for exploiting the double free vulnerability triggered in poc 1. See `xpl_kmem/oob_reader_base.c` for more details
 
 
 ### 5: `poc_info_disclosure` - Information disclosure in `smbfs_vnop_ioctl`
@@ -239,7 +238,7 @@ The vulnerability demonstrated in this PoC is not used in any of the exploits de
 
 #### Start the arbitary kernel memory read / write server
 
-The project `xpl_kmem` exploits the vulnerabilities demonstrated / triggered in poc 1, 2, 3 and 4 to achieve arbitary kernel memory read write. This project provides the kernel memory read / write capability from the below demo projects by listening on a unix domain socket (By default `/tmp/xpl_kmem.sock`. Can be changed using -k option). Run this project before running any of the below demo projects
+The project `xpl_kmem` exploits the vulnerabilities demonstrated / triggered in poc 1, 2, 3 and 4 to achieve arbitary kernel memory read write. This project provides the kernel memory read / write capability for the below demo projects by listening on a unix domain socket (By default `/tmp/xpl_kmem.sock`. Can be changed using -k option). Run this project before running any of the below demo projects
 
 ##### Steps to run `xpl_kmem`
 
@@ -275,7 +274,7 @@ If you are unable to start the `xpl_kmem` server within three attempts, then the
 
 - Machine configuration: 1 (Apple M1 MacBook Pro)
 - New OS installation (No additional Apps installed)
-- WiFi and Bluetooth turned off
+- Wi-Fi and Bluetooth turned off
 - Not signed in to iCloud
 - Battery above 90%
 - Connected to charger
@@ -285,7 +284,7 @@ If you are unable to start the `xpl_kmem` server within three attempts, then the
 
 - Machine configuration: 2 (Apple M1 Mac mini)
 - New OS installation (No additional Apps installed)
-- WiFi and Bluetooth turned off
+- Wi-Fi and Bluetooth turned off
 - Not signed in to iCloud
 - Started `xpl_smbx` and `xpl_kmem` immediately after system boot
 
@@ -401,7 +400,7 @@ cd build/${TARGET_CONFIGURATION}/demo
 ./demo_entitlements
 ```
 
-If everythings goes well, the message "bind to privileged port succeded after adding entitlement" will be printed on the console output
+If everything goes well, the message "bind to privileged port succeded after adding entitlement" will be printed on the console output
 
 
 # Conclusion
@@ -414,7 +413,7 @@ After obtaining kernel memory read write, it was straight forward to disable fil
 
 The mechanism used by `msdosfs.kext` for caching the most recently used FAT block allowed us to copy data between arbitary vnodes and kernel memory locations. This allowed us to develop a fast kernel memory reader / writer and also allowed us to gain root priviliges by modifying the `/etc/sudoers` file. (This technique could also be used to modify the user and system `TCC.db` directly without having to disable sandbox file system restrictions).  
 
-A quick scan of kernel binary using Ghidra showed multiple occasions where callee-saved general purpose registers were used as operands for PACDA instruction. By developing a method to acquire / release arbitary read write locks in kernel memory, we were able to exploit one of those occasions to sign arbitary values with arbitary modifiers using PACDA. With arbitary PACDA signing, we were able to assign fake small block descriptors to Blocks, which allowed us to develop a three link chain to execute arbitary kernel functions with fully controlled arguments. 
+A quick scan of kernel binary using Ghidra showed multiple occasions where callee-saved general purpose registers were used as operands for PACDA instruction. By developing a method to acquire / release arbitary read write locks in kernel memory, we exploited one of those occasions to sign arbitary values with arbitary modifiers using PACDA. With arbitary PACDA signing, we were able to assign fake small block descriptors to Blocks, which allowed us to develop a three link chain to execute arbitary kernel functions with fully controlled arguments. 
 
-The PACDA exploit allows signing ~27 pointers per second and the kernel function calling exploit allows making ~32 arbitary function calls per second (Tested on Apple M1 MacBook Pro with kernel memory read / write provided by `xpl_kmem`. Kernel function calls per second were measured by calling `vn_default_error` function, since it has only two instructions). Eventhough the arbitary kernel memory read write exploit will work only on macOS platforms, I beleive the techniques used for PACDA and kernel function exploits can be used on other platforms like iOS and iPadOS also.
+The PACDA exploit allows signing ~27 pointers per second and the kernel function calling exploit allows making ~32 arbitary function calls per second (Tested on Apple M1 MacBook Pro with kernel memory read / write provided by `xpl_kmem`. Kernel function calls per second were measured by calling `vn_default_error` function, since it has only two instructions). Eventhough the arbitary kernel memory read write exploit will work only on macOS platforms, I beleive the techniques used for PACDA and kernel function exploits can also be used on other platforms like iOS, iPadOS etc.
 

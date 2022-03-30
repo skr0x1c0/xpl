@@ -8,9 +8,9 @@
 #include "util/binary.h"
 
 
-int xpl_util_binary_hex_dump(const char* data, size_t data_size) {
+int xpl_binary_hex_dump(const void* data, size_t data_size) {
     for (size_t i=0; i<data_size; i++) {
-        printf("%.2x ", (uint8_t)data[i]);
+        printf("%.2x ", (uint8_t)((char*)data)[i]);
         if ((i+1) % 8 == 0) {
             printf("\n");
         }

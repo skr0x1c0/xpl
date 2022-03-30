@@ -16,10 +16,9 @@
 #include "oob_reader_base.h"
 
 
-/*
- * --- Allocates memory (upto 256 bytes) from `KHEAP_KEXT` zone
+/**
+ * --- Allocates memory (upto 256 bytes) from `KHEAP_KEXT`
  * --- Address of allocated memory will be returned
- * --- Data after first 8 bytes in allocated memory can be controlled
  */
 
 

@@ -13,7 +13,7 @@
 #include <macos/kernel.h>
 
 
-uintptr_t xpl_util_kh_find_zone_for_size(uintptr_t heap, size_t size) {
+uintptr_t xpl_kheap_find_zone_for_size(uintptr_t heap, size_t size) {
     uintptr_t kh_zones = xpl_kmem_read_uint64(heap, TYPE_KALLOC_HEAP_MEM_KH_ZONES_OFFSET);
     uint16_t max_k_zone = xpl_kmem_read_uint16(kh_zones, TYPE_KHEAP_ZONES_MEM_MAX_K_ZONE_OFFSET);
     uintptr_t cfg = xpl_kmem_read_uint64(kh_zones, TYPE_KHEAP_ZONES_MEM_CFG_OFFSET);

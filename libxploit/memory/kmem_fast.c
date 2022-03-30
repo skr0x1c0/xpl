@@ -28,16 +28,16 @@
 /// module `utils/vnode.c` to read / write data from / to arbitrary kernel memory location
 /// via a vnode to a open file. To write data to a arbitary kernel memory location `dst`, from
 /// user memory `src` of size `length`, the data `src` is first written to a open file `bridge_fd`.
-/// Then we use `xpl_util_vnode_read_kernel` method to copy the data in `bridge_vnode` to
+/// Then we use `xpl_vnode_read_kernel` method to copy the data in `bridge_vnode` to
 /// `dst`. Similarly to read data from a arbitary kernel memory location `src` of size `length` to
-/// user memory `dst`, we use `xpl_util_vnode_write_kernel` method to copy the data from
+/// user memory `dst`, we use `xpl_vnode_write_kernel` method to copy the data from
 /// `src` to `bridge_vnode` and then we read the data from `bridge_fd` to user buffer `dst`
 ///
 
 
 typedef struct xpl_memory_kmem_fast {
-    xpl_util_vnode_t util_vnode;
-    xpl_util_msdosfs_t util_msdosfs;
+    xpl_vnode_t util_vnode;
+    xpl_msdosfs_t util_msdosfs;
     int bridge_fd;
     uintptr_t bridge_vnode;
 } *xpl_memory_kmem_fast_t;
@@ -50,7 +50,7 @@ void xpl_memory_kmem_fast_read(void* ctx, void* dst, uintptr_t src, size_t size)
     xpl_assert_errno(off < 0);
     
     /// Copy data from `src` to `bridge_fd`
-    xpl_util_vnode_write_kernel(kmem->util_vnode, kmem->bridge_vnode, src, size);
+    xpl_vnode_write_kernel(kmem->util_vnode, kmem->bridge_vnode, src, size);
     
     ssize_t bytes_read = read(kmem->bridge_fd, dst, size);
     xpl_assert_cond(bytes_read, ==, size)
@@ -66,7 +66,7 @@ void xpl_memory_kmem_fast_write(void* ctx, uintptr_t dst, const void* src, size_
     xpl_assert_cond(bytes_written, ==, size);
     
     /// Copy data from `bridge_fd` to `dst`
-    xpl_util_vnode_read_kernel(kmem->util_vnode, kmem->bridge_vnode, dst, size);
+    xpl_vnode_read_kernel(kmem->util_vnode, kmem->bridge_vnode, dst, size);
 }
 
 
@@ -78,11 +78,11 @@ const static struct xpl_kmem_ops xpl_memory_kmem_fast_ops = {
 };
 
 
-xpl_util_msdosfs_t xpl_memory_kmem_setup_vol(int* bridge_fd) {
-    xpl_util_msdosfs_t vol = xpl_util_msdosfs_mount(64, MNT_DONTBROWSE);
+xpl_msdosfs_t xpl_memory_kmem_setup_vol(int* bridge_fd) {
+    xpl_msdosfs_t vol = xpl_msdosfs_mount(64, MNT_DONTBROWSE);
     
-    char mount[sizeof(xpl_MOUNT_TEMP_DIR)];
-    xpl_util_msdosfs_mount_point(vol, mount);
+    char mount[sizeof(XPL_MOUNT_TEMP_DIR)];
+    xpl_msdosfs_mount_point(vol, mount);
     
     char path[sizeof(mount) + 7];
     snprintf(path, sizeof(path), "%s/bridge", mount);
@@ -99,7 +99,7 @@ xpl_util_msdosfs_t xpl_memory_kmem_setup_vol(int* bridge_fd) {
 
 xpl_kmem_backend_t xpl_memory_kmem_fast_create(void) {
     int fd_bridge;
-    xpl_util_msdosfs_t util_msdos = xpl_memory_kmem_setup_vol(&fd_bridge);
+    xpl_msdosfs_t util_msdos = xpl_memory_kmem_setup_vol(&fd_bridge);
     
     xpl_assert_errno(fd_bridge < 0);
     uintptr_t vnode_bridge;
@@ -110,7 +110,7 @@ xpl_kmem_backend_t xpl_memory_kmem_fast_create(void) {
     xpl_memory_kmem_fast_t kmem = malloc(sizeof(struct xpl_memory_kmem_fast));
     kmem->bridge_fd = fd_bridge;
     kmem->bridge_vnode = vnode_bridge;
-    kmem->util_vnode = xpl_util_vnode_create();
+    kmem->util_vnode = xpl_vnode_create();
     kmem->util_msdosfs = util_msdos;
     
     return xpl_kmem_backend_create(&xpl_memory_kmem_fast_ops, kmem);
@@ -119,9 +119,9 @@ xpl_kmem_backend_t xpl_memory_kmem_fast_create(void) {
 
 void xpl_memory_kmem_fast_destroy(xpl_kmem_backend_t* backend_p) {
     xpl_memory_kmem_fast_t kmem = xpl_kmem_backend_get_ctx(*backend_p);
-    xpl_util_vnode_destroy(&kmem->util_vnode);
+    xpl_vnode_destroy(&kmem->util_vnode);
     close(kmem->bridge_fd);
-    xpl_util_msdosfs_unmount(&kmem->util_msdosfs);
+    xpl_msdosfs_unmount(&kmem->util_msdosfs);
     free(kmem);
     xpl_kmem_backend_destroy(backend_p);
 }

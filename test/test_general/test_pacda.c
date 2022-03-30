@@ -33,7 +33,7 @@ void test_pacda(void) {
         uintptr_t ctx = random();
     
         uint64_t start = clock_gettime_nsec_np(CLOCK_MONOTONIC);
-        uintptr_t signed_ptr = xpl_util_pacda_sign(addr, ctx);
+        uintptr_t signed_ptr = xpl_pacda_sign(addr, ctx);
         elapsed += clock_gettime_nsec_np(CLOCK_MONOTONIC) - start;
         xpl_log_debug("signed pointer %p with context %p using PACDA, res: %p", (void*)addr, (void*)ctx, (void*)signed_ptr);        
     }

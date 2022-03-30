@@ -20,21 +20,21 @@
 
 void test_kfunc(void) {
     // This message should appear from kernel process in Console.app
-    char message[] = "XE: xpl_util_kfunc test run";
+    char message[] = "XE: xpl_kfunc test run";
     
     uintptr_t address;
     xpl_allocator_small_mem_t allocator = xpl_allocator_small_mem_allocate(sizeof(message), &address);
     
     xpl_kmem_write(address, 0, message, sizeof(message));
     
-    xpl_util_kfunc_t util = xpl_util_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
+    xpl_kfunc_t util = xpl_kfunc_create(VAR_ZONE_ARRAY_LEN - 1);
     
     uint64_t args[8];
     bzero(args, sizeof(args));
     args[0] = address;
     
     for (int i=0; i<5; i++) {
-        xpl_util_kfunc_execute_simple(util, xpl_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE), args);
+        xpl_kfunc_execute_simple(util, xpl_slider_kernel_slide(FUNC_OS_REPORT_WITH_BACKTRACE), args);
     }
     
     int num_samples = 100;
@@ -46,7 +46,7 @@ void test_kfunc(void) {
     
     for (int i=0; i<num_samples; i++) {
         uint64_t start = clock_gettime_nsec_np(CLOCK_MONOTONIC);
-        xpl_util_kfunc_execute_simple(util, function, args);
+        xpl_kfunc_execute_simple(util, function, args);
         elapsed += clock_gettime_nsec_np(CLOCK_MONOTONIC) - start;
     }
     
@@ -54,5 +54,5 @@ void test_kfunc(void) {
     xpl_log_info("kfunc test OK, num samples: %d, total time: %llu ns, samples / second: %.2f", num_samples, elapsed, samples_per_second);
     
     xpl_allocator_small_mem_destroy(&allocator);
-    xpl_util_kfunc_destroy(&util);
+    xpl_kfunc_destroy(&util);
 }
