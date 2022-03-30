@@ -1,9 +1,3 @@
-//
-//  constants.h
-//  
-//
-//  Created by admin on 1/4/22.
-//
 
 #ifndef macos_common_constants_h
 #define macos_common_constants_h

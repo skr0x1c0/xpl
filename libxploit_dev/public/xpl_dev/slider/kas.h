@@ -1,9 +1,3 @@
-//
-//  slider_kas.h
-//  libxe_dev
-//
-//  Created by admin on 1/11/22.
-//
 
 #ifndef xpl_dev_slider_kas_h
 #define xpl_dev_slider_kas_h

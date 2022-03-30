@@ -1,9 +1,3 @@
-//
-//  kmem_common.c
-//  xe
-//
-//  Created by admin on 11/20/21.
-//
 
 #include <assert.h>
 #include <stdio.h>

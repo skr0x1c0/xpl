@@ -1,9 +1,3 @@
-//
-//  slider_kas.c
-//  libxe_dev
-//
-//  Created by admin on 1/11/22.
-//
 
 #include <assert.h>
 

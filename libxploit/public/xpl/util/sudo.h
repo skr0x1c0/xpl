@@ -1,9 +1,3 @@
-//
-//  suid.h
-//  libxe
-//
-//  Created by sreejith on 3/10/22.
-//
 
 #ifndef xpl_suid_h
 #define xpl_suid_h

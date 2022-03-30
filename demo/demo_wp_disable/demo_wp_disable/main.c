@@ -1,10 +1,3 @@
-//
-//  main.c
-//  demo_wp_disable
-//
-//  Created by admin on 2/18/22.
-//
-
 
 #include <stdio.h>
 #include <limits.h>

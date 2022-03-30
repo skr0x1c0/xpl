@@ -1,9 +1,3 @@
-//
-//  io_registry_entry.h
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #ifndef xpl_io_registry_entry_h
 #define xpl_io_registry_entry_h

@@ -1,9 +1,3 @@
-//
-//  allocator_nrnw.c
-//  xpl_kmem
-//
-//  Created by admin on 2/22/22.
-//
 
 #include <stdatomic.h>
 #include <xpl/util/assert.h>

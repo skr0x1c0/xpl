@@ -1,9 +1,3 @@
-//
-//  kfunc.c
-//  libxe
-//
-//  Created by admin on 2/16/22.
-//
 
 #include <assert.h>
 #include <stdlib.h>

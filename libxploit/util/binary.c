@@ -1,9 +1,3 @@
-//
-//  util_binary.c
-//  xe
-//
-//  Created by admin on 11/24/21.
-//
 
 #include "util/binary.h"
 

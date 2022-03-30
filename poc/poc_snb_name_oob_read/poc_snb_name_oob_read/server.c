@@ -1,9 +1,3 @@
-//
-//  main.c
-//  poc_snb_name_oob_read_server
-//
-//  Created by sreejith on 3/16/22.
-//
 
 #include <stdio.h>
 #include <string.h>

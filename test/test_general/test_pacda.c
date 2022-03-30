@@ -1,9 +1,3 @@
-//
-//  test_pacda.c
-//  test_remote
-//
-//  Created by admin on 1/11/22.
-//
 
 #include <stdlib.h>
 #include <unistd.h>

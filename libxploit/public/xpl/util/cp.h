@@ -1,9 +1,3 @@
-//
-//  cp.h
-//  libxe
-//
-//  Created by sreejith on 2/24/22.
-//
 
 #ifndef xpl_cp_h
 #define xpl_cp_h

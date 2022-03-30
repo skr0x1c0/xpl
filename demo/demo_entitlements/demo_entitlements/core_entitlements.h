@@ -1,9 +1,3 @@
-//
-//  core_entitlements.h
-//  demo_entitlements
-//
-//  Created by sreejith on 3/4/22.
-//
 
 #ifndef xpl_core_entitlements_h
 #define xpl_core_entitlements_h

@@ -1,9 +1,3 @@
-//
-//  slider_kext.c
-//  libxe
-//
-//  Created by admin on 1/1/22.
-//
 
 #include <stdlib.h>
 #include <string.h>

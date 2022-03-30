@@ -1,9 +1,3 @@
-//
-//  vnode.h
-//  libxe
-//
-//  Created by sreejith on 3/10/22.
-//
 
 #ifndef xpl_vnode_h
 #define xpl_vnode_h

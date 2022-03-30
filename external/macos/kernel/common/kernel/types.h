@@ -1,9 +1,3 @@
-//
-//  macos_types.h
-//  xe
-//
-//  Created by admin on 11/20/21.
-//
 
 #ifndef macos_common_types_h
 #define macos_common_types_h

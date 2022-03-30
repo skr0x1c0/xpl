@@ -1,9 +1,3 @@
-//
-//  xe.c
-//  libxe
-//
-//  Created by sreejith on 3/22/22.
-//
 
 #include <stdio.h>
 #include <limits.h>

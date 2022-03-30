@@ -1,9 +1,3 @@
-//
-//  utils_misc.h
-//  xe
-//
-//  Created by admin on 11/26/21.
-//
 
 #ifndef xpl_misc_h
 #define xpl_misc_h

@@ -1,9 +1,3 @@
-//
-//  log.c
-//  libxe
-//
-//  Created by sreejith on 3/18/22.
-//
 
 #include <libunwind.h>
 

@@ -1,9 +1,3 @@
-//
-//  sandbox.h
-//  playground
-//
-//  Created by sreejith on 3/8/22.
-//
 
 #ifndef xpl_sandbox_h
 #define xpl_sandbox_h

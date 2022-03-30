@@ -1,9 +1,3 @@
-//
-//  main.swift
-//  demo_av
-//
-//  Created by sreejith on 3/1/22.
-//
 
 import Foundation
 import AVFoundation

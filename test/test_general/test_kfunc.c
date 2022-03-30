@@ -1,9 +1,3 @@
-//
-//  test_kfunc.c
-//  test
-//
-//  Created by sreejith on 2/20/22.
-//
 
 #include <time.h>
 

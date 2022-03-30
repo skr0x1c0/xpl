@@ -1,9 +1,3 @@
-//
-//  util_pacda.c
-//  xe
-//
-//  Created by admin on 12/3/21.
-//
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>

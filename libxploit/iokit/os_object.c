@@ -1,9 +1,3 @@
-//
-//  os_object.c
-//  libxe
-//
-//  Created by sreejith on 3/10/22.
-//
 
 #include "iokit/os_object.h"
 #include "memory/kmem.h"

@@ -1,9 +1,3 @@
-//
-//  thread.h
-//  libxe
-//
-//  Created by sreejith on 2/25/22.
-//
 
 #ifndef xpl_thread_h
 #define xpl_thread_h

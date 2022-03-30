@@ -1,9 +1,3 @@
-//
-//  vnode.c
-//  libxe
-//
-//  Created by sreejith on 3/10/22.
-//
 
 #include <limits.h>
 

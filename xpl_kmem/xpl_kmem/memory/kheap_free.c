@@ -1,9 +1,3 @@
-//
-//  zfree_kext.c
-//  kmem_xepg
-//
-//  Created by admin on 12/20/21.
-//
 
 #include <stdlib.h>
 #include <string.h>

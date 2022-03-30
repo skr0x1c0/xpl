@@ -1,9 +1,3 @@
-//
-//  test_sudo.c
-//  test
-//
-//  Created by sreejith on 3/10/22.
-//
 
 #include <limits.h>
 #include <spawn.h>

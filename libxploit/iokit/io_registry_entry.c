@@ -1,9 +1,3 @@
-//
-//  io_registry_entry.c
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #include <strings.h>
 #include <limits.h>

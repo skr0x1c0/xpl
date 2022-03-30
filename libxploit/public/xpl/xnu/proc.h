@@ -1,9 +1,3 @@
-//
-//  xnu_proc.h
-//  xe
-//
-//  Created by admin on 11/20/21.
-//
 
 #ifndef xpl_proc_h
 #define xpl_proc_h

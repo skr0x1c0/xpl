@@ -1,9 +1,3 @@
-//
-//  constants.h
-//  kmem_xepg
-//
-//  Created by admin on 1/1/22.
-//
 
 #ifndef xpl_constants_h
 #define xpl_constants_h

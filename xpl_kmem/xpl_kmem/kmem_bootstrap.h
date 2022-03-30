@@ -1,9 +1,3 @@
-//
-//  kmem_bootstrap.h
-//  xpl_kmem
-//
-//  Created by sreejith on 2/25/22.
-//
 
 #ifndef xpl_kmem_bootstrap_h
 #define xpl_kmem_bootstrap_h

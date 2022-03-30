@@ -1,9 +1,3 @@
-//
-//  safe_release.c
-//  xpl_kmem
-//
-//  Created by sreejith on 3/22/22.
-//
 
 #include <sys/stat.h>
 

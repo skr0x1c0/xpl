@@ -1,9 +1,3 @@
-//
-//  sandbox.c
-//  playground
-//
-//  Created by sreejith on 3/8/22.
-//
 
 #include <stdlib.h>
 #include <string.h>

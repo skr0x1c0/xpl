@@ -1,9 +1,3 @@
-//
-//  util_assert.h
-//  libxe
-//
-//  Created by admin on 1/2/22.
-//
 
 #ifndef xpl_assert_h
 #define xpl_assert_h

@@ -1,9 +1,3 @@
-//
-//  zone.c
-//  libxe
-//
-//  Created by sreejith on 2/27/22.
-//
 
 #include "memory/kmem.h"
 #include "slider/kernel.h"

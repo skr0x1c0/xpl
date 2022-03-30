@@ -1,9 +1,3 @@
-//
-//  io_string.c
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #include "iokit/os_string.h"
 #include "memory/kmem.h"

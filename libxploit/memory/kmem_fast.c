@@ -1,9 +1,3 @@
-//
-//  kmem_fast.c
-//  libxe
-//
-//  Created by sreejith on 3/12/22.
-//
 
 #include <limits.h>
 

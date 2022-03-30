@@ -1,9 +1,3 @@
-//
-//  io_surface.c
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #include <stdatomic.h>
 

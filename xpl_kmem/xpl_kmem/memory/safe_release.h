@@ -1,9 +1,3 @@
-//
-//  safe_release.h
-//  xpl_kmem
-//
-//  Created by sreejith on 3/22/22.
-//
 
 #ifndef xpl_safe_release_h
 #define xpl_safe_release_h

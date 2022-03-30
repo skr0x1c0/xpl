@@ -1,9 +1,3 @@
-//
-//  kmem_tester.c
-//  kmem_msdosfs
-//
-//  Created by admin on 11/29/21.
-//
 
 #include <time.h>
 #include <string.h>

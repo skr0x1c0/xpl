@@ -1,9 +1,3 @@
-//
-//  main.c
-//  poc_oob_write
-//
-//  Created by sreejith on 3/15/22.
-//
 
 #include <limits.h>
 #include <sys/fcntl.h>

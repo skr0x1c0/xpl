@@ -1,9 +1,3 @@
-//
-//  io_string.h
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #ifndef xpl_io_string_h
 #define xpl_io_string_h

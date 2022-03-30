@@ -1,9 +1,3 @@
-//
-//  kmem_write_session.h
-//  xpl_kmem
-//
-//  Created by sreejith on 2/25/22.
-//
 
 #ifndef xpl_kmem_write_session_h
 #define xpl_kmem_write_session_h

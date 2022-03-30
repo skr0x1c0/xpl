@@ -1,9 +1,3 @@
-//
-//  neighbor_reader.h
-//  kmem_xepg
-//
-//  Created by admin on 12/20/21.
-//
 
 #ifndef xpl_neighbor_reader_h
 #define xpl_neighbor_reader_h

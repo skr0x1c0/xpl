@@ -1,9 +1,3 @@
-//
-//  util_binary.h
-//  xe
-//
-//  Created by admin on 11/24/21.
-//
 
 #ifndef xpl_binary_h
 #define xpl_binary_h

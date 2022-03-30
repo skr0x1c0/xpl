@@ -1,9 +1,3 @@
-//
-//  test_large_mem.c
-//  test
-//
-//  Created by admin on 2/15/22.
-//
 
 #include <xpl/allocator/large_mem.h>
 #include <xpl/util/assert.h>

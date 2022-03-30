@@ -1,9 +1,3 @@
-//
-//  kmem_ro.c
-//  xpl_kmem
-//
-//  Created by admin on 2/23/22.
-//
 
 #include <mach/thread_info.h>
 

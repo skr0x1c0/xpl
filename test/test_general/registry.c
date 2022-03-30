@@ -1,9 +1,3 @@
-//
-//  main_common.c
-//  test
-//
-//  Created by admin on 1/11/22.
-//
 
 #include <limits.h>
 #include <string.h>

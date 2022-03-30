@@ -1,9 +1,3 @@
-//
-//  allocator_nrnw.h
-//  xpl_kmem
-//
-//  Created by admin on 2/22/22.
-//
 
 #ifndef xpl_allocator_nrnw_h
 #define xpl_allocator_nrnw_h

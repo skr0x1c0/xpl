@@ -1,9 +1,3 @@
-//
-//  pipe.c
-//  libxe
-//
-//  Created by sreejith on 3/20/22.
-//
 
 #include <stdlib.h>
 

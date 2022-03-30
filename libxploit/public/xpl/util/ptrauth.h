@@ -1,9 +1,3 @@
-//
-//  util_ptrauth.h
-//  xe
-//
-//  Created by admin on 11/25/21.
-//
 
 #ifndef xpl_ptrauth_h
 #define xpl_ptrauth_h

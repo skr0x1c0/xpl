@@ -1,9 +1,3 @@
-//
-//  main.c
-//  kmem_client_test
-//
-//  Created by admin on 12/2/21.
-//
 
 #include <stdlib.h>
 #include <assert.h>

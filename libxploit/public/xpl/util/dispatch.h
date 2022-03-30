@@ -1,9 +1,3 @@
-//
-//  utils_dispatch.h
-//  xe
-//
-//  Created by admin on 11/27/21.
-//
 
 #ifndef xpl_dispatch_h
 #define xpl_dispatch_h

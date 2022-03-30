@@ -1,9 +1,3 @@
-//
-//  tcc.c
-//  playground
-//
-//  Created by sreejith on 3/8/22.
-//
 
 #include <sqlite3.h>
 

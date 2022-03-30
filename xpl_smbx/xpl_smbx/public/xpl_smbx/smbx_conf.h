@@ -1,9 +1,3 @@
-//
-//  smb_custom.h
-//  kmem_xepg
-//
-//  Created by admin on 1/3/22.
-//
 
 #ifndef xpl_kmem_smb_custom_h
 #define xpl_kmem_smb_custom_h

@@ -1,9 +1,3 @@
-//
-//  test_vnode.c
-//  test_general_gym
-//
-//  Created by sreejith on 3/10/22.
-//
 
 #include <stdlib.h>
 #include <limits.h>

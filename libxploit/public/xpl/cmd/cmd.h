@@ -1,9 +1,3 @@
-//
-//  cmd.h
-//  libxe
-//
-//  Created by sreejith on 3/24/22.
-//
 
 #ifndef xpl_cmd_h
 #define xpl_cmd_h

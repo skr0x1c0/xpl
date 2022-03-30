@@ -1,9 +1,3 @@
-//
-//  cmd.c
-//  libxe
-//
-//  Created by sreejith on 3/24/22.
-//
 
 #include <spawn.h>
 

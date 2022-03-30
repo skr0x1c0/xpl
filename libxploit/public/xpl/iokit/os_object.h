@@ -1,9 +1,3 @@
-//
-//  os_object.h
-//  libxe
-//
-//  Created by sreejith on 3/10/22.
-//
 
 #ifndef xpl_os_object_h
 #define xpl_os_object_h

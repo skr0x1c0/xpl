@@ -1,9 +1,3 @@
-//
-//  main_remote.c
-//  test_remote
-//
-//  Created by admin on 1/11/22.
-//
 
 #include <stdio.h>
 

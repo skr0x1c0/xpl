@@ -1,9 +1,3 @@
-//
-//  slider_kext.h
-//  libxe
-//
-//  Created by admin on 1/1/22.
-//
 
 #ifndef xpl_slider_kext_h
 #define xpl_slider_kext_h

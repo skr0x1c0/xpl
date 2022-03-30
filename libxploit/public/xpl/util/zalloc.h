@@ -1,9 +1,3 @@
-//
-//  zone.h
-//  libxe
-//
-//  Created by sreejith on 2/27/22.
-//
 
 #ifndef xpl_zone_h
 #define xpl_zone_h

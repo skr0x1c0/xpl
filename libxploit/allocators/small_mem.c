@@ -1,9 +1,3 @@
-//
-//  allocator_pipe.c
-//  xe
-//
-//  Created by admin on 11/22/21.
-//
 
 #include <assert.h>
 #include <unistd.h>

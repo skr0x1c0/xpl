@@ -1,9 +1,3 @@
-//
-//  xnu_proc.c
-//  xe
-//
-//  Created by admin on 11/20/21.
-//
 
 #include <unistd.h>
 #include <libproc.h>

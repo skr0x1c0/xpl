@@ -1,9 +1,3 @@
-//
-//  util_log.h
-//  libxe
-//
-//  Created by admin on 12/28/21.
-//
 
 #ifndef xpl_log_h
 #define xpl_log_h

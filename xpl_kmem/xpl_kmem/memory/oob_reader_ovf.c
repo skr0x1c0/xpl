@@ -1,9 +1,3 @@
-//
-//  neighbor_reader.c
-//  kmem_xepg
-//
-//  Created by admin on 12/20/21.
-//
 
 #include <assert.h>
 #include <stdlib.h>

@@ -1,9 +1,3 @@
-//
-//  allocator_pipe.h
-//  xe
-//
-//  Created by admin on 11/22/21.
-//
 
 #ifndef xpl_allocator_small_mem_h
 #define xpl_allocator_small_mem_h

@@ -1,10 +1,3 @@
-//
-//  main.c
-//  kmem_msdosfs
-//
-//  Created by admin on 11/26/21.
-//
-
 
 #include <stdio.h>
 #include <stdlib.h>

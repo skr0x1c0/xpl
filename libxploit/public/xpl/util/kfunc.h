@@ -1,9 +1,3 @@
-//
-//  kfunc.h
-//  libxe
-//
-//  Created by admin on 2/16/22.
-//
 
 #ifndef xpl_kfunc_h
 #define xpl_kfunc_h

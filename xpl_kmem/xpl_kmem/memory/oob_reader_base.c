@@ -1,9 +1,3 @@
-//
-//  zkext_neighbor_reader_xs.c
-//  kmem_xepg
-//
-//  Created by admin on 1/3/22.
-//
 
 #include <assert.h>
 #include <stdlib.h>

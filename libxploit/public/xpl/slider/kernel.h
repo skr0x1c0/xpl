@@ -1,9 +1,3 @@
-//
-//  slider.h
-//  xe
-//
-//  Created by admin on 11/25/21.
-//
 
 #ifndef xpl_slider_h
 #define xpl_slider_h

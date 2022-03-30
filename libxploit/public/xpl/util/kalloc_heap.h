@@ -1,9 +1,3 @@
-//
-//  util_kalloc_heap.h
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #ifndef xpl_kalloc_heap_h
 #define xpl_kalloc_heap_h

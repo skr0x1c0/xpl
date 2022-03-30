@@ -1,9 +1,3 @@
-//
-//  smb_dev_rw.c
-//  xpl_kmem
-//
-//  Created by admin on 2/22/22.
-//
 
 #include <assert.h>
 #include <stdatomic.h>

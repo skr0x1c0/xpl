@@ -1,9 +1,3 @@
-//
-//  utils_dispatch.c
-//  xe
-//
-//  Created by admin on 11/27/21.
-//
 
 #include <stdio.h>
 #include <string.h>

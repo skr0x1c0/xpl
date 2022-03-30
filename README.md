@@ -183,7 +183,7 @@ This PoC provides a minimal client and server program required to demonstrate th
 To start fake SMB server from Xcode, use the scheme `poc_snb_name_oob_read_server`. To start from command line,
 
 ```bash
-cd build/${TARGET_CONFIGURATION}
+cd build/${TARGET_CONFIGURATION}/poc
 ./poc_snb_name_oob_read_server
 ```
 

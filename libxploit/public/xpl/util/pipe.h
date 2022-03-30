@@ -1,9 +1,3 @@
-//
-//  pipe.h
-//  libxe
-//
-//  Created by sreejith on 3/20/22.
-//
 
 #ifndef xpl_pipe_h
 #define xpl_pipe_h

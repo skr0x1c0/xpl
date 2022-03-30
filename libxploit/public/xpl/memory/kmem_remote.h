@@ -1,9 +1,3 @@
-//
-//  kmem_remote.h
-//  xe
-//
-//  Created by admin on 12/2/21.
-//
 
 #ifndef xpl_kmem_remote_h
 #define xpl_kmem_remote_h

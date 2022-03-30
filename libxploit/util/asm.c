@@ -1,9 +1,3 @@
-//
-//  assembly.c
-//  libxe
-//
-//  Created by sreejith on 3/14/22.
-//
 
 #include "util/asm.h"
 #include "util/assert.h"

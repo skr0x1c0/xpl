@@ -1,9 +1,3 @@
-//
-//  kmem_write_session.c
-//  xpl_kmem
-//
-//  Created by sreejith on 2/25/22.
-//
 
 #include <assert.h>
 #include <pthread.h>

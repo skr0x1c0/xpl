@@ -1,9 +1,3 @@
-//
-//  main1.c
-//  xpl_kmem
-//
-//  Created by admin on 2/21/22.
-//
 
 #include <stdio.h>
 #include <limits.h>

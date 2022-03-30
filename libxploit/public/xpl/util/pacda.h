@@ -1,9 +1,3 @@
-//
-//  util_pacda.h
-//  xe
-//
-//  Created by admin on 12/3/21.
-//
 
 #ifndef xpl_pacda_h
 #define xpl_pacda_h

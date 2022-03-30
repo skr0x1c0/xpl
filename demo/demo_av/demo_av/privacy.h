@@ -1,9 +1,3 @@
-//
-//  systemstatusd.h
-//  playground
-//
-//  Created by sreejith on 3/9/22.
-//
 
 #ifndef xpl_privacy_h
 #define xpl_privacy_h

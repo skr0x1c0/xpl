@@ -1,9 +1,3 @@
-//
-//  test_lck_rw.c
-//  test
-//
-//  Created by admin on 1/11/22.
-//
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>

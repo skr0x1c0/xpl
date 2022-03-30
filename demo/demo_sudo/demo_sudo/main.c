@@ -1,9 +1,3 @@
-//
-//  main.c
-//  demo_sudo
-//
-//  Created by sreejith on 3/11/22.
-//
 
 #include <stdio.h>
 

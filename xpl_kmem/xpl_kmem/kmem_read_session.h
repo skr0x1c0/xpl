@@ -1,9 +1,3 @@
-//
-//  kmem_read_session.h
-//  xpl_kmem
-//
-//  Created by admin on 2/22/22.
-//
 
 #ifndef xpl_kmem_read_session_h
 #define xpl_kmem_read_session_h

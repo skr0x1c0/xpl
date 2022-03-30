@@ -1,9 +1,3 @@
-//
-//  kmem_fast.h
-//  libxe
-//
-//  Created by sreejith on 3/12/22.
-//
 
 #ifndef xpl_kmem_fast_h
 #define xpl_kmem_fast_h

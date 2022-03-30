@@ -1,9 +1,3 @@
-//
-//  io_array.c
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #include "iokit/os_array.h"
 #include "memory/kmem.h"

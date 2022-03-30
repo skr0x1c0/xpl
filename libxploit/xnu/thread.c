@@ -1,9 +1,3 @@
-//
-//  thread.c
-//  libxe
-//
-//  Created by sreejith on 2/25/22.
-//
 
 #include <pthread.h>
 

@@ -1,9 +1,3 @@
-//
-//  ipc.c
-//  libxe
-//
-//  Created by sreejith on 3/8/22.
-//
 
 #include <macos/kernel.h>
 

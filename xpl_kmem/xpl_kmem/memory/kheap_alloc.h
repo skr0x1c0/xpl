@@ -1,9 +1,3 @@
-//
-//  zalloc_kext_small.h
-//  kmem_xepg
-//
-//  Created by admin on 12/27/21.
-//
 
 #ifndef xpl_zalloc_kext_small_h
 #define xpl_zalloc_kext_small_h

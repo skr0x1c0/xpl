@@ -1,9 +1,3 @@
-//
-//  large_mem.c
-//  libxe
-//
-//  Created by admin on 2/15/22.
-//
 
 #include <stdlib.h>
 #include <stdatomic.h>

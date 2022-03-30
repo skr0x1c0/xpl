@@ -1,9 +1,3 @@
-//
-//  ipc.h
-//  libxe
-//
-//  Created by sreejith on 3/8/22.
-//
 
 #ifndef xpl_ipc_h
 #define xpl_ipc_h

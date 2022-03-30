@@ -1,9 +1,3 @@
-//
-//  util_kalloc_heap.c
-//  xe
-//
-//  Created by admin on 12/6/21.
-//
 
 #include <sys/errno.h>
 

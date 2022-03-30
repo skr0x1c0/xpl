@@ -1,9 +1,3 @@
-//
-//  large_mem.h
-//  libxe
-//
-//  Created by admin on 2/15/22.
-//
 
 #ifndef xpl_large_mem_h
 #define xpl_large_mem_h

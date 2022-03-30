@@ -1,9 +1,3 @@
-//
-//  kmem_read_session.c
-//  xpl_kmem
-//
-//  Created by admin on 2/22/22.
-//
 
 #include <assert.h>
 #include <stdio.h>

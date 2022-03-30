@@ -1,9 +1,3 @@
-//
-//  main.c
-//  demo_sb
-//
-//  Created by user on 1/7/22.
-//
 
 #include <stdio.h>
 #include <stdlib.h>

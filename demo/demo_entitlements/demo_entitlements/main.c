@@ -1,9 +1,3 @@
-//
-//  main.c
-//  demo_entitlements
-//
-//  Created by admin on 2/18/22.
-//
 
 #include <stdio.h>
 #include <stdlib.h>

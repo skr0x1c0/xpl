@@ -1,9 +1,3 @@
-//
-//  main.c
-//  poc_double_free
-//
-//  Created by sreejith on 3/15/22.
-//
 
 #include <stdio.h>
 #include <string.h>

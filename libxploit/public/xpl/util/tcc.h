@@ -1,9 +1,3 @@
-//
-//  tcc.h
-//  playground
-//
-//  Created by sreejith on 3/8/22.
-//
 
 #ifndef xpl_tcc_h
 #define xpl_tcc_h

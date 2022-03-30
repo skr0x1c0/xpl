@@ -1,9 +1,3 @@
-//
-//  smb_dev_rw.h
-//  xpl_kmem
-//
-//  Created by admin on 2/22/22.
-//
 
 #ifndef xpl_smb_dev_rw_h
 #define xpl_smb_dev_rw_h

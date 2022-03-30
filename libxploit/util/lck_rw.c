@@ -1,9 +1,3 @@
-//
-//  util_lck_rw.c
-//  xe
-//
-//  Created by admin on 12/2/21.
-//
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,9 +1,3 @@
-//
-//  main.c
-//  poc_info_disclosure
-//
-//  Created by sreejith on 3/16/22.
-//
 
 #include <stdio.h>
 #include <string.h>

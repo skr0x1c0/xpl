@@ -1,9 +1,3 @@
-//
-//  kmem_internal.h
-//  libxe
-//
-//  Created by sreejith on 2/24/22.
-//
 
 #ifndef xpl_kmem_internal_h
 #define xpl_kmem_internal_h

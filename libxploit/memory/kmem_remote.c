@@ -1,9 +1,3 @@
-//
-//  kmem_remote.c
-//  xe
-//
-//  Created by admin on 12/2/21.
-//
 
 #include <string.h>
 #include <stdio.h>

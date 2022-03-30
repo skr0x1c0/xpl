@@ -1,9 +1,3 @@
-//
-//  cp.c
-//  libxe
-//
-//  Created by sreejith on 2/24/22.
-//
 
 #include <unistd.h>
 

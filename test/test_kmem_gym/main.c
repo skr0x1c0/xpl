@@ -1,9 +1,3 @@
-//
-//  main.c
-//  test_kmem_gym
-//
-//  Created by admin on 2/7/22.
-//
 
 #include <stdio.h>
 

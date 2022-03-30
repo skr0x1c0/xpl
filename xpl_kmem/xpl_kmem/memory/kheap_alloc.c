@@ -1,9 +1,3 @@
-//
-//  zalloc_kext_small.c
-//  kmem_xepg
-//
-//  Created by admin on 12/27/21.
-//
 
 #include <assert.h>
 #include <stdlib.h>

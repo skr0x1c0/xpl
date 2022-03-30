@@ -1,9 +1,3 @@
-//
-//  zfree_kext.h
-//  kmem_xepg
-//
-//  Created by admin on 12/20/21.
-//
 
 #ifndef xpl_zfree_kext_h
 #define xpl_zfree_kext_h

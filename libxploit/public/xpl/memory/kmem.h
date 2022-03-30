@@ -1,9 +1,3 @@
-//
-//  kmem.h
-//  xe
-//
-//  Created by admin on 11/20/21.
-//
 
 #ifndef xpl_memory_kmem_h
 #define xpl_memory_kmem_h

@@ -1,9 +1,3 @@
-//
-//  config.h
-//  poc_snb_name_oob_read
-//
-//  Created by sreejith on 3/16/22.
-//
 
 #ifndef xpl_config_h
 #define xpl_config_h

@@ -1,9 +1,3 @@
-//
-//  systemstatusd.c
-//  playground
-//
-//  Created by sreejith on 3/9/22.
-//
 
 #include <stdlib.h>
 #include <limits.h>

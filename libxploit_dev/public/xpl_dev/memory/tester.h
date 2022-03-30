@@ -1,9 +1,3 @@
-//
-//  kmem_tester.h
-//  kmem_msdosfs
-//
-//  Created by admin on 11/29/21.
-//
 
 #ifndef xpl_dev_kmem_tester_h
 #define xpl_dev_kmem_tester_h

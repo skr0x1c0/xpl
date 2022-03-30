@@ -1,9 +1,3 @@
-//
-//  util_lck_rw.h
-//  xe
-//
-//  Created by admin on 12/2/21.
-//
 
 #ifndef xpl_lck_rw_h
 #define xpl_lck_rw_h

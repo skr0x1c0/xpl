@@ -1,9 +1,3 @@
-//
-//  assembly.h
-//  libxe
-//
-//  Created by sreejith on 3/14/22.
-//
 
 #ifndef xpl_assembly_h
 #define xpl_assembly_h
