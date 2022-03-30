@@ -17,13 +17,13 @@
 #include <macos/kernel.h>
 
 
-uintptr_t xpl_xnu_thread_current_thread(void) {
+uintptr_t xpl_thread_current_thread(void) {
     pthread_t pthread = pthread_self();
     uint64_t tid;
     int error = pthread_threadid_np(pthread, &tid);
     xpl_assert_err(error);
     
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     uintptr_t task = xpl_ptrauth_strip(xpl_kmem_read_uint64(proc, TYPE_PROC_MEM_TASK_OFFSET));
     uintptr_t thread = xpl_kmem_read_uint64(task, TYPE_TASK_MEM_THREADS_OFFSET);
     while (thread != 0 && thread != task + TYPE_TASK_MEM_THREADS_OFFSET) {
@@ -39,7 +39,7 @@ uintptr_t xpl_xnu_thread_current_thread(void) {
 }
 
 
-int xpl_xnu_thread_scan_stack(uintptr_t thread, uintptr_t value, uintptr_t mask, int scan_count, uintptr_t* found_address) {
+int xpl_thread_scan_stack(uintptr_t thread, uintptr_t value, uintptr_t mask, int scan_count, uintptr_t* found_address) {
     uintptr_t machine = thread + TYPE_THREAD_MEM_MACHINE_OFFSET;
     uintptr_t kstackptr = xpl_kmem_read_ptr(machine, TYPE_MACHINE_THREAD_MEM_KSTACKPTR_OFFSET);
     uintptr_t kernel_stack = xpl_kmem_read_ptr(thread, TYPE_THREAD_MEM_KERNEL_STACK_OFFSET);

@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef _NETSMB_DEV_H_
-#define _NETSMB_DEV_H_
+#ifndef EXTERNAL_SMBFS_NETSMB_DEV_H_
+#define EXTERNAL_SMBFS_NETSMB_DEV_H_
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -261,4 +261,4 @@ struct smbioc_ntwrk_identity {
 #define    SMBIOC_MULTICHANNEL_PROPERTIES    _IOWR('n', 131, struct smbioc_multichannel_properties)
 #define    SMBIOC_NIC_INFO         _IOWR('n', 132, struct smbioc_nic_info)
 
-#endif /* _NETSMB_DEV_H_ */
+#endif /* EXTERNAL_SMBFS_NETSMB_DEV_H_ */

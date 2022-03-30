@@ -5,8 +5,8 @@
 //  Created by admin on 1/3/22.
 //
 
-#ifndef zkext_neighbor_reader_xs_h
-#define zkext_neighbor_reader_xs_h
+#ifndef xpl_zkext_neighbor_reader_xs_h
+#define xpl_zkext_neighbor_reader_xs_h
 
 #include <stdio.h>
 
@@ -59,4 +59,4 @@ struct xpl_oob_reader_base_args {
 /// @param local_nb_name_size size of `local_nb_name` buffer
 void xpl_oob_reader_base_read(const struct xpl_oob_reader_base_args* args, char* server_nb_name, uint32_t* server_nb_name_size, char* local_nb_name, uint32_t* local_nb_name_size);
 
-#endif /* zkext_neighbor_reader_xs_h */
+#endif /* xpl_zkext_neighbor_reader_xs_h */

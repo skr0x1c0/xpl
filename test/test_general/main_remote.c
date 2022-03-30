@@ -41,7 +41,7 @@ int main(int argc, const char * argv[]) {
     xpl_kmem_backend_t backend;
     int error = xpl_kmem_remote_client_create(uds_path, &backend);
     if (error) {
-        xpl_log_error("failed to connect to kmem server unix domain socket, err: %s", uds_path, strerror(error));
+        xpl_log_error("failed to connect to kmem server unix domain socket %s, err: %s", uds_path, strerror(error));
         exit(1);
     }
     

@@ -21,8 +21,8 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
-#ifndef smb2_mc_h
-#define smb2_mc_h
+#ifndef external_smbfs_smb2_mc_h
+#define external_smbfs_smb2_mc_h
 
 #include <net/if.h>
 #include <netinet/in.h>
@@ -142,4 +142,4 @@ struct complete_nic_info_entry {
 
 TAILQ_HEAD(interface_info_list, complete_nic_info_entry);
 
-#endif /* smb2_mc_h */
+#endif /* external_smbfs_smb2_mc_h */

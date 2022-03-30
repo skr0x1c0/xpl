@@ -1,5 +1,5 @@
-#ifndef allocator_rw_h
-#define allocator_rw_h
+#ifndef xpl_allocator_rw_h
+#define xpl_allocator_rw_h
 
 #include <sys/types.h>
 #include <arpa/inet.h>
@@ -27,4 +27,4 @@ int xpl_allocator_rw_grow_backend_count(xpl_allocator_rw_t allocator, int count)
 int xpl_allocator_rw_get_backend_count(xpl_allocator_rw_t allocator);
 int xpl_allocator_rw_destroy(xpl_allocator_rw_t* allocator);
 
-#endif /* allocator_rw_h */
+#endif /* xpl_allocator_rw_h */

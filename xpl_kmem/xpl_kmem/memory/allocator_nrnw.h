@@ -5,8 +5,8 @@
 //  Created by admin on 2/22/22.
 //
 
-#ifndef allocator_nrnw_h
-#define allocator_nrnw_h
+#ifndef xpl_allocator_nrnw_h
+#define xpl_allocator_nrnw_h
 
 #include <stdio.h>
 #include <arpa/inet.h>
@@ -35,4 +35,4 @@ void xpl_allocator_nrnw_allocate(xpl_allocator_nrnw_t allocator, size_t size, si
 /// @param allocator_p allocator created using xpl_allocator_nrnw_create
 void xpl_allocator_nrnw_destroy(xpl_allocator_nrnw_t* allocator_p);
 
-#endif /* allocator_nrnw_h */
+#endif /* xpl_allocator_nrnw_h */

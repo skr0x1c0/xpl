@@ -5,8 +5,8 @@
 //  Created by admin on 2/16/22.
 //
 
-#ifndef kfunc_h
-#define kfunc_h
+#ifndef xpl_kfunc_h
+#define xpl_kfunc_h
 
 #include <stdio.h>
 
@@ -55,4 +55,4 @@ void xpl_kfunc_execute_simple(xpl_kfunc_t util, uintptr_t target_func, uint64_t 
 /// @param util_p pointer to `xpl_kfunc_t` created using `xpl_kfunc_create`
 void xpl_kfunc_destroy(xpl_kfunc_t* util_p);
 
-#endif /* kfunc_h */
+#endif /* xpl_kfunc_h */

@@ -31,9 +31,9 @@ void test_vnode() {
     int file = open(path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
     xpl_assert(file >= 0);
     
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     uintptr_t vnode;
-    int error = xpl_xnu_proc_find_fd_data(proc, file, &vnode);
+    int error = xpl_proc_find_fd_data(proc, file, &vnode);
     xpl_assert_err(error);
     
     char data[32];

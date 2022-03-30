@@ -483,7 +483,7 @@ struct xpl_kfunc_register_state xpl_kfunc_link0_pre_execute(link0_t link0) {
     dispatch_semaphore_t sem_surface_destroying = dispatch_semaphore_create(0);
     dispatch_semaphore_t sem_surface_destroyed = dispatch_semaphore_create(0);
     dispatch_async(xpl_dispatch_queue(), ^() {
-        *waiting_thread = xpl_xnu_thread_current_thread();
+        *waiting_thread = xpl_thread_current_thread();
         dispatch_semaphore_signal(sem_surface_destroying);
         xpl_log_debug("io_surface remove value start");
         IOSurfaceRemoveValue(surface_ref, CFSTR("xpl_kfunc_key"));
@@ -504,7 +504,7 @@ struct xpl_kfunc_register_state xpl_kfunc_link0_pre_execute(link0_t link0) {
     
     uintptr_t lr;
     /// Find the location of stack used by `IOStatistics::unregisterEventSource` method
-    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_unregister_event_source, XPL_PTRAUTH_MASK, 1024, &lr);
+    error = xpl_thread_scan_stack(*waiting_thread, lr_unregister_event_source, XPL_PTRAUTH_MASK, 1024, &lr);
     xpl_assert_err(error);
     
     link0->lr_stack_ptr = lr;
@@ -521,7 +521,7 @@ struct xpl_kfunc_register_state xpl_kfunc_link0_pre_execute(link0_t link0) {
     register_state.fp = register_state.sp + 0x10;
     register_state.lr = lr_block_dispose_helper;
     
-    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_is_io_connect_method, XPL_PTRAUTH_MASK, 1024, &lr);
+    error = xpl_thread_scan_stack(*waiting_thread, lr_is_io_connect_method, XPL_PTRAUTH_MASK, 1024, &lr);
     xpl_assert_err(error);
     
     register_state.x25 = xpl_kmem_read_uint64(lr, -0x40);

@@ -1,5 +1,5 @@
-#ifndef smb_ssn_allocator_h
-#define smb_ssn_allocator_h
+#ifndef xpl_smb_ssn_allocator_h
+#define xpl_smb_ssn_allocator_h
 
 #include <stdio.h>
 
@@ -10,4 +10,4 @@ int smb_ssn_allocator_allocate(smb_ssn_allocator id, const char* data1, uint32_t
 int smb_ssn_allocator_read(smb_ssn_allocator id, char* data1_out, uint32_t data1_size, char* data2_out, uint32_t data2_size);
 int smb_ssn_allocator_destroy(smb_ssn_allocator* id);
 
-#endif /* smb_ssn_allocator_h */
+#endif /* xpl_smb_ssn_allocator_h */

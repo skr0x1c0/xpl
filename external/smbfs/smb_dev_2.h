@@ -21,8 +21,8 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
-#ifndef smb_dev_2_h
-#define smb_dev_2_h
+#ifndef external_smbfs_smb_dev_2_h
+#define external_smbfs_smb_dev_2_h
 
 #include "smb_dev.h"
 
@@ -43,4 +43,4 @@ struct smbioc_client_interface {
 #define SMBIOC_UPDATE_CLIENT_INTERFACES   _IOW('n', 127, struct smbioc_client_interface)
 #define SMBIOC_NOTIFIER_UPDATE_INTERFACES _IOW('n', 130, struct smbioc_client_interface)
 
-#endif /* smb_dev_2_h */
+#endif /* external_smbfs_smb_dev_2_h */

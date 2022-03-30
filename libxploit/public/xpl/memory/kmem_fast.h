@@ -5,8 +5,8 @@
 //  Created by sreejith on 3/12/22.
 //
 
-#ifndef kmem_fast_h
-#define kmem_fast_h
+#ifndef xpl_kmem_fast_h
+#define xpl_kmem_fast_h
 
 #include <stdio.h>
 
@@ -21,4 +21,4 @@ xpl_kmem_backend_t xpl_memory_kmem_fast_create(void);
 /// `xpl_memory_kmem_fast_create`
 void xpl_memory_kmem_fast_destroy(xpl_kmem_backend_t* backend_p);
 
-#endif /* kmem_fast_h */
+#endif /* xpl_kmem_fast_h */

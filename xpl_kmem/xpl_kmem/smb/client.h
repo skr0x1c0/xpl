@@ -1,5 +1,5 @@
-#ifndef smb_client_h
-#define smb_client_h
+#ifndef xpl_smb_client_h
+#define xpl_smb_client_h
 
 #include <smbfs/smb2_mc.h>
 #include <smbfs/smb_dev.h>
@@ -22,4 +22,4 @@ int smb_client_ioc_read_last_nb_ssn_request(int fd_dev, char* dst, uint32_t dst_
 int smb_client_ioc_cancel_session(int fd_dev);
 int smb_client_ioc_set_ntwrk_identity(int fd_dev, const ntsid_t* ntsid);
 
-#endif /* smb_client_h */
+#endif /* xpl_smb_client_h */

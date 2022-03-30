@@ -59,13 +59,13 @@ static xpl_sudo_t xpl_sudo_nop = (xpl_sudo_t)UINT64_MAX;
 
 int xpl_sudo_find_sudoers_vnode(uintptr_t proc, uintptr_t* sudoers_vnode) {
     uint32_t num_ofiles;
-    xpl_xnu_proc_read_fdesc_ofiles(proc, &num_ofiles);
+    xpl_proc_read_fdesc_ofiles(proc, &num_ofiles);
     
     /// Scan the open file descriptors of the process to find the vnode of file with `vn_name`
     /// equal to "sudoers"
     for (int i=3; i<num_ofiles; i++) {
         uintptr_t vnode;
-        int error = xpl_xnu_proc_find_fd_data(proc, i, &vnode);
+        int error = xpl_proc_find_fd_data(proc, i, &vnode);
         xpl_assert_err(error);
         
         const char file_name[] = "sudoers";
@@ -164,7 +164,7 @@ xpl_sudo_t xpl_sudo_create(void) {
     close(pfds[0]);
         
     uintptr_t sudo_proc;
-    error = xpl_xnu_proc_find(sudo_pid, &sudo_proc);
+    error = xpl_proc_find(sudo_pid, &sudo_proc);
     xpl_assert_err(error);
     
     /// Read the vnode associated to the sudoers file from `sudo_proc`

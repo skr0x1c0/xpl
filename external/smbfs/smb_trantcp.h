@@ -32,8 +32,8 @@
  * SUCH DAMAGE.
  *
  */
-#ifndef _NETSMB_SMB_TRANTCP_H_
-#define    _NETSMB_SMB_TRANTCP_H_
+#ifndef EXTERNAL_SMBFS_NETSMB_SMB_TRANTCP_H_
+#define EXTERNAL_SMBFS_NETSMB_SMB_TRANTCP_H_
 
 #include <sys/kernel_types.h>
 
@@ -80,4 +80,4 @@ struct nbpcb {
 /*    LIST_ENTRY(nbpcb) nbp_link;*/
 };
 
-#endif /* !_NETSMB_SMB_TRANTCP_H_ */
+#endif /* !EXTERNAL_SMBFS_NETSMB_SMB_TRANTCP_H_ */

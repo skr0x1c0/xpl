@@ -5,8 +5,8 @@
 //  Created by admin on 12/28/21.
 //
 
-#ifndef xpl_util_log_h
-#define xpl_util_log_h
+#ifndef xpl_log_h
+#define xpl_log_h
 
 #include "./binary.h"
 
@@ -50,4 +50,4 @@
 
 void xpl_log_print_backtrace(void);
 
-#endif /* xpl_util_log_h */
+#endif /* xpl_log_h */

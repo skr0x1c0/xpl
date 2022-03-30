@@ -18,8 +18,8 @@
  * http://lists.samba.org/archive/cifs-protocol/2009-April/000722.html
  */
 
-#ifndef ntstatus_h
-#define ntstatus_h
+#ifndef external_smbfs_ntstatus_h
+#define external_smbfs_ntstatus_h
 
 #define NTSTATUS_SUCCESS 0x00000000
 #define NTSTATUS_WAIT_0 0x00000000
@@ -1833,4 +1833,4 @@
 #define NTSTATUS_VHD_DIFFERENCING_CHAIN_ERROR_IN_PARENT 0xC03A0019
 
 
-#endif /* ntstatus_h */
+#endif /* external_smbfs_ntstatus_h */

@@ -5,8 +5,8 @@
 //  Created by admin on 12/20/21.
 //
 
-#ifndef neighbor_reader_h
-#define neighbor_reader_h
+#ifndef xpl_neighbor_reader_h
+#define xpl_neighbor_reader_h
 
 #include <stdio.h>
 
@@ -17,4 +17,4 @@
 /// @param data_size size of `data` buffer
 int xpl_oob_reader_ovf_read(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size);
 
-#endif /* neighbor_reader_h */
+#endif /* xpl_neighbor_reader_h */

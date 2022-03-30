@@ -5,11 +5,11 @@
 //  Created by sreejith on 3/10/22.
 //
 
-#ifndef test_vnode_h
-#define test_vnode_h
+#ifndef xpl_test_vnode_h
+#define xpl_test_vnode_h
 
 #include <stdio.h>
 
 void test_vnode(void);
 
-#endif /* test_vnode_h */
+#endif /* xpl_test_vnode_h */

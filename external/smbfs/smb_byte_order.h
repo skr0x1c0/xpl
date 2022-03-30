@@ -21,8 +21,8 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
-#ifndef _SMB_BYTEORDER_H_
-#define _SMB_BYTEORDER_H_
+#ifndef EXTERNAL_SMBFS_SMB_BYTEORDER_H_
+#define EXTERNAL_SMBFS_SMB_BYTEORDER_H_
 
 #include <libkern/OSByteOrder.h>
 
@@ -40,4 +40,4 @@
 #define    htobeq(x)    (OSSwapHostToBigInt64(x))
 #define    betohq(x)    (OSSwapBigToHostInt64(x))
 
-#endif    /* !_SMB_BYTEORDER_H_ */
+#endif    /* !EXTERNAL_SMBFS_SMB_BYTEORDER_H_ */

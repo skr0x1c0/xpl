@@ -5,8 +5,8 @@
 //  Created by sreejith on 2/27/22.
 //
 
-#ifndef zone_h
-#define zone_h
+#ifndef xpl_zone_h
+#define xpl_zone_h
 
 #include <stdio.h>
 
@@ -30,4 +30,4 @@ uintptr_t xpl_zalloc_alloc(xpl_zalloc_t util, int element_idx);
 /// @param util_p pointer to `xpl_zalloc_t` created using `xpl_zalloc_create`
 void xpl_zalloc_destroy(xpl_zalloc_t* util_p);
 
-#endif /* zone_h */
+#endif /* xpl_zone_h */

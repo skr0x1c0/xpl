@@ -1,6 +1,6 @@
 
-#ifndef _KERN_TYPES_H
-#define _KERN_TYPES_H
+#ifndef EXTERNAL_SMBFS_KERN_TYPES_H
+#define EXTERNAL_SMBFS_KERN_TYPES_H
 
 struct __lck_mtx_t__ {
     uintptr_t opaque[2];

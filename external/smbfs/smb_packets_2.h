@@ -21,11 +21,11 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
-#ifndef smb_packets_2_h
-#define smb_packets_2_h
+#ifndef external_smbfs_smb_packets_2_h
+#define external_smbfs_smb_packets_2_h
 
 #define    SMB2_SIGNATURE            "\xFESMB"
 #define    SMB2_SIGLEN                4
 #define    SMB2_HDRLEN                64
 
-#endif /* smb_packets_2_h */
+#endif /* external_smbfs_smb_packets_2_h */

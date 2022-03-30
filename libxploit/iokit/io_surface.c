@@ -65,7 +65,7 @@ uintptr_t xpl_io_surface_get_user_client(uintptr_t root_user_client, uint32_t in
 
 
 IOSurfaceRef xpl_io_surface_create(uintptr_t* addr_out) {
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     uintptr_t task = xpl_kmem_read_ptr(proc, TYPE_PROC_MEM_TASK_OFFSET);
     
     CFMutableDictionaryRef props = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);

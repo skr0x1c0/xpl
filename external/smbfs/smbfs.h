@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef _SMBFS_SMBFS_H_
-#define _SMBFS_SMBFS_H_
+#ifndef EXTERNAL_SMBFS_SMBFS_SMBFS_H_
+#define EXTERNAL_SMBFS_SMBFS_SMBFS_H_
 
 
 #define SMB_MAX_UNIQUE_ID    128 + MAXPATHLEN + (int32_t)sizeof(struct sockaddr_storage)  /* Share name, path, sockaddr */
@@ -80,4 +80,4 @@ struct smbSockAddrPB {
 #define smbfsGetSessionSockaddrFSCTL        _IOR('z', 20, struct sockaddr_storage)
 #define smbfsGetSessionSockaddrFSCTL2       _IOR('z', 30, struct smbSockAddrPB)
 
-#endif /* _SMBFS_SMBFS_H_ */
+#endif /* EXTERNAL_SMBFS_SMBFS_SMBFS_H_ */

@@ -17,7 +17,7 @@
 #define IE_BITS_GEN_MASK        0xff000000
 
 
-void xpl_xnu_ipc_iter_mach_ports(uintptr_t proc, _Bool(^callback)(uint32_t name, uintptr_t port)) {
+void xpl_ipc_iter_mach_ports(uintptr_t proc, _Bool(^callback)(uint32_t name, uintptr_t port)) {
     uintptr_t task = xpl_kmem_read_ptr(proc, TYPE_PROC_MEM_TASK_OFFSET);
     uintptr_t itk_space = xpl_kmem_read_ptr(task, TYPE_TASK_MEM_ITK_SPACE_OFFSET);
     uintptr_t is_table_head = xpl_kmem_read_ptr(itk_space, TYPE_IPC_SPACE_MEM_IS_TABLE_OFFSET);
@@ -40,10 +40,10 @@ void xpl_xnu_ipc_iter_mach_ports(uintptr_t proc, _Bool(^callback)(uint32_t name,
 }
 
 
-int xpl_xnu_ipc_find_mach_port(uintptr_t proc, uint32_t mach_port_name, uintptr_t* out) {
+int xpl_ipc_find_mach_port(uintptr_t proc, uint32_t mach_port_name, uintptr_t* out) {
     int* error = alloca(sizeof(int));
     *error = ENOENT;
-    xpl_xnu_ipc_iter_mach_ports(proc, ^_Bool(uint32_t name, uintptr_t port) {
+    xpl_ipc_iter_mach_ports(proc, ^_Bool(uint32_t name, uintptr_t port) {
         if (name == mach_port_name) {
             *out = port;
             *error = 0;
@@ -55,7 +55,7 @@ int xpl_xnu_ipc_find_mach_port(uintptr_t proc, uint32_t mach_port_name, uintptr_
 }
 
 
-uintptr_t xpl_xnu_ipc_port_get_receiver_task(uintptr_t port) {
+uintptr_t xpl_ipc_port_get_receiver_task(uintptr_t port) {
     uintptr_t ip_receiver = xpl_kmem_read_ptr(port, TYPE_IPC_PORT_MEM_IP_RECEIVER_OFFSET);
     if (ip_receiver) {
         return xpl_kmem_read_ptr(ip_receiver, TYPE_IPC_SPACE_MEM_IS_TASK_OFFSET);

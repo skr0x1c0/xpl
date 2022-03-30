@@ -5,8 +5,8 @@
 //  Created by sreejith on 3/4/22.
 //
 
-#ifndef core_entitlements_h
-#define core_entitlements_h
+#ifndef xpl_core_entitlements_h
+#define xpl_core_entitlements_h
 
 #include <stdlib.h>
 
@@ -17,4 +17,4 @@ extern long CESerializeCFDictionary(CERuntimeRef runtime, CFDictionaryRef dict, 
 extern CERuntimeRef CECRuntime;
 extern uint64_t kCEAPIMisuse, kCEAllocationFailed, kCEInvalidArgument, kCEMalformedEntitlements, kCENoError, kCEQueryCannotBeSatisfied;
 
-#endif /* core_entitlements_h */
+#endif /* xpl_core_entitlements_h */

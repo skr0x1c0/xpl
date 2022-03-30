@@ -5,8 +5,8 @@
 //  Created by admin on 1/2/22.
 //
 
-#ifndef xpl_util_assert_h
-#define xpl_util_assert_h
+#ifndef xpl_assert_h
+#define xpl_assert_h
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,4 +31,4 @@
 #define xpl_assert_cond(lhs, cond, rhs) if (!((lhs) cond (rhs))) { printf("[ERROR] assert condition %llu %s %llu failed at %s::%d\n", (uint64_t)(lhs), #cond, (uint64_t)(rhs), __FILE__, __LINE__); xpl_abort(); }
 #define xpl_assert_kaddr(val) if (!xpl_vm_kernel_address_valid((val))) { printf("[ERROR] assertion for valid kernel address failed for %p at %s:%d\n", (void*)val, __FILE__, __LINE__); xpl_abort(); }
 
-#endif /* xpl_util_assert_h */
+#endif /* xpl_assert_h */

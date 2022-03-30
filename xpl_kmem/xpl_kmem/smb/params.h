@@ -5,8 +5,8 @@
 //  Created by admin on 1/1/22.
 //
 
-#ifndef constants_h
-#define constants_h
+#ifndef xpl_constants_h
+#define xpl_constants_h
 
 /* Variables */
 #define VAR_SMB_SESSION_LIST_OFFSET_DATA 0x1e48
@@ -29,4 +29,4 @@
 #define TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_COUNT_OFFSET 20
 #define TYPE_SESSION_INTERFACE_INFO_MEM_CLIENT_NIC_INFO_LIST_OFFSET 24
 
-#endif /* constants_h */
+#endif /* xpl_constants_h */

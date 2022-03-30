@@ -5,8 +5,8 @@
 //  Created by admin on 2/22/22.
 //
 
-#ifndef kmem_read_session_h
-#define kmem_read_session_h
+#ifndef xpl_kmem_read_session_h
+#define xpl_kmem_read_session_h
 
 #include <stdio.h>
 
@@ -42,4 +42,4 @@ int kmem_read_session_read(kmem_read_session_t session, int smb_dev_fd, void* ds
 /// @param session_p pointer to kmem_read_session_t created using method `kmem_read_session_create`
 void kmem_read_session_destroy(kmem_read_session_t* session_p);
 
-#endif /* kmem_read_session_h */
+#endif /* xpl_kmem_read_session_h */

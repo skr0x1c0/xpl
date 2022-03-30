@@ -28,7 +28,7 @@ struct map_ctx {
 static dispatch_queue_t s_xe_dispatch_queue;
 
 
-void map_apply(void* data, size_t index) {
+void xep_dispatch_map(void* data, size_t index) {
     struct map_ctx* ctx = (struct map_ctx*)data;
     if (ctx->error != 0) {
         return;
@@ -41,7 +41,7 @@ void map_apply(void* data, size_t index) {
 }
 
 
-int xpl_util_dispatch_apply(void* data, size_t element_size, size_t element_count, void* map_fn_ctx, dispatch_apply_fn map_fn) {
+int xpl_dispatch_apply(void* data, size_t element_size, size_t element_count, void* map_fn_ctx, dispatch_apply_fn map_fn) {
     if (element_count == 1) {
         return map_fn(map_fn_ctx, data, 0);
     }
@@ -53,7 +53,7 @@ int xpl_util_dispatch_apply(void* data, size_t element_size, size_t element_coun
     ctx.map_fn = map_fn;
     ctx.map_fn_ctx = map_fn_ctx;
     atomic_init(&ctx.error, 0);
-    dispatch_apply_f(element_count, xpl_dispatch_queue(), &ctx, map_apply);
+    dispatch_apply_f(element_count, xpl_dispatch_queue(), &ctx, xep_dispatch_map);
     return ctx.error;
 }
 

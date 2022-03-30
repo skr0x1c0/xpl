@@ -5,8 +5,8 @@
 //  Created by admin on 1/4/22.
 //
 
-#ifndef macos_constants_h
-#define macos_constants_h
+#ifndef macos_common_constants_h
+#define macos_common_constants_h
 
 #define XPL_PAGE_SIZE 16384
 #define XPL_PAGE_SHIFT 14
@@ -24,4 +24,4 @@
 #define PTOV_TABLE_SIZE 8
 #define KERNEL_STACK_SIZE 16384
 
-#endif /* macos_constants_h */
+#endif /* macos_common_constants_h */

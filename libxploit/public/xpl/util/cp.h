@@ -5,8 +5,8 @@
 //  Created by sreejith on 2/24/22.
 //
 
-#ifndef cp_h
-#define cp_h
+#ifndef xpl_cp_h
+#define xpl_cp_h
 
 #include <stdio.h>
 
@@ -15,4 +15,4 @@
 /// @param dst destination file
 int xpl_cp(const char* src, const char* dst);
 
-#endif /* cp_h */
+#endif /* xpl_cp_h */

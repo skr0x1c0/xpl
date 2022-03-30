@@ -5,8 +5,8 @@
 //  Created by sreejith on 3/10/22.
 //
 
-#ifndef suid_h
-#define suid_h
+#ifndef xpl_suid_h
+#define xpl_suid_h
 
 #include <stdio.h>
 
@@ -26,4 +26,4 @@ int xpl_sudo_run(xpl_sudo_t util, const char* cmd, const char* argv[], size_t ar
 /// @param util_p pointer to `xpl_sudo_t` created using `xpl_sudo_create`
 void xpl_sudo_destroy(xpl_sudo_t* util_p);
 
-#endif /* suid_h */
+#endif /* xpl_suid_h */

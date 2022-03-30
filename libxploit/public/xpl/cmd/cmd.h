@@ -5,12 +5,12 @@
 //  Created by sreejith on 3/24/22.
 //
 
-#ifndef cmd_h
-#define cmd_h
+#ifndef xpl_cmd_h
+#define xpl_cmd_h
 
 #include <stdio.h>
 
 int xpl_cmd_exec(const char* exec_path, const char* argv[], pid_t* pid, int* std_out);
 int xpl_cmd_exec_sync(const char* exec_path, const char* argv[], char* buffer, size_t buffer_size);
 
-#endif /* cmd_h */
+#endif /* xpl_cmd_h */

@@ -192,7 +192,7 @@ int xpl_oob_reader_ovf_read_internal(const struct sockaddr_in* smb_addr, uint8_t
 }
 
 int xpl_oob_reader_ovf_read(const struct sockaddr_in* smb_addr, uint8_t zone_size, char* data, size_t data_size) {
-    dispatch_queue_t queue = dispatch_queue_create("reader", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INTERACTIVE, DISPATCH_QUEUE_PRIORITY_HIGH));
+    dispatch_queue_t queue = dispatch_queue_create("reader", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, DISPATCH_QUEUE_PRIORITY_HIGH));
 
     volatile _Bool* stop = alloca(sizeof(_Bool));
     *stop = FALSE;

@@ -43,7 +43,7 @@ xpl_pipe_t xpl_pipe_create(size_t size) {
     
     /// Read address of allocated buffer
     uintptr_t pipe_buffer;
-    int error = xpl_xnu_proc_find_fd_data(xpl_xnu_proc_current_proc(), pfds[0], &pipe_buffer);
+    int error = xpl_proc_find_fd_data(xpl_proc_current_proc(), pfds[0], &pipe_buffer);
     xpl_assert_err(error);
     uintptr_t allocated_buffer = xpl_kmem_read_ptr(pipe_buffer, TYPE_PIPEBUF_MEM_BUFFER_OFFSET);
     xpl_assert_cond(xpl_kmem_read_uint32(pipe_buffer, TYPE_PIPEBUF_MEM_SIZE_OFFSET), >=, size);

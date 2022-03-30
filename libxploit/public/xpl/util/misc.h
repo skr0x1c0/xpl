@@ -5,8 +5,8 @@
 //  Created by admin on 11/26/21.
 //
 
-#ifndef xpl_util_misc_h
-#define xpl_util_misc_h
+#ifndef xpl_misc_h
+#define xpl_misc_h
 
 #include <time.h>
 #include <sys/sysctl.h>
@@ -36,4 +36,4 @@ static inline int xpl_cpu_count(void) {
 }
 
 
-#endif /* xpl_util_misc_h */
+#endif /* xpl_misc_h */

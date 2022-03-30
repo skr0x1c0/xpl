@@ -5,8 +5,8 @@
 //  Created by admin on 2/22/22.
 //
 
-#ifndef smb_dev_rw_h
-#define smb_dev_rw_h
+#ifndef xpl_smb_dev_rw_h
+#define xpl_smb_dev_rw_h
 
 #include <stdio.h>
 
@@ -45,4 +45,4 @@ uintptr_t smb_dev_rw_get_session(smb_dev_rw_t dev);
 /// @param rw_p pointer to `smb_dev_rw_t` created using `smb_dev_rw_create`
 void smb_dev_rw_destroy(smb_dev_rw_t* rw_p);
 
-#endif /* smb_dev_rw_h */
+#endif /* xpl_smb_dev_rw_h */

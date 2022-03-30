@@ -5,8 +5,8 @@
 //  Created by sreejith on 3/14/22.
 //
 
-#ifndef assembly_h
-#define assembly_h
+#ifndef xpl_assembly_h
+#define xpl_assembly_h
 
 #include <stdio.h>
 
@@ -15,4 +15,4 @@
 /// @param from address of instruction
 uint32_t xpl_asm_build_bl_instr(uintptr_t to, uintptr_t from);
 
-#endif /* assembly_h */
+#endif /* xpl_assembly_h */

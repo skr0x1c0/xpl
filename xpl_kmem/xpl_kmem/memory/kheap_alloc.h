@@ -5,8 +5,8 @@
 //  Created by admin on 12/27/21.
 //
 
-#ifndef zalloc_kext_small_h
-#define zalloc_kext_small_h
+#ifndef xpl_zalloc_kext_small_h
+#define xpl_zalloc_kext_small_h
 
 #include <stdio.h>
 
@@ -39,4 +39,4 @@ struct xpl_kheap_alloc_entry {
 ///                   AF_INET is 8,  AF_INET6 is 24 and others is 2)
 struct xpl_kheap_alloc_entry xpl_kheap_alloc(const struct sockaddr_in* smb_addr, uint8_t alloc_size, uint8_t sa_family, const char* data, uint8_t data_size, uint8_t data_offset);
 
-#endif /* zalloc_kext_small_h */
+#endif /* xpl_zalloc_kext_small_h */

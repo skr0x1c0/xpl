@@ -19,7 +19,7 @@
 
 
 void test_pacda(void) {
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     xpl_log_info("pid: %d", getpid());
     xpl_log_info("proc: %p", (void*)proc);
     

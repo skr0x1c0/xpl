@@ -5,8 +5,8 @@
 //  Created by sreejith on 2/25/22.
 //
 
-#ifndef kmem_write_session_h
-#define kmem_write_session_h
+#ifndef xpl_kmem_write_session_h
+#define xpl_kmem_write_session_h
 
 #include <stdio.h>
 
@@ -32,4 +32,4 @@ uintptr_t kmem_write_session_get_addr(kmem_write_session_t session);
 /// @param session_p Pointer to session created using `kmem_write_session_create` method
 void kmem_write_session_destroy(kmem_write_session_t* session_p);
 
-#endif /* kmem_write_session_h */
+#endif /* xpl_kmem_write_session_h */

@@ -43,10 +43,10 @@ struct privacy_disable_session {
 uintptr_t find_systemstatusd(void) {
     uintptr_t* found = alloca(sizeof(uintptr_t));
     *found = 0;
-    xpl_xnu_proc_iter_pids_with_binary(SYSTEMSTATUSD_BINARY_PATH, ^_Bool(pid_t pid) {
+    xpl_proc_iter_pids_with_binary(SYSTEMSTATUSD_BINARY_PATH, ^_Bool(pid_t pid) {
         /// Make sure only one systemstatusd process is running in the system
         xpl_assert(*found == 0);
-        int error = xpl_xnu_proc_find(pid, found);
+        int error = xpl_proc_find(pid, found);
         xpl_assert_err(error);
         return 0;
     });
@@ -64,8 +64,8 @@ privacy_disable_session_t privacy_disable_session_start(void) {
     int* backup_index = alloca(sizeof(int));
     *backup_index = 0;
     
-    xpl_xnu_ipc_iter_mach_ports(systemstatusd, ^_Bool(uint32_t port_name, uintptr_t port) {
-        uintptr_t receiver_task = xpl_xnu_ipc_port_get_receiver_task(port);
+    xpl_ipc_iter_mach_ports(systemstatusd, ^_Bool(uint32_t port_name, uintptr_t port) {
+        uintptr_t receiver_task = xpl_ipc_port_get_receiver_task(port);
         if (!receiver_task) {
             return 0;
         }

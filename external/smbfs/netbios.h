@@ -32,8 +32,8 @@
  * SUCH DAMAGE.
  *
  */
-#ifndef _NETSMB_NETBIOS_H_
-#define _NETSMB_NETBIOS_H_
+#ifndef EXTERNAL_SMBFS_NETSMB_NETBIOS_H_
+#define EXTERNAL_SMBFS_NETSMB_NETBIOS_H_
 
 #define    NB_NAMELEN       16
 #define    NB_ENCNAMELEN    NB_NAMELEN * 2
@@ -61,4 +61,4 @@ struct sockaddr_nb {
     u_char                snb_name[1 + NB_ENCNAMELEN + 1];    /* encoded */
 };
 
-#endif /* _NETSMB_NETBIOS_H_ */
+#endif /* EXTERNAL_SMBFS_NETSMB_NETBIOS_H_ */

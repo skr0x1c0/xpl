@@ -35,7 +35,7 @@ xpl_allocator_rw_t xpl_allocator_rw_create(const struct sockaddr_in* addr, int c
     xpl_assert(count <= MAX_BACKEND_COUNT);
 
     smb_ssn_allocator* backends = malloc(sizeof(smb_ssn_allocator) * count);
-    int error = xpl_util_dispatch_apply(backends, sizeof(smb_ssn_allocator), count, NULL, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(backends, sizeof(smb_ssn_allocator), count, NULL, ^(void* ctx, void* data, size_t index) {
         smb_ssn_allocator* allocator = (smb_ssn_allocator*)data;
         *allocator = smb_ssn_allocator_create(addr, DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN);
         return 0;
@@ -61,7 +61,7 @@ int xpl_allocator_rw_allocate(xpl_allocator_rw_t allocator, int count, xpl_alloc
         return ERANGE;
     }
 
-    int error = xpl_util_dispatch_apply(&allocator->backends[write_idx], sizeof(smb_ssn_allocator), count, NULL, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(&allocator->backends[write_idx], sizeof(smb_ssn_allocator), count, NULL, ^(void* ctx, void* data, size_t index) {
         smb_ssn_allocator* id = (smb_ssn_allocator*)data;
         char* data1 = NULL;
         char* data2 = NULL;
@@ -89,7 +89,7 @@ int xpl_allocator_rw_filter(xpl_allocator_rw_t allocator, int offset, int count,
     _Atomic int found_idx;
     atomic_init(&found_idx, -1);
 
-    int error = xpl_util_dispatch_apply(&allocator->backends[offset], sizeof(smb_ssn_allocator), count, &found_idx, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(&allocator->backends[offset], sizeof(smb_ssn_allocator), count, &found_idx, ^(void* ctx, void* data, size_t index) {
         smb_ssn_allocator* id = (smb_ssn_allocator*)data;
 
         char data1[data1_size];
@@ -133,7 +133,7 @@ int xpl_allocator_rw_release_backends(xpl_allocator_rw_t allocator, int offset, 
         return EINVAL;
     }
 
-    int error = xpl_util_dispatch_apply(&allocator->backends[offset], sizeof(allocator->backends[0]), count, NULL, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(&allocator->backends[offset], sizeof(allocator->backends[0]), count, NULL, ^(void* ctx, void* data, size_t index) {
         return smb_ssn_allocator_destroy((smb_ssn_allocator*)data);
     });
 
@@ -162,7 +162,7 @@ int xpl_allocator_rw_grow_backend_count(xpl_allocator_rw_t allocator, int count)
         return ENOMEM;
     }
 
-    int error = xpl_util_dispatch_apply(&backends[allocator->backend_count], sizeof(backends[0]), count, NULL, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(&backends[allocator->backend_count], sizeof(backends[0]), count, NULL, ^(void* ctx, void* data, size_t index) {
         smb_ssn_allocator* ssn_allocator = (smb_ssn_allocator*)data;
         *ssn_allocator =  smb_ssn_allocator_create(&allocator->addr, DEFAULT_SSN_ALLOCATOR_IOC_SADDR_LEN);
         return 0;
@@ -186,7 +186,7 @@ int xpl_allocator_rw_get_backend_count(xpl_allocator_rw_t allocator) {
 
 int xpl_allocator_rw_destroy(xpl_allocator_rw_t* allocator) {
     xpl_allocator_rw_t arg = *allocator;
-    int error = xpl_util_dispatch_apply(arg->backends, sizeof(smb_ssn_allocator), arg->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(arg->backends, sizeof(smb_ssn_allocator), arg->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
         return smb_ssn_allocator_destroy((smb_ssn_allocator*)data);
     });
     if (error) {

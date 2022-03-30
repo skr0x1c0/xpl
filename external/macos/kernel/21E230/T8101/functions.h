@@ -5,8 +5,8 @@
 //  Created by admin on 1/4/22.
 //
 
-#ifndef macos_21E230_functions_h
-#define macos_21E230_functions_h
+#ifndef macos_21E230_T8101_functions_h
+#define macos_21E230_T8101_functions_h
 
 #define FUNC_KFREE_EXT_ADDR 0xfffffe00072b8198
 #define FUNC_TCP_INPUT_ADDR 0xfffffe00076b57ac
@@ -27,4 +27,4 @@
 #define FUNC_XIO_CONNECT_METHOD_ADDR 0xfffffe00073a95cc
 #define FUNC_IS_IO_CONNECT_METHOD_ADDR 0xfffffe0007a2d32c
 
-#endif /* macos_21E230_functions_h */
+#endif /* macos_21E230_T8101_functions_h */

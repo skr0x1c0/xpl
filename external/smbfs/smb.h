@@ -43,8 +43,8 @@
  * Common definintions and structures for SMB/CIFS protocol
  */
  
-#ifndef _NETSMB_SMB_H_
-#define _NETSMB_SMB_H_
+#ifndef EXTERNAL_SMBFS_NETSMB_SMB_H_
+#define EXTERNAL_SMBFS_NETSMB_SMB_H_
 
 #include "smb_byte_order.h"
 
@@ -249,4 +249,4 @@
 #define SMB_QFILEINFO_NETWORK_OPEN_INFORMATION  1034
 #define SMB_QFILEINFO_ATTRIBUTE_TAG_INFORMATION 1035
 
-#endif /* _NETSMB_SMB_H_ */
+#endif /* EXTERNAL_SMBFS_NETSMB_SMB_H_ */

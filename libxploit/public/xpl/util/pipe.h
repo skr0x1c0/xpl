@@ -5,8 +5,8 @@
 //  Created by sreejith on 3/20/22.
 //
 
-#ifndef pipe_h
-#define pipe_h
+#ifndef xpl_pipe_h
+#define xpl_pipe_h
 
 #include <stdio.h>
 
@@ -30,4 +30,4 @@ void xpl_pipe_write(xpl_pipe_t pipe, const void* data, size_t size);
 /// @param pipe_p pointer to `xpl_pipe_t` created using `xpl_pipe_create`
 void xpl_pipe_destroy(xpl_pipe_t* pipe_p);
 
-#endif /* pipe_h */
+#endif /* xpl_pipe_h */

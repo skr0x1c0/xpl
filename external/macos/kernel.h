@@ -12,10 +12,10 @@
 #if !defined(MACOS_21E230_T8101_RELEASE)
 /// Use default build configuration from `xpl/env.h` in none provided
 #include "../../env.h"
-#endif /* !MACOS_21E230_T6000_RELEASE */
-#endif /* !MACOS_21E230_T8101_RELEASE */
+#endif /* MACOS_21E230_T6000_RELEASE */
+#endif /* MACOS_21E230_T8101_RELEASE */
 
-#if defined(MACOS_21E230_T6000_RELEASE)
+#if MACOS_21E230_T6000_RELEASE
 
 #define MACOS_OSVERSION              "21E230"
 #define MACOS_OSVERSION_21E230       1
@@ -31,7 +31,7 @@
 #include "kernel/21E230/T6000/types.h"
 #include "kernel/21E230/T6000/constants.h"
 
-#elif defined(MACOS_21E230_T8101_RELEASE)
+#elif MACOS_21E230_T8101_RELEASE
 
 #define MACOS_OSVERSION              "21E230"
 #define MACOS_OSVERSION_21E230       1

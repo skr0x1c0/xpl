@@ -288,7 +288,7 @@ func relaunch() throws {
 // MARK: - Utils
 
 func findParentTerminalProcess() throws -> uintptr_t {
-    var cursor: uintptr_t = xpl_xnu_proc_current_proc()
+    var cursor: uintptr_t = xpl_proc_current_proc()
     while cursor != 0 {
         let pid = xpl_kmem_read_uint32(cursor, Int(TYPE_PROC_MEM_P_PID_OFFSET))
         

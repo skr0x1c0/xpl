@@ -21,8 +21,8 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
-#ifndef smb_2_h
-#define smb_2_h
+#ifndef external_smbfs_smb_2_h
+#define external_smbfs_smb_2_h
 
 /* SMB 2/3 Commands, 2.2.1 */
 #define SMB2_NEGOTIATE       0x0000
@@ -62,4 +62,4 @@
 #define SMB2_GLOBAL_CAP_DIRECTORY_LEASING    0x00000020
 #define SMB2_GLOBAL_CAP_ENCRYPTION          0x00000040
 
-#endif /* smb_2_h */
+#endif /* external_smbfs_smb_2_h */

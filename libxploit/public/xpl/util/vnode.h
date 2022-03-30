@@ -5,8 +5,8 @@
 //  Created by sreejith on 3/10/22.
 //
 
-#ifndef vnode_h
-#define vnode_h
+#ifndef xpl_vnode_h
+#define xpl_vnode_h
 
 #include <stdio.h>
 
@@ -47,4 +47,4 @@ void xpl_vnode_write_user(xpl_vnode_t util, uintptr_t vnode, const char* src, si
 /// @param util_p  pointer to `xpl_vnode_t` created using `xpl_vnode_create`
 void xpl_vnode_destroy(xpl_vnode_t* util_p);
 
-#endif /* vnode_h */
+#endif /* xpl_vnode_h */

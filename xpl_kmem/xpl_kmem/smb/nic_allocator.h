@@ -1,5 +1,5 @@
-#ifndef smb_nic_allocator_h
-#define smb_nic_allocator_h
+#ifndef xpl_smb_nic_allocator_h
+#define xpl_smb_nic_allocator_h
 
 #include <arpa/inet.h>
 
@@ -14,4 +14,4 @@ int smb_nic_allocator_allocate(smb_nic_allocator id, const struct network_nic_in
 int smb_nic_allocator_read(smb_nic_allocator id, struct smbioc_nic_info* info_out);
 int smb_nic_allocator_destroy(smb_nic_allocator* id);
 
-#endif /* smb_nic_allocator_h */
+#endif /* xpl_smb_nic_allocator_h */

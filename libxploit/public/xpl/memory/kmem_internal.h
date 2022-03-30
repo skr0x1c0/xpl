@@ -5,8 +5,8 @@
 //  Created by sreejith on 2/24/22.
 //
 
-#ifndef kmem_internal_h
-#define kmem_internal_h
+#ifndef xpl_kmem_internal_h
+#define xpl_kmem_internal_h
 
 struct xpl_kmem_ops {
     void(*read)(void* ctx, void* dst, uintptr_t src, size_t size);
@@ -20,4 +20,4 @@ xpl_kmem_backend_t xpl_kmem_backend_create(const struct xpl_kmem_ops* ops, void*
 void* xpl_kmem_backend_get_ctx(xpl_kmem_backend_t backend);
 void xpl_kmem_backend_destroy(xpl_kmem_backend_t* backend_p);
 
-#endif /* kmem_internal_h */
+#endif /* xpl_kmem_internal_h */

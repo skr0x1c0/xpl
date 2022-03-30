@@ -154,7 +154,7 @@ int main(int argc, const char * argv[]) {
     
     CFDictionaryRef entitlements = parse_entitlement_plist("entitlements.plist");
     
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     xpl_log_debug("proc: %p", (void*)proc);
     uintptr_t cs_blob = get_proc_cs_blobs(proc);
     xpl_log_debug("cs_blob: %p", (void*)cs_blob);

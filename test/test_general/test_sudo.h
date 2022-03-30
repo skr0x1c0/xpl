@@ -5,11 +5,11 @@
 //  Created by sreejith on 3/10/22.
 //
 
-#ifndef test_sudo_h
-#define test_sudo_h
+#ifndef xpl_test_sudo_h
+#define xpl_test_sudo_h
 
 #include <stdio.h>
 
 void test_sudo(void);
 
-#endif /* test_sudo_h */
+#endif /* xpl_test_sudo_h */

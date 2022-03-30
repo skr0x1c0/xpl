@@ -5,8 +5,8 @@
 //  Created by admin on 12/20/21.
 //
 
-#ifndef zfree_kext_h
-#define zfree_kext_h
+#ifndef xpl_zfree_kext_h
+#define xpl_zfree_kext_h
 
 #include <stdio.h>
 #include <xpl/slider/kext.h>
@@ -33,4 +33,4 @@ void xpl_kheap_free_session_execute(xpl_kheap_free_session_t session, const stru
 /// @param slider Slider for smbfs.kext
 void xpl_kheap_free_session_destroy(xpl_kheap_free_session_t* session_p, xpl_slider_kext_t slider);
 
-#endif /* zfree_kext_h */
+#endif /* xpl_zfree_kext_h */

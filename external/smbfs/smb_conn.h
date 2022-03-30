@@ -32,8 +32,8 @@
  * SUCH DAMAGE.
  *
  */
-#ifndef _SMB_CONN_H_
-#define _SMB_CONN_H_
+#ifndef EXTERNAL_SMBFS_SMB_CONN_H_
+#define EXTERNAL_SMBFS_SMB_CONN_H_
 
 #include <bsm/audit.h>
 #include <sys/queue.h>
@@ -215,4 +215,4 @@ struct smbiod {
 #define SMBIOD_INACTIVE_CHANNEL     0x0800 // The channel is connected but does not pass data.
 #define SMBIOD_ABORT_CONNECT        0x1000 // Stop iod from trying to establish connection
 
-#endif /* _SMB_CONN_H_ */
+#endif /* EXTERNAL_SMBFS_SMB_CONN_H_ */

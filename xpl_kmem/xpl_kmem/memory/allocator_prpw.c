@@ -27,7 +27,7 @@ struct xpl_allocator_prpw {
 xpl_allocator_prpw_t xpl_allocator_prpw_create(const struct sockaddr_in* addr, size_t num_allocs) {
     size_t backends_required = (num_allocs + MAX_ALLOCS_PER_BACKEND - 1) / MAX_ALLOCS_PER_BACKEND;
     smb_nic_allocator* backends = malloc(sizeof(smb_nic_allocator) * backends_required);
-    xpl_util_dispatch_apply(backends, sizeof(smb_nic_allocator), backends_required, NULL, ^(void* ctx, void* data, size_t index) {
+    xpl_dispatch_apply(backends, sizeof(smb_nic_allocator), backends_required, NULL, ^(void* ctx, void* data, size_t index) {
         smb_nic_allocator* allocator = (smb_nic_allocator*)data;
         *allocator = smb_nic_allocator_create(addr, sizeof(*addr));
         return 0;
@@ -38,7 +38,7 @@ xpl_allocator_prpw_t xpl_allocator_prpw_create(const struct sockaddr_in* addr, s
     allocator->backend_count = backends_required;
     atomic_init(&allocator->alloc_cursor, 0);
 
-    int error = xpl_util_dispatch_apply(backends, sizeof(smb_nic_allocator), backends_required, NULL, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(backends, sizeof(smb_nic_allocator), backends_required, NULL, ^(void* ctx, void* data, size_t index) {
         smb_nic_allocator* allocator = (smb_nic_allocator*)data;
         struct network_nic_info infos[MAX_NICS_PER_BACKEND];
         bzero(infos, sizeof(infos));
@@ -117,7 +117,7 @@ int xpl_allocator_prpw_filter(xpl_allocator_prpw_t allocator, size_t offset, siz
     _Atomic int64_t found_idx;
     atomic_init(&found_idx, -1);
 
-    int error = xpl_util_dispatch_apply(&allocator->backends[backend_start_idx], sizeof(smb_nic_allocator), backend_count, &found_idx, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(&allocator->backends[backend_start_idx], sizeof(smb_nic_allocator), backend_count, &found_idx, ^(void* ctx, void* data, size_t index) {
         size_t backend_alloc_start_idx = (backend_start_idx + index) * MAX_ALLOCS_PER_BACKEND;
         size_t backend_alloc_end_idx = xpl_min(backend_alloc_start_idx + MAX_ALLOCS_PER_BACKEND, alloc_cursor) - 1;
         size_t backend_num_allocs = backend_alloc_end_idx - backend_alloc_start_idx + 1;
@@ -188,7 +188,7 @@ int xpl_allocator_prpw_trim_backend_count(xpl_allocator_prpw_t allocator, size_t
     _Atomic size_t num_released;
     atomic_init(&num_released, 0);
 
-    int error = xpl_util_dispatch_apply(&allocator->backends[offset], sizeof(allocator->backends[0]), count, &num_released, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(&allocator->backends[offset], sizeof(allocator->backends[0]), count, &num_released, ^(void* ctx, void* data, size_t index) {
         size_t backend_idx = offset + index;
         size_t num_allocated = xpl_min(xpl_max(0, allocator->alloc_cursor - (backend_idx * MAX_ALLOCS_PER_BACKEND)), MAX_ALLOCS_PER_BACKEND);
         int error = smb_nic_allocator_destroy((smb_nic_allocator*)data);
@@ -230,7 +230,7 @@ int xpl_allocator_prpw_destroy(xpl_allocator_prpw_t* id) {
     }
 
     xpl_allocator_prpw_t allocator = *id;
-    int error = xpl_util_dispatch_apply(allocator->backends, sizeof(smb_nic_allocator), allocator->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
+    int error = xpl_dispatch_apply(allocator->backends, sizeof(smb_nic_allocator), allocator->backend_count, NULL, ^(void* ctx, void* data, size_t index) {
         return smb_nic_allocator_destroy((smb_nic_allocator*)data);
     });
 

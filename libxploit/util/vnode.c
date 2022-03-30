@@ -100,11 +100,11 @@ xpl_vnode_t xpl_vnode_create(void) {
     char mount_point[sizeof(XPL_MOUNT_TEMP_DIR)];
     xpl_msdosfs_mount_point(msdosfs_util, mount_point);
     
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     
     int mount_fd = xpl_msdosfs_mount_fd(msdosfs_util);
     uintptr_t mount_vnode;
-    int error = xpl_xnu_proc_find_fd_data(proc, mount_fd, &mount_vnode);
+    int error = xpl_proc_find_fd_data(proc, mount_fd, &mount_vnode);
     xpl_assert_err(error);
     uintptr_t mount = xpl_kmem_read_ptr(mount_vnode, TYPE_VNODE_MEM_VN_UN_OFFSET);
     uintptr_t msdosfs_mount = xpl_kmem_read_ptr(mount, TYPE_MOUNT_MEM_MNT_DATA_OFFSET);
@@ -117,7 +117,7 @@ xpl_vnode_t xpl_vnode_create(void) {
     xpl_assert(cctl_fd >= 0);
     
     uintptr_t cctl_vnode;
-    error = xpl_xnu_proc_find_fd_data(proc, cctl_fd, &cctl_vnode);
+    error = xpl_proc_find_fd_data(proc, cctl_fd, &cctl_vnode);
     xpl_assert_err(error);
     uintptr_t cctl_dep = xpl_kmem_read_ptr(cctl_vnode, TYPE_VNODE_MEM_VN_DATA_OFFSET);
     xpl_assert_cond(xpl_kmem_read_uint64(cctl_dep, TYPE_DENODE_MEM_DE_PMP_OFFSET), ==, msdosfs_mount);

@@ -103,7 +103,7 @@ xpl_kmem_backend_t xpl_memory_kmem_fast_create(void) {
     
     xpl_assert_errno(fd_bridge < 0);
     uintptr_t vnode_bridge;
-    int error = xpl_xnu_proc_find_fd_data(xpl_xnu_proc_current_proc(), fd_bridge, &vnode_bridge);
+    int error = xpl_proc_find_fd_data(xpl_proc_current_proc(), fd_bridge, &vnode_bridge);
     xpl_assert_err(error);
     xpl_log_debug("bridge file opened at fd: %d, vnode: %p", fd_bridge, (void*)vnode_bridge);
     

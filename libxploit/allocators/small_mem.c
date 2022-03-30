@@ -32,10 +32,10 @@ xpl_allocator_small_mem_t xpl_allocator_small_mem_allocate(size_t size, uintptr_
     int res = pipe(fds);
     xpl_assert_errno(res);
     
-    uintptr_t proc = xpl_xnu_proc_current_proc();
+    uintptr_t proc = xpl_proc_current_proc();
     
     uintptr_t pipe;
-    int error = xpl_xnu_proc_find_fd_data(proc, fds[0], &pipe);
+    int error = xpl_proc_find_fd_data(proc, fds[0], &pipe);
     xpl_assert_err(error);
     
     char* temp = malloc(size);
@@ -63,7 +63,7 @@ uintptr_t xpl_allocator_small_allocate_disowned(size_t size) {
     xpl_allocator_small_mem_t allocator = xpl_allocator_small_mem_allocate(size, &addr);
     
     uintptr_t pipe;
-    int error = xpl_xnu_proc_find_fd_data(xpl_xnu_proc_current_proc(), allocator->fd0, &pipe);
+    int error = xpl_proc_find_fd_data(xpl_proc_current_proc(), allocator->fd0, &pipe);
     xpl_assert_err(error);
     
     xpl_kmem_write_uint64(pipe, TYPE_PIPEBUF_MEM_BUFFER_OFFSET, 0);
