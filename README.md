@@ -27,6 +27,26 @@ Using these new capabilities, the following demonstration softwares were develop
 All the exploits and demonstration softwares were tested to work on latest macOS operating system (21E230) running on latest Apple hardware (Apple M1 MacBook Pro and Apple M1 Macmini) in full security mode.
 
 
+# Documentation map
+Detailed write-up of all vulnerabilities and exploit techniques used in this research is present in their respective source code files. Following list provides a map of all the important write-ups embedded in the source code.
+
+1. Vulnerability proof of concepts
+    - [PoC#1: Double free in `smb2_mc_parse_client_interface_array`](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/poc/poc_double_free/poc_double_free/main.c#L12)
+    - [PoC#2: Out of bound read in `smb_sm_negotiate`](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/poc/poc_sockaddr_oob_read/poc_sockaddr_oob_read/main.c#L18)
+    - [PoC#3: Out of bound write in `smb_dup_sockaddr`](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/poc/poc_oob_write/poc_oob_write/main.c#L11)
+    - [PoC#4: Out of bound read in `nb_put_name`](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/poc/poc_snb_name_oob_read/poc_snb_name_oob_read/client.c#L24)
+    - [PoC#5: Information disclosure in `smbfs_vnop_ioctl`](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/poc/poc_info_disclosure/poc_info_disclosure/main.c#L19)
+2. Technique used for slow kernel memory read write
+    - [Part 1: Obtaining read/write access to `struct smb_dev`](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/xpl_kmem/xpl_kmem/smb_dev_rw.c#L29)
+    - [Part 2: Obtaining slow kernel memory read](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/xpl_kmem/xpl_kmem/kmem_read_session.c#L21)
+    - [Part 3: Obtaining slow kernel memory write](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/xpl_kmem/xpl_kmem/kmem_write_session.c#L24)
+3. Technique used for fast kernel memory read write
+    - [Part 1: Obtain fast kernel memory read write](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/libxploit/util/vnode.c#L21)
+4. Technique for bypassing kernel control flow integrity protections
+    - [Part 1: Signing arbitary pointers with arbitary modifiers using DA pointer authentication key](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/libxploit/util/pacda.c#L24)
+    - [Part 2: Calling arbitary kernel functions with arbitary arguments](https://github.com/skr0x1c0/xpl/blob/f23e406edfd86bf57da75443550a5e198b5c5f73/libxploit/util/kfunc.c#L30)
+
+
 # Impact
 
 A malicious application may :-
